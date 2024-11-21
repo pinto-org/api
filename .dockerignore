@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+tests
+.env
+.git
+docker
+.DS_Store
+
+!docker/inbuilt
+
+misc-analysis.js

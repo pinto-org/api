@@ -1,0 +1,9 @@
+node_modules/
+.vscode/
+npm-debug.log
+.env
+.DS_Store
+docker/.data
+docker/.env
+
+misc-analysis.js
