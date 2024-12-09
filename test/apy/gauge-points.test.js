@@ -11,9 +11,12 @@ describe('Gauge Point Functions', () => {
     expect(f(500, 20, 5)).toEqual(505);
     expect(f(500, 20, 10)).toEqual(503);
     expect(f(500, 20, 15)).toEqual(501);
-    expect(f(500, 20, 21)).toEqual(499);
-    expect(f(500, 20, 19)).toEqual(501);
+
     expect(f(500, 20, 20)).toEqual(500);
+    expect(f(500, 20, 28)).toEqual(500);
+    expect(f(500, 20, 28.1)).toEqual(499);
+    expect(f(500, 20, 18)).toEqual(500);
+    expect(f(500, 20, 17.9)).toEqual(501);
   });
   test('BIP45 implementation', () => {
     const f = LegacyDefaultGaugePointFunction.next;
