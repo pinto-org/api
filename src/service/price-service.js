@@ -47,7 +47,7 @@ class PriceService {
   static #getPriceFunction(token) {
     if (token === C().BEAN) {
       return PriceService.getBeanPrice;
-    } else if ([C().WETH, C().WSTETH].includes(token)) {
+    } else if ([C().WETH, C().CBETH, C().CBBTC, C().WSOL, C().USDC].includes(token)) {
       return (options) => PriceService.getUsdOracleTokenPrice(token, options);
     }
     return () => ({
