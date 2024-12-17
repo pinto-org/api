@@ -1,4 +1,5 @@
 const { C } = require('../../constants/runtime-constants');
+const Log = require('../../utils/logging');
 const AlchemyUtil = require('../alchemy');
 const Contracts = require('../contracts/contracts');
 
@@ -14,14 +15,46 @@ class FilterLogs {
       fromBlock,
       toBlock
     };
+    const logs = await FilterLogs.safeGetBatchLogs(filter, c);
 
-    const logs = await c.RPC.getLogs(filter);
     const events = logs.map((log) => {
       const parsed = iBeanstalk.parseLog(log);
       parsed.rawLog = log;
       return parsed;
     });
     return events;
+  }
+
+  static async safeGetBatchLogs(filter, c = C()) {
+    filter = JSON.parse(JSON.stringify(filter));
+    let originalTo = filter.toBlock !== 'latest' ? filter.toBlock : (await C().RPC.getBlock()).number;
+    let range = originalTo - filter.fromBlock;
+    filter.toBlock = 0;
+
+    if (range > 500000) {
+      // While it could be retrieved through this method without error, protect against runaway retrievals
+      throw new Error(`Excessively large log range requested (${range})`);
+    }
+
+    const all = [];
+    while (filter.toBlock < originalTo) {
+      filter.toBlock = Math.min(filter.fromBlock + range, originalTo);
+      try {
+        const logs = await c.RPC.getLogs(filter);
+        all.push(...logs);
+        Log.info(`Got ${logs.length} logs for range [${filter.fromBlock}, ${filter.toBlock}]`);
+        // Prepare for next iteration
+        filter.fromBlock = filter.toBlock + 1;
+      } catch (e) {
+        Log.info('WARNING! getLogs failed, reducing block range and retrying...', filter.fromBlock, range);
+
+        // Prepare for next iteration, reset toBlock and decrease the range
+        filter.toBlock = 0;
+        // Large ranges may initially fail but will eventually reduce
+        range = Math.min(range / 2, 25000);
+      }
+    }
+    return all;
   }
 }
 module.exports = FilterLogs;
@@ -32,9 +65,10 @@ if (require.main === module) {
     const events = await FilterLogs.getBeanstalkEvents(
       ['AddDeposit', 'RemoveDeposit', 'RemoveDeposits'],
       22668331,
-      'latest',
+      23088331,
+      // 'latest',
       C('base')
     );
-    console.log(events);
+    console.log(events.length);
   })();
 }
