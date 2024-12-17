@@ -17,7 +17,6 @@ class ApySeeder {
       await Concurrent.run(TAG, 2, async () => {
         try {
           await YieldService.saveSeasonalApys({ season });
-          Log.info(`Saved apy for season ${season}`);
         } catch (e) {
           Log.info(`Could not save apy for season ${season}`, e);
           throw e;

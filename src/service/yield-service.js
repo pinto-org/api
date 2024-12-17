@@ -10,6 +10,7 @@ const TokenRepository = require('../repository/postgres/queries/token-repository
 const YieldRepository = require('../repository/postgres/queries/yield-repository');
 const BeanstalkSubgraphRepository = require('../repository/subgraph/beanstalk-subgraph');
 const AsyncContext = require('../utils/async/context');
+const Log = require('../utils/logging');
 const SiloApyService = require('./silo-apy');
 
 class YieldService {
@@ -64,6 +65,7 @@ class YieldService {
     await AsyncContext.sequelizeTransaction(async () => {
       return await YieldRepository.addYields(yieldRows);
     });
+    Log.info(`Saved apy for season ${season}`);
   }
 
   // Returns a list of seasons that are missing a yield entry
