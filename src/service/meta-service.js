@@ -14,8 +14,8 @@ class AppMetaService {
   static async getLambdaMeta() {
     const meta = await MetaRepository.get(C().CHAIN);
     return {
-      lastUpdate: meta?.lastDepositUpdate ? meta.lastDepositUpdate : undefined,
-      lastBdvs: meta?.lastLambdaBdvs ? allToBigInt(JSON.parse(meta.lastLambdaBdvs)) : undefined
+      lastUpdate: meta?.lastDepositUpdate ? meta.lastDepositUpdate : null,
+      lastBdvs: meta?.lastLambdaBdvs ? allToBigInt(JSON.parse(meta.lastLambdaBdvs)) : null
     };
   }
 
