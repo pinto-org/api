@@ -22,12 +22,11 @@ class DepositService {
     request.account && criteriaList.push({ account: request.account });
     request.token && criteriaList.push({ token: request.token });
 
-    if (!request.sort) {
-      request.sort = {
-        type: 'absolute',
-        field: 'bdv'
-      };
-    }
+    request.sort ??= {
+      type: 'absolute',
+      field: 'bdv'
+    };
+    request.limit ??= 100;
 
     const { deposits, lastUpdated } = await AsyncContext.sequelizeTransaction(async () => {
       const [deposits, lambdaMeta] = await Promise.all([

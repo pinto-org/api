@@ -7,7 +7,8 @@ const DepositsTask = require('./tasks/deposits');
 // All cron jobs which could be activated are configured here
 const ALL_JOBS = {
   sunrise: {
-    cron: '0 * * * *',
+    maxFrequency: 60 * 1000,
+    cron: '50-59 59 * * * *',
     function: SunriseTask.handleSunrise
   },
   deposits: {
@@ -20,7 +21,10 @@ const ALL_JOBS = {
 
       try {
         DepositsTask.__cronLock = true;
-        await DepositsTask.updateDeposits();
+        let caughtUp = false;
+        while (!caughtUp) {
+          caughtUp = await DepositsTask.updateDeposits();
+        }
       } finally {
         DepositsTask.__cronLock = false;
       }
@@ -57,7 +61,17 @@ function activateJobs(jobNames) {
   for (const jobName of jobNames) {
     const job = ALL_JOBS[jobName];
     if (job) {
-      cron.schedule(job.cron, () => errorWrapper(job.function));
+      cron.schedule(job.cron, () => {
+        // This is to mitigate a quirk in node-cron where sometimes jobs are missed. Jobs can specify
+        // a range of seconds they are willing to execute on, making it far less likely to drop.
+        // This guard prevents double-execution.
+        if (job.maxFrequency && Date.now() - job.__lastExecuted < job.maxFrequency) {
+          return;
+        }
+        job.__lastExecuted = Date.now();
+
+        errorWrapper(job.function);
+      });
       activated.push(jobName);
     } else {
       failed.push(jobName);

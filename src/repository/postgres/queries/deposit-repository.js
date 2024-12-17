@@ -12,13 +12,7 @@ class DepositRepository {
   }
 
   // Retrieves a list of deposits following optional criteria
-  static async findAllWithOptions({
-    criteriaList = null,
-    lambdaBdvChange = null,
-    sort = null,
-    limit = null,
-    skip = null
-  } = {}) {
+  static async findAllWithOptions({ criteriaList, lambdaBdvChange, sort, limit, skip } = {}) {
     const options = {
       include: [
         {
@@ -34,7 +28,7 @@ class DepositRepository {
     if (sort) {
       options.order = this._constructFindSort(sort);
     }
-    options.limit = limit ?? 100;
+    options.limit = limit;
     if (skip) {
       options.offset = skip;
     }

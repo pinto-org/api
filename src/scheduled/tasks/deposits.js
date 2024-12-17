@@ -9,8 +9,11 @@ const { percentDiff } = require('../../utils/number');
 const Log = require('../../utils/logging');
 const SiloService = require('../../service/silo-service');
 
+// If the BDV has changed by at least these amounts, update lambda stats
 const DEFAULT_UPDATE_THRESHOLD = 0.01;
 const HOURLY_UPDATE_THRESHOLD = 0.005;
+// Maximum number of blocks to process in one invocation
+const MAX_BLOCKS = 2000;
 
 class DepositsTask {
   // Set by SunriseTask when a new season is encountered. Indicates that all deposits should be updated.
@@ -23,12 +26,19 @@ class DepositsTask {
       return;
     }
 
+    let isCaughtUp = true;
     const { lastUpdate, lastBdvs } = await AppMetaService.getLambdaMeta();
 
     // Determine range of blocks to update on
     const currentBlock = (await C().RPC.getBlock()).number;
     // Buffer to avoid issues with a chain reorg
-    const updateBlock = currentBlock - ChainUtil.blocksPerInterval(C().CHAIN, 10000);
+    let updateBlock = currentBlock - ChainUtil.blocksPerInterval(C().CHAIN, 10000);
+    if (updateBlock - lastUpdate > MAX_BLOCKS) {
+      updateBlock = lastUpdate + MAX_BLOCKS;
+      isCaughtUp = false;
+    }
+
+    Log.info(`Updating deposits for block range [${lastUpdate}, ${updateBlock}]`);
 
     const tokenInfos = await SiloService.getWhitelistedTokenInfo({ block: updateBlock, chain: C().CHAIN });
 
@@ -58,6 +68,8 @@ class DepositsTask {
       await AppMetaService.setLastLambdaBdvs(lastBdvs);
     });
     DepositsTask.__seasonUpdate = false;
+
+    return isCaughtUp;
   }
 
   // Updates the list of deposits in the database, adding/removing entries as needed
