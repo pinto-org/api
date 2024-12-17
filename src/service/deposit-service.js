@@ -22,12 +22,11 @@ class DepositService {
     request.account && criteriaList.push({ account: request.account });
     request.token && criteriaList.push({ token: request.token });
 
-    if (!request.sort) {
-      request.sort = {
-        type: 'absolute',
-        field: 'bdv'
-      };
-    }
+    request.sort ??= {
+      type: 'absolute',
+      field: 'bdv'
+    };
+    request.limit ??= 100;
 
     const { deposits, lastUpdated } = await AsyncContext.sequelizeTransaction(async () => {
       const [deposits, lambdaMeta] = await Promise.all([
@@ -99,7 +98,6 @@ class DepositService {
       tokens: [],
       amounts: []
     };
-    // FIXME: Negative depositedAmounts here. Issue is a limit 100 on deposits. Check limits on others too.
     for (const deposit of depositDtos) {
       bdvsCalldata.tokens.push(deposit.token);
       bdvsCalldata.amounts.push(deposit.depositedAmount);

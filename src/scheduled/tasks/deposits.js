@@ -38,7 +38,7 @@ class DepositsTask {
       isCaughtUp = false;
     }
 
-    console.log(`Updating deposits for block range [${lastUpdate}, ${updateBlock}]`);
+    Log.info(`Updating deposits for block range [${lastUpdate}, ${updateBlock}]`);
 
     const tokenInfos = await SiloService.getWhitelistedTokenInfo({ block: updateBlock, chain: C().CHAIN });
 

@@ -42,7 +42,7 @@ class FilterLogs {
       try {
         const logs = await c.RPC.getLogs(filter);
         all.push(...logs);
-        Log.info(`Got ${logs.length} logs for range [${filter.fromBlock}, ${filter.toBlock}]`);
+        // Log.info(`Got ${logs.length} logs for range [${filter.fromBlock}, ${filter.toBlock}]`);
         // Prepare for next iteration
         filter.fromBlock = filter.toBlock + 1;
       } catch (e) {
