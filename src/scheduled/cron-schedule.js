@@ -20,7 +20,10 @@ const ALL_JOBS = {
 
       try {
         DepositsTask.__cronLock = true;
-        await DepositsTask.updateDeposits();
+        let caughtUp = false;
+        while (!caughtUp) {
+          caughtUp = await DepositsTask.updateDeposits();
+        }
       } finally {
         DepositsTask.__cronLock = false;
       }

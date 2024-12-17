@@ -58,7 +58,7 @@ class Concurrent {
           if (errors.length === 0) {
             resolve();
           } else {
-            reject(`Failed with errors: ${this.errors[id]}`);
+            reject(`[Concurrent] Failed with errors: ${errors}`);
           }
         }
       }, 50);

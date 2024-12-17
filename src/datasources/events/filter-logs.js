@@ -1,4 +1,5 @@
 const { C } = require('../../constants/runtime-constants');
+const AlchemyUtil = require('../alchemy');
 const Contracts = require('../contracts/contracts');
 
 class FilterLogs {
@@ -24,3 +25,16 @@ class FilterLogs {
   }
 }
 module.exports = FilterLogs;
+
+if (require.main === module) {
+  (async () => {
+    await AlchemyUtil.ready('base');
+    const events = await FilterLogs.getBeanstalkEvents(
+      ['AddDeposit', 'RemoveDeposit', 'RemoveDeposits'],
+      22668331,
+      'latest',
+      C('base')
+    );
+    console.log(events);
+  })();
+}

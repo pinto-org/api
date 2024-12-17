@@ -99,6 +99,7 @@ class DepositService {
       tokens: [],
       amounts: []
     };
+    // FIXME: Negative depositedAmounts here. Issue is a limit 100 on deposits. Check limits on others too.
     for (const deposit of depositDtos) {
       bdvsCalldata.tokens.push(deposit.token);
       bdvsCalldata.amounts.push(deposit.depositedAmount);
