@@ -11,11 +11,11 @@ class SunriseTask {
     Log.info(`Waiting for season ${nextSeason} to be processed by subgraphs...`);
     try {
       // Wait 5.5 mins, fails + notifies if unsuccessful
-      await OnSunriseUtil.waitForSunrise(5.5 * 60 * 1000);
+      await OnSunriseUtil.waitForSunrise(nextSeason, 5.5 * 60 * 1000);
     } catch (e) {
       Log.info(`Season ${nextSeason} not detected yet, sent notification and still waiting...`);
       // Wait up to an additional 50 mins. Dont re-catch on failure
-      await OnSunriseUtil.waitForSunrise(50 * 60 * 1000);
+      await OnSunriseUtil.waitForSunrise(nextSeason, 50 * 60 * 1000);
     }
     Log.info(`Season ${nextSeason} was processed by the subgraphs, proceeding.`);
 
