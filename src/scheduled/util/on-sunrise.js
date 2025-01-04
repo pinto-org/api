@@ -4,7 +4,7 @@ const CommonSubgraphRepository = require('../../repository/subgraph/common-subgr
 const { sendWebhookMessage } = require('../../utils/discord');
 
 const DEFAULT_WAIT = 5.5 * 60 * 1000;
-const INTERVAL = 5000;
+const CHECK_INTERVAL = 5000;
 
 class OnSunriseUtil {
   static async failureCallback(maxWait) {
@@ -29,7 +29,7 @@ class OnSunriseUtil {
               `One or more subgraphs didn't process sunrise within the expected time, or it didn't occur on-chain.`
             );
           } else {
-            setTimeout(checkSunrise, INTERVAL);
+            setTimeout(checkSunrise, CHECK_INTERVAL);
           }
         };
         check().catch((e) => {
