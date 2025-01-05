@@ -4,7 +4,7 @@ const CommonSubgraphRepository = require('../../repository/subgraph/common-subgr
 const { sendWebhookMessage } = require('../../utils/discord');
 
 const DEFAULT_WAIT = 5.5 * 60 * 1000;
-const INTERVAL = 5000;
+const CHECK_INTERVAL = 5000;
 
 class OnSunriseUtil {
   static async failureCallback(maxWait) {
@@ -12,13 +12,13 @@ class OnSunriseUtil {
   }
 
   // Waits until the subgraphs have processed this sunrise
-  static async waitForSunrise(maxWait = DEFAULT_WAIT) {
+  static async waitForSunrise(targetSeason, maxWait = DEFAULT_WAIT) {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
       const checkSunrise = () => {
         // Separate async check function so error handling can be attached
         const check = async () => {
-          const isSunriseProcessed = await OnSunriseUtil.checkSubgraphsForSunrise();
+          const isSunriseProcessed = await OnSunriseUtil.checkSubgraphsForSunrise(targetSeason);
           const elapsedTime = Date.now() - startTime;
 
           if (isSunriseProcessed) {
@@ -29,7 +29,7 @@ class OnSunriseUtil {
               `One or more subgraphs didn't process sunrise within the expected time, or it didn't occur on-chain.`
             );
           } else {
-            setTimeout(checkSunrise, INTERVAL);
+            setTimeout(checkSunrise, CHECK_INTERVAL);
           }
         };
         check().catch((e) => {
@@ -40,12 +40,9 @@ class OnSunriseUtil {
     });
   }
 
-  static async checkSubgraphsForSunrise() {
+  static async checkSubgraphsForSunrise(targetSeason) {
     const beanstalkSeason = await BeanstalkSubgraphRepository.getLatestSeason();
-    const currentTime = Date.now() / 1000;
-    const createdAtSeconds = parseInt(beanstalkSeason.createdAt);
-    const isNewSeason = Math.abs(currentTime - createdAtSeconds) <= 5 * 60;
-    if (isNewSeason) {
+    if (parseInt(beanstalkSeason.season) >= targetSeason) {
       const newSeasonBlock = parseInt(beanstalkSeason.sunriseBlock);
       // See if bean, basin subgraphs are ready also
       const [beanMeta, basinMeta] = await Promise.all([

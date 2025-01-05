@@ -30,7 +30,7 @@ describe('OnSunrise', () => {
 
     const checkSpy = jest.spyOn(OnSunriseUtil, 'checkSubgraphsForSunrise');
 
-    const waitPromise = OnSunriseUtil.waitForSunrise(17500);
+    const waitPromise = OnSunriseUtil.waitForSunrise(17501, 5 * 60 * 1000);
     await checkLastPromiseResult(checkSpy, false);
 
     const seasonResponse2 = require('../mock-responses/subgraph/scheduled/sunrise/beanstalkSeason_2.json');
@@ -58,7 +58,7 @@ describe('OnSunrise', () => {
 
     const checkSpy = jest.spyOn(OnSunriseUtil, 'checkSubgraphsForSunrise');
 
-    const waitPromise = OnSunriseUtil.waitForSunrise(7500);
+    const waitPromise = OnSunriseUtil.waitForSunrise(17501, 7500);
     await checkLastPromiseResult(checkSpy, false);
 
     // Fast-forward timers and continue
