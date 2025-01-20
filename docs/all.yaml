@@ -5,7 +5,7 @@ info:
   description: REST API for getting information as to the current and historical state of Pinto and related protocols.
 servers:
   - url: 'https://api.pinto.money'
-  
+
 tags:
   - name: Basin
   - name: Silo
@@ -15,7 +15,7 @@ tags:
 paths:
   /basin/tickers:
     get:
-      tags: 
+      tags:
         - Basin
       summary: Retrieve tickers and 24h stats
       operationId: getTickers
@@ -35,19 +35,19 @@ paths:
                     ticker_id:
                       type: string
                       description: Unique identifier for the ticker
-                      example: "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab_0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                      example: '0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab_0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
                     base_currency:
                       type: string
                       description: Base currency identifier
-                      example: "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab"
+                      example: '0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab'
                     target_currency:
                       type: string
                       description: Target currency identifier
-                      example: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+                      example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
                     pool_id:
                       type: string
                       description: Pool identifier
-                      example: "0xbea0e11282e2bb5893bece110cf199501e872bad"
+                      example: '0xbea0e11282e2bb5893bece110cf199501e872bad'
                     last_price:
                       type: number
                       format: float
@@ -97,7 +97,7 @@ paths:
                       example: 0.000383640247389837
   /basin/historical_trades:
     get:
-      tags: 
+      tags:
         - Basin
       summary: Retrieve historical trades
       operationId: getHistoricalTrades
@@ -108,14 +108,14 @@ paths:
           description: Unique identifier for the ticker
           schema:
             type: string
-            example: "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab_0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+            example: '0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab_0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         - name: type
           in: query
           required: false
           description: Type of the trade (buy or sell). Defaults to both.
           schema:
             type: string
-            example: "buy | sell"
+            example: 'buy | sell'
         - name: limit
           in: query
           description: Limit the number of results returned. Defaults to 500.
@@ -128,14 +128,14 @@ paths:
           schema:
             type: string
             format: date-time
-            example: "2024-05-01T00:00:00.000Z"
+            example: '2024-05-01T00:00:00.000Z'
         - name: end_time
           in: query
           description: End time for filtering trades. Defaults to today.
           schema:
             type: string
             format: date-time
-            example: "2024-05-01T00:00:00.000Z"
+            example: '2024-05-01T00:00:00.000Z'
       responses:
         '200':
           description: Successful response
@@ -186,7 +186,7 @@ paths:
                       type: string
                       enum: [NEW, AVERAGE]
                       description: Indicates whether to calculate from the basis of a new silo deposit, or the average silo deposit.
-                      default: "AVERAGE"
+                      default: 'AVERAGE'
                     initUserValues:
                       type: array
                       items:
@@ -194,12 +194,12 @@ paths:
                         properties:
                           stalkPerBdv:
                             type: number
-                            description: "(user deposited stalk) / (user deposited bdv + user germinating bdv)"
+                            description: '(user deposited stalk) / (user deposited bdv + user germinating bdv)'
                           germinating:
                             type: array
                             items:
                               type: number
-                            description: "[Even, Odd] germinating stalk ratio of this deposit type. Each entry should be computed as: (user germinating stalk) / (user deposited bdv + user germinating bdv)"
+                            description: '[Even, Odd] germinating stalk ratio of this deposit type. Each entry should be computed as: (user germinating stalk) / (user deposited bdv + user germinating bdv)'
                             default: [0, 0]
                         description: Each entry in the array corresponds to the requested token at the same index.
                       description: Initial values of a deposit starting state. Takes precedence over initType
@@ -255,8 +255,8 @@ paths:
                         description: Yields for each whitelisted token
                     description: Yields for each available ema window.
                     example:
-                      "720":
-                        "0xbea0005b8599265d41256905a9b3073d397812e4":
+                      '720':
+                        '0xbea0005b8599265d41256905a9b3073d397812e4':
                           bean: 0
                           stalk: 1.749468280393595
                           ownership: 1.415032727943025
@@ -270,9 +270,9 @@ paths:
                       $ref: '#/components/schemas/EmaInfo'
                     description: EMA calculation details for each requested window.
                     example:
-                        "720":
-                          effectiveWindow: 350
-                          beansPerSeason: "213456789"
+                      '720':
+                        effectiveWindow: 350
+                        beansPerSeason: '213456789'
                 required:
                   - season
                   - yields
@@ -295,7 +295,7 @@ paths:
                   type: string
                   format: address
                   description: The whitelisted token address.
-                  example: "0xabcd"
+                  example: '0xabcd'
                 emaWindow:
                   type: integer
                   enum: [24, 168, 720]
@@ -347,15 +347,15 @@ paths:
                   description: Yield breakdown for the season.
                 description: Mapping of season numbers to their yield data.
               example:
-                "10000":
+                '10000':
                   bean: 0
                   stalk: 0.8661584416280589
                   ownership: 0.6056560518900254
-                "10001":
+                '10001':
                   bean: 0
                   stalk: 0.8642958966146155
                   ownership: 0.6044476224863509
-                "10002":
+                '10002':
                   bean: 0
                   stalk: 0.8642958966146155
                   ownership: 0.6044476224863509
@@ -376,12 +376,12 @@ paths:
                   type: string
                   format: address
                   description: EVM address of a depositor. Default is all accounts
-                  example: "0xabcd"
+                  example: '0xabcd'
                 token:
                   type: string
                   format: address
                   description: EVM address of a whitelisted token. Default is all tokens
-                  example: "0xef01"
+                  example: '0xef01'
                 sort:
                   type: object
                   properties:
@@ -472,21 +472,21 @@ paths:
               example:
                 lastUpdated: 267360284
                 deposits:
-                  - chain: "arb"
-                    account: "0x3d138e67dfac9a7af69d2694470b0b6d37721b06"
-                    token: "0xbea0005b8599265d41256905a9b3073d397812e4"
-                    stem: "14945036521"
-                    mowStem: "39978964924"
-                    depositedAmount: "5489953983"
-                    depositedBdv: "19685712512"
-                    baseStalk: "196857125120000000000"
-                    grownStalk: "492810717587449278336"
-                    mowableStalk: "42783894565816732800"
-                    currentStalk: "689667842707449278336"
-                    currentSeeds: "123527216069999616"
-                    bdvOnLambda: "5489953983"
-                    stalkOnLambda: "204266232677503621224"
-                    seedsOnLambda: "34449285564797544"
+                  - chain: 'arb'
+                    account: '0x3d138e67dfac9a7af69d2694470b0b6d37721b06'
+                    token: '0xbea0005b8599265d41256905a9b3073d397812e4'
+                    stem: '14945036521'
+                    mowStem: '39978964924'
+                    depositedAmount: '5489953983'
+                    depositedBdv: '19685712512'
+                    baseStalk: '196857125120000000000'
+                    grownStalk: '492810717587449278336'
+                    mowableStalk: '42783894565816732800'
+                    currentStalk: '689667842707449278336'
+                    currentSeeds: '123527216069999616'
+                    bdvOnLambda: '5489953983'
+                    stalkOnLambda: '204266232677503621224'
+                    seedsOnLambda: '34449285564797544'
   /price:
     get:
       tags:
@@ -506,7 +506,7 @@ paths:
                 properties:
                   block:
                     type: integer
-                    description: On-chain Ethereum block number of the requested price data
+                    description: On-chain EVM block number of the requested price data
                     example: 19804698
                   timestamp:
                     type: integer
@@ -514,8 +514,8 @@ paths:
                     example: 1714921799
                   token:
                     type: string
-                    description: Ethereum address of the token
-                    example: "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab"
+                    description: EVM address of the token
+                    example: '0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab'
                   usdPrice:
                     type: number
                     format: double
@@ -568,7 +568,7 @@ paths:
                           type: string
                           format: address
                           description: EVM address of the voter
-                          example: "0xabcd"
+                          example: '0xabcd'
                         score:
                           type: number
                           format: float
@@ -582,9 +582,8 @@ paths:
                             example: 500.20
                           description: Mapping of EVM addresses and their voting power contributing to the primary address' vote.
                           example:
-                            "0xabcd": 266.32
-                            "0xcdef": 1234.28
-
+                            '0xabcd': 266.32
+                            '0xcdef': 1234.28
 
 components:
   parameters:
@@ -592,7 +591,7 @@ components:
       name: blockNumber
       in: query
       required: false
-      description: Ethereum block number. Defaults to the latest block.
+      description: EVM block number. Defaults to the latest block.
       schema:
         type: integer
         example: 19000000
@@ -631,7 +630,7 @@ components:
           example: 1715161115000
         type:
           type: string
-          example: "buy | sell"
+          example: 'buy | sell'
     EmaInfo:
       type: object
       properties:
@@ -641,4 +640,4 @@ components:
         beansPerSeason:
           type: string
           description: The number of seasonal reward beans as a BigInt string
-          example: "213456789"
+          example: '213456789'
