@@ -11,7 +11,7 @@ info:
 
     - [Exchange subgraph](https://graph.pinto.money/explorer/exchange)
 servers:
-  - url: 'https://api.pinto.money'
+  - url: "https://api.pinto.money"
 
 tags:
   - name: Exchange
@@ -24,10 +24,10 @@ paths:
       summary: Retrieve tickers and 24h stats
       operationId: getTickers
       parameters:
-        - $ref: '#/components/parameters/blockNumber'
-        - $ref: '#/components/parameters/timestamp'
+        - $ref: "#/components/parameters/blockNumber"
+        - $ref: "#/components/parameters/timestamp"
       responses:
-        '200':
+        "200":
           description: Successful response
           content:
             application/json:
@@ -39,19 +39,19 @@ paths:
                     ticker_id:
                       type: string
                       description: Unique identifier for the ticker
-                      example: '0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab_0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+                      example: "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab_0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
                     base_currency:
                       type: string
                       description: Base currency identifier
-                      example: '0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab'
+                      example: "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab"
                     target_currency:
                       type: string
                       description: Target currency identifier
-                      example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+                      example: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
                     pool_id:
                       type: string
                       description: Pool identifier
-                      example: '0xbea0e11282e2bb5893bece110cf199501e872bad'
+                      example: "0xbea0e11282e2bb5893bece110cf199501e872bad"
                     last_price:
                       type: number
                       format: float
@@ -112,14 +112,14 @@ paths:
           description: Unique identifier for the ticker
           schema:
             type: string
-            example: '0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab_0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            example: "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab_0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
         - name: type
           in: query
           required: false
           description: Type of the trade (buy or sell). Defaults to both.
           schema:
             type: string
-            example: 'buy | sell'
+            example: "buy | sell"
         - name: limit
           in: query
           description: Limit the number of results returned. Defaults to 500.
@@ -132,16 +132,16 @@ paths:
           schema:
             type: string
             format: date-time
-            example: '2024-05-01T00:00:00.000Z'
+            example: "2024-05-01T00:00:00.000Z"
         - name: end_time
           in: query
           description: End time for filtering trades. Defaults to today.
           schema:
             type: string
             format: date-time
-            example: '2024-05-01T00:00:00.000Z'
+            example: "2024-05-01T00:00:00.000Z"
       responses:
-        '200':
+        "200":
           description: Successful response
           content:
             application/json:
@@ -151,11 +151,11 @@ paths:
                   buy:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Trade'
+                      $ref: "#/components/schemas/Trade"
                   sell:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Trade'
+                      $ref: "#/components/schemas/Trade"
 components:
   parameters:
     blockNumber:
@@ -201,4 +201,4 @@ components:
           example: 1715161115000
         type:
           type: string
-          example: 'buy | sell'
+          example: "buy | sell"

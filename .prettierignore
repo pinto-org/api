@@ -3,6 +3,6 @@ node_modules/
 docker
 
 *.json
-api-spec.yaml
+docs/**/*.yaml
 .gitignore
 README.md
