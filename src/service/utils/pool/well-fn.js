@@ -2,11 +2,12 @@ const { C } = require('../../../constants/runtime-constants');
 const AlchemyUtil = require('../../../datasources/alchemy');
 const Contracts = require('../../../datasources/contracts/contracts');
 const { BigInt_abs } = require('../../../utils/bigint');
+const { fromBigInt } = require('../../../utils/number');
 
 // This functionality may or may not be helpful within this API project - it is used in subgraphs.
 // However it was first developed here as a means of understanding the inputs/outputs.
 class WellFnUtil {
-  // Returns adjusted rates from `calcRate` that have precision equivalent to their corresponding token
+  // Returns adjusted rates from `calcRate` in decimal values.
   // Value at index i is how much of token i is received in exchange for one of token 1 - i.
   static async getRates(reserves, data, wellFnAddr, decimals) {
     const wellFn = Contracts.get(wellFnAddr);
@@ -45,18 +46,16 @@ class WellFnUtil {
   }
 
   /**
-   * Transforms a rate returned from `calcRate` such that its precision is the same as the "i" token.
-   * This is not necessary for Stable2.
+   * Convert the rate into a decimal value. The given rate precision is quoteToken + 18 - baseToken
    * @param {*} rate - The computed rate from `calcRate`
    * @param {*} j - The "j" token used to compute this rate
    * @param {*} decimals - decimal precision of tokens in this well
    */
   static _transformRate(rate, wellFnAddr, j, decimals) {
     if (wellFnAddr === C().CP2 || wellFnAddr === C().CP2_121) {
-      const decimalsToRemove = 18 - decimals[j];
-      return rate / BigInt(10 ** decimalsToRemove);
+      return fromBigInt(rate, 18 + decimals[1 - j] - decimals[j]);
     }
-    return rate;
+    return fromBigInt(rate, 6);
   }
 }
 

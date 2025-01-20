@@ -51,6 +51,18 @@ class UsdOracle {
     const instPrice = this.contract.__version() === 1 ? BigInt(10 ** 24) / result : result;
     return instPrice;
   }
+
+  async getUsdTokenPrice(token) {
+    return await this.contract.getUsdTokenPrice(token);
+  }
+
+  async getMillionUsdPrice(token, lookback = 0) {
+    return await this.contract.getMillionUsdPrice(token, lookback);
+  }
+
+  async getTokenUsdTwap(token, lookback = 3600) {
+    return await this.contract.getTokenUsdTwap(token, lookback);
+  }
 }
 
 module.exports = UsdOracle;

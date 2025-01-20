@@ -40,6 +40,10 @@ class BeanstalkPrice {
   async price() {
     return await this.contract.price();
   }
+
+  async poolPrice(poolAddress) {
+    return await this.contract.poolPrice(poolAddress);
+  }
 }
 
 module.exports = BeanstalkPrice;

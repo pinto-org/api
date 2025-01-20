@@ -4,8 +4,8 @@ info:
   version: 1.0.0
   description: REST API for getting information as to the current and historical state of Pinto and related protocols.
 servers:
-  - url: 'https://api.pinto.money'
-  
+  - url: "https://api.pinto.money"
+
 tags:
   - name: Basin
   - name: Silo
@@ -15,15 +15,15 @@ tags:
 paths:
   /basin/tickers:
     get:
-      tags: 
+      tags:
         - Basin
       summary: Retrieve tickers and 24h stats
       operationId: getTickers
       parameters:
-        - $ref: '#/components/parameters/blockNumber'
-        - $ref: '#/components/parameters/timestamp'
+        - $ref: "#/components/parameters/blockNumber"
+        - $ref: "#/components/parameters/timestamp"
       responses:
-        '200':
+        "200":
           description: Successful response
           content:
             application/json:
@@ -97,7 +97,7 @@ paths:
                       example: 0.000383640247389837
   /basin/historical_trades:
     get:
-      tags: 
+      tags:
         - Basin
       summary: Retrieve historical trades
       operationId: getHistoricalTrades
@@ -137,7 +137,7 @@ paths:
             format: date-time
             example: "2024-05-01T00:00:00.000Z"
       responses:
-        '200':
+        "200":
           description: Successful response
           content:
             application/json:
@@ -147,11 +147,11 @@ paths:
                   buy:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Trade'
+                      $ref: "#/components/schemas/Trade"
                   sell:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Trade'
+                      $ref: "#/components/schemas/Trade"
   /silo/yield:
     post:
       tags:
@@ -206,7 +206,7 @@ paths:
                     ema:
                       type: array
                       items:
-                        $ref: '#/components/schemas/EmaInfo'
+                        $ref: "#/components/schemas/EmaInfo"
                       description: Override values to use for the ema
                     catchUpRate:
                       type: number
@@ -267,12 +267,12 @@ paths:
                   ema:
                     type: object
                     additionalProperties:
-                      $ref: '#/components/schemas/EmaInfo'
+                      $ref: "#/components/schemas/EmaInfo"
                     description: EMA calculation details for each requested window.
                     example:
-                        "720":
-                          effectiveWindow: 350
-                          beansPerSeason: "213456789"
+                      "720":
+                        effectiveWindow: 350
+                        beansPerSeason: "213456789"
                 required:
                   - season
                   - yields
@@ -424,7 +424,7 @@ paths:
                       properties:
                         chain:
                           type: string
-                          description: The blockchain network (e.g., 'arb' for Arbitrum).
+                          description: The blockchain network (e.g., "arb" for Arbitrum).
                         account:
                           type: string
                           format: address
@@ -494,10 +494,10 @@ paths:
       summary: Retrieve the current Bean price, liquidity, and deltaB
       operationId: price
       parameters:
-        - $ref: '#/components/parameters/blockNumber'
-        - $ref: '#/components/parameters/timestamp'
+        - $ref: "#/components/parameters/blockNumber"
+        - $ref: "#/components/parameters/timestamp"
       responses:
-        '200':
+        "200":
           description: Successful response
           content:
             application/json:
@@ -506,7 +506,7 @@ paths:
                 properties:
                   block:
                     type: integer
-                    description: On-chain Ethereum block number of the requested price data
+                    description: On-chain EVM block number of the requested price data
                     example: 19804698
                   timestamp:
                     type: integer
@@ -514,7 +514,7 @@ paths:
                     example: 1714921799
                   token:
                     type: string
-                    description: Ethereum address of the token
+                    description: EVM address of the token
                     example: "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab"
                   usdPrice:
                     type: number
@@ -585,14 +585,13 @@ paths:
                             "0xabcd": 266.32
                             "0xcdef": 1234.28
 
-
 components:
   parameters:
     blockNumber:
       name: blockNumber
       in: query
       required: false
-      description: Ethereum block number. Defaults to the latest block.
+      description: EVM block number. Defaults to the latest block.
       schema:
         type: integer
         example: 19000000
