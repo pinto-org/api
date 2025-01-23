@@ -1,5 +1,3 @@
-const WellDto = require('./WellDto');
-
 class TradeDto {
   constructor(sg) {
     this.tradeType = sg.tradeType;
@@ -29,6 +27,7 @@ class TradeDto {
     this.txnHash = sg.hash;
     this.blockNumber = sg.blockNumber && parseInt(sg.blockNumber);
     this.logIndex = sg.logIndex && parseInt(sg.logIndex);
+    this.timestamp = sg.timestamp;
   }
 }
 module.exports = TradeDto;

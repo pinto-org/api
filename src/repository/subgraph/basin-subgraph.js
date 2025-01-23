@@ -44,6 +44,7 @@ class BasinSubgraphRepository {
             orderBy: timestamp
             orderDirection: desc
           ) {
+            tradeType
             swapAmountIn
             swapAmountOut
             swapFromToken {
