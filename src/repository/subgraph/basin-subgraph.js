@@ -68,18 +68,18 @@ class BasinSubgraphRepository {
     return flattenedSwaps.map((swapTrade) => new TradeDto(swapTrade));
   }
 
-  // TODO: swaps, deposits, withdrawals can be combined into one. only are ever used in aggregate.
-  static async getAllSwaps(fromTimestamp, toTimestamp, c = C()) {
-    const allSwaps = await SubgraphQueryUtil.allPaginatedSG(
+  static async getAllTrades(fromTimestamp, toTimestamp, c = C()) {
+    const allTrades = await SubgraphQueryUtil.allPaginatedSG(
       c.SG.BASIN,
       gql`
         {
-          swaps {//TODO
+          trades {
             id
+            tradeType
             well {
               id
             }
-            tokenPrice
+            afterTokenRates
             timestamp
             logIndex
           }
@@ -93,64 +93,7 @@ class BasinSubgraphRepository {
         direction: 'asc'
       }
     );
-    allSwaps.forEach((s) => (s.tokenPrice = s.tokenPrice.map(BigInt)));
-    return allSwaps;
-  }
-
-  static async getAllDeposits(fromTimestamp, toTimestamp, c = C()) {
-    const allDeposits = await SubgraphQueryUtil.allPaginatedSG(
-      c.SG.BASIN,
-      gql`
-        {
-          deposits {//TODO
-            id
-            well {
-              id
-            }
-            tokenPrice // TODO: consider this will get renamed and precision refactored.
-            timestamp
-            logIndex
-          }
-        }
-      `,
-      '',
-      `timestamp_lte: "${toTimestamp}"`,
-      {
-        field: 'timestamp',
-        lastValue: fromTimestamp.toFixed(0),
-        direction: 'asc'
-      }
-    );
-    allDeposits.forEach((d) => (d.tokenPrice = d.tokenPrice.map(BigInt)));
-    return allDeposits;
-  }
-
-  static async getAllWithdraws(fromTimestamp, toTimestamp, c = C()) {
-    const allWithdraws = await SubgraphQueryUtil.allPaginatedSG(
-      c.SG.BASIN,
-      gql`
-        {
-          withdraws {//TODO
-            id
-            well {
-              id
-            }
-            tokenPrice
-            timestamp
-            logIndex
-          }
-        }
-      `,
-      '',
-      `timestamp_lte: "${toTimestamp}"`,
-      {
-        field: 'timestamp',
-        lastValue: fromTimestamp.toFixed(0),
-        direction: 'asc'
-      }
-    );
-    allWithdraws.forEach((w) => (w.tokenPrice = w.tokenPrice.map(BigInt)));
-    return allWithdraws;
+    return allTrades.map((trade) => new TradeDto(trade));
   }
 }
 

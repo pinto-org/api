@@ -97,29 +97,24 @@ class CoingeckoService {
   }
 
   /**
-   * Retrieves all swaps/deposits/withdraws for all wells in the given time range.
+   * Retrieves all trades/LP events for all wells in the given time range.
    * @param {*} allWells - contains all wells represented as WellDto
    * @param {number} timestamp - the upper bound timestamp
    * @param {number} lookback - amount of time to look in the past
    * @returns all changes in price rates for each well
    */
   static async getAllPriceChanges(allWells, timestamp, lookback = ONE_DAY) {
-    // Each is queried separately so they can be paginated.
-    const allPriceChangeEvents = await Promise.all([
-      BasinSubgraphRepository.getAllSwaps(timestamp - lookback, timestamp),
-      BasinSubgraphRepository.getAllDeposits(timestamp - lookback, timestamp),
-      BasinSubgraphRepository.getAllWithdraws(timestamp - lookback, timestamp)
-    ]);
+    const allTrades = await BasinSubgraphRepository.getAllTrades(timestamp - lookback, timestamp);
 
-    const flattened = allPriceChangeEvents
+    const flattened = allTrades
       .reduce((acc, next) => {
         acc.push(...next);
         return acc;
       }, [])
-      .map((event) => ({
-        well: event.well.id,
-        rates: NumberUtil.createNumberSpread(event.tokenPrice, allWells[event.well.id].tokenDecimals()),
-        timestamp: event.timestamp
+      .map((trade) => ({
+        well: trade.well.id,
+        rates: trade.afterTokenRates,
+        timestamp: trade.timestamp
       }));
 
     const byWell = flattened.reduce(
@@ -159,8 +154,8 @@ class CoingeckoService {
     // Return the min/max token price from the perspective of token0.
     // The maximal value of token0 is when fewer of its tokens can be bought with token1
     return {
-      high: rates.reduce((max, next) => (next.float[0] < max.float[0] ? next : max), rates[0]),
-      low: rates.reduce((min, next) => (next.float[0] > min.float[0] ? next : min), rates[0])
+      high: rates.reduce((max, next) => (next[0] < max[0] ? next : max), rates[0]),
+      low: rates.reduce((min, next) => (next[0] > min[0] ? next : min), rates[0])
     };
   }
 }

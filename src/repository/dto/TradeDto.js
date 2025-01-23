@@ -6,13 +6,13 @@ class TradeDto {
     this.well = new WellDto(sg.well);
     this.account = sg.account?.id;
     if (this.tradeType !== 'SWAP') {
-      this.lpTokenAmount = BigInt(sg.liqLpTokenAmount);
+      this.lpTokenAmount = sg.liqLpTokenAmount && BigInt(sg.liqLpTokenAmount);
       this.reservesAmount = sg.reservesAmount?.map(BigInt);
     } else {
       this.fromToken = sg.swapFromToken;
-      this.amountIn = BigInt(sg.swapAmountIn);
+      this.amountIn = sg.swapAmountIn && BigInt(sg.swapAmountIn);
       this.toToken = sg.swapToToken;
-      this.amountOut = BigInt(sg.swapAmountOut);
+      this.amountOut = sg.swapAmountOut && BigInt(sg.swapAmountOut);
     }
     this.isConvert = sg.isConvert;
     this.beforeReserves = sg.beforeReserves?.map(BigInt);
