@@ -10,7 +10,7 @@ class WellDto {
     tokenOrder
     reserves
     symbol
-    tokenPrice
+    tokenRates
     rollingDailyBiTradeVolumeReserves
     wellFunction {
       id
@@ -22,7 +22,7 @@ class WellDto {
     this.address = sg.id;
     this.symbol = sg.symbol;
     this.tokens = this.#orderedTokens(sg.tokens, sg.tokenOrder);
-    this.rates = NumberUtil.createNumberSpread(sg.tokenPrice.map(BigInt), this.tokenDecimals());
+    this.rates = sg.tokenRates.map((r) => parseFloat(r));
     this.reserves = NumberUtil.createNumberSpread(sg.reserves.map(BigInt), this.tokenDecimals());
     this.biTokenVolume24h = NumberUtil.createNumberSpread(
       sg.rollingDailyBiTradeVolumeReserves.map(BigInt),

@@ -38,7 +38,7 @@ class CoingeckoService {
           base_currency,
           target_currency,
           pool_id: well.address,
-          last_price: well.rates.float[1],
+          last_price: well.rates[1],
           base_volume: well.biTokenVolume24h.float[0],
           target_volume: well.biTokenVolume24h.float[1],
           liquidity_in_usd: parseFloat(poolLiquidity.toFixed(0)),
@@ -46,8 +46,8 @@ class CoingeckoService {
             buy: depth2.buy.float,
             sell: depth2.sell.float
           },
-          high: priceRange.high.float[1],
-          low: priceRange.low.float[1]
+          high: priceRange.high[1],
+          low: priceRange.low[1]
         };
         return ticker;
       });
@@ -106,16 +106,11 @@ class CoingeckoService {
   static async getAllPriceChanges(allWells, timestamp, lookback = ONE_DAY) {
     const allTrades = await BasinSubgraphRepository.getAllTrades(timestamp - lookback, timestamp);
 
-    const flattened = allTrades
-      .reduce((acc, next) => {
-        acc.push(...next);
-        return acc;
-      }, [])
-      .map((trade) => ({
-        well: trade.well.id,
-        rates: trade.afterTokenRates,
-        timestamp: trade.timestamp
-      }));
+    const flattened = allTrades.map((trade) => ({
+      well: trade.well.id,
+      rates: trade.afterTokenRates,
+      timestamp: trade.timestamp
+    }));
 
     const byWell = flattened.reduce(
       (acc, next) => {
@@ -137,7 +132,8 @@ class CoingeckoService {
    * Gets the high/low over the given time range
    * @param {WellDto} well - the well
    * @param {*} priceEvents - the price events for this well in the desired period
-   * @returns high/low price over the given time period, in terms of the underlying tokens
+   * @returns high/low price over the given time period, in terms of the underlying tokens,
+   *  with decimal precision alrady applied
    */
   static getWellPriceRange(well, allPriceEvents) {
     const priceEvents = allPriceEvents[well.address];

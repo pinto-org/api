@@ -3,7 +3,7 @@ const WellDto = require('./WellDto');
 class TradeDto {
   constructor(sg) {
     this.tradeType = sg.tradeType;
-    this.well = new WellDto(sg.well);
+    this.well = sg.well;
     this.account = sg.account?.id;
     if (this.tradeType !== 'SWAP') {
       this.lpTokenAmount = sg.liqLpTokenAmount && BigInt(sg.liqLpTokenAmount);
