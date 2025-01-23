@@ -163,34 +163,6 @@ class CoingeckoService {
       low: rates.reduce((min, next) => (next.float[0] > min.float[0] ? next : min), rates[0])
     };
   }
-
-  /// Deprecated in favor of using the precomputed 24h rolling volumes from the subgraph
-  // Gets the swap volume in terms of token amounts in the well over the requested period
-  static async deprecated_calcWellSwapVolume(wellAddress, timestamp, lookback = ONE_DAY) {
-    const allSwaps = await BasinSubgraphRepository.getAllSwaps(timestamp - lookback, timestamp);
-    const wellSwaps = allSwaps.filter((s) => s.well.id === wellAddress.toLowerCase());
-
-    if (wellSwaps.length === 0) {
-      return createNumberSpread([0n, 0n], [1, 1]);
-    }
-
-    // Add all of the swap amounts for each token
-    const swapVolume = {};
-    for (const swap of wellSwaps) {
-      swapVolume[swap.fromToken.id] = (swapVolume[swap.fromToken.id] ?? 0n) + BigInt(swap.amountIn);
-      swapVolume[swap.toToken.id] = (swapVolume[swap.toToken.id] ?? 0n) + BigInt(swap.amountOut);
-    }
-
-    const decimals = {
-      [wellSwaps[0].fromToken.id]: wellSwaps[0].fromToken.decimals,
-      [wellSwaps[0].toToken.id]: wellSwaps[0].toToken.decimals
-    };
-    // Convert to the appropriate precision
-    for (const token in swapVolume) {
-      swapVolume[token] = createNumberSpread(swapVolume[token], decimals[token]);
-    }
-    return swapVolume;
-  }
 }
 
 module.exports = CoingeckoService;

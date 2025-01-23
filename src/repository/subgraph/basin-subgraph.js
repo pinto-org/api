@@ -2,6 +2,7 @@ const { gql } = require('graphql-request');
 const { C } = require('../../constants/runtime-constants');
 const SubgraphQueryUtil = require('../../utils/subgraph-query');
 const WellDto = require('../dto/WellDto');
+const TradeDto = require('../dto/TradeDto');
 
 class BasinSubgraphRepository {
   static async getAllWells(blockNumber, c = C()) {
@@ -33,8 +34,9 @@ class BasinSubgraphRepository {
     const wellSwaps = await c.SG.BASIN(gql`
       {
         wells(where: { tokens: [${tokens.map((t) => `"${t}"`).join(', ')}] }) {
-          swaps(
+          trades(
             where: {
+              tradeType: "SWAP"
               timestamp_gte: ${fromTimestamp}
               timestamp_lte: ${toTimestamp}
             }
@@ -42,13 +44,13 @@ class BasinSubgraphRepository {
             orderBy: timestamp
             orderDirection: desc
           ) {
-            amountIn
-            amountOut
-            fromToken {
+            swapAmountIn
+            swapAmountOut
+            swapFromToken {
               id
               decimals
             }
-            toToken {
+            swapToToken {
               id
               decimals
             }
@@ -60,23 +62,19 @@ class BasinSubgraphRepository {
       }`);
 
     const flattenedSwaps = wellSwaps.wells.reduce((acc, next) => {
-      acc.push(...next.swaps);
+      acc.push(...next.trades);
       return acc;
     }, []);
-
-    flattenedSwaps.forEach((swap) => {
-      swap.amountIn = BigInt(swap.amountIn);
-      swap.amountOut = BigInt(swap.amountOut);
-    });
-    return flattenedSwaps;
+    return flattenedSwaps.map((swapTrade) => new TradeDto(swapTrade));
   }
 
+  // TODO: swaps, deposits, withdrawals can be combined into one. only are ever used in aggregate.
   static async getAllSwaps(fromTimestamp, toTimestamp, c = C()) {
     const allSwaps = await SubgraphQueryUtil.allPaginatedSG(
       c.SG.BASIN,
       gql`
         {
-          swaps {
+          swaps {//TODO
             id
             well {
               id
@@ -104,12 +102,12 @@ class BasinSubgraphRepository {
       c.SG.BASIN,
       gql`
         {
-          deposits {
+          deposits {//TODO
             id
             well {
               id
             }
-            tokenPrice
+            tokenPrice // TODO: consider this will get renamed and precision refactored.
             timestamp
             logIndex
           }
@@ -132,7 +130,7 @@ class BasinSubgraphRepository {
       c.SG.BASIN,
       gql`
         {
-          withdraws {
+          withdraws {//TODO
             id
             well {
               id
