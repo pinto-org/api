@@ -4,7 +4,6 @@ const BasinSubgraphRepository = require('../repository/subgraph/basin-subgraph')
 const PromiseUtil = require('../utils/async/promise');
 const LiquidityUtil = require('./utils/pool/liquidity');
 const { C } = require('../constants/runtime-constants');
-const TradeDto = require('../repository/dto/TradeDto');
 
 const ONE_DAY = 60 * 60 * 24;
 
@@ -15,6 +14,8 @@ class CoingeckoService {
 
     // Retrieve all results upfront from Basin subgraph.
     // This strategy is optimized for performance/minimal load against subgraph api rate limits.
+    // Trades are only needed to produce the high/low over the period, in the future can improve
+    // performance by sourcing this information elsewhere. There are often > 1k trades in a day
     const [allWells, allTrades] = await Promise.all([
       BasinSubgraphRepository.getAllWells(block.number),
       BasinSubgraphRepository.getAllTrades(block.timestamp - ONE_DAY, block.timestamp)
