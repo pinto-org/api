@@ -1,15 +1,16 @@
 {
   "wells": [
     {
-      "swaps": [
+      "trades": [
         {
-          "amountIn": "5000000000",
-          "amountOut": "1627986324056845061",
-          "fromToken": {
+          "tradeType": "SWAP",
+          "swapAmountIn": "5000000000",
+          "swapAmountOut": "1627986324056845061",
+          "swapFromToken": {
             "id": "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab",
             "decimals": 6
           },
-          "toToken": {
+          "swapToToken": {
             "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "decimals": 18
           },
@@ -18,13 +19,14 @@
           "logIndex": 334
         },
         {
-          "amountIn": "17587084351",
-          "amountOut": "5735653111300472776",
-          "fromToken": {
+          "tradeType": "SWAP",
+          "swapAmountIn": "17587084351",
+          "swapAmountOut": "5735653111300472776",
+          "swapFromToken": {
             "id": "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab",
             "decimals": 6
           },
-          "toToken": {
+          "swapToToken": {
             "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "decimals": 18
           },
@@ -33,13 +35,14 @@
           "logIndex": 358
         },
         {
-          "amountIn": "3351405114",
-          "amountOut": "1094643603804553368",
-          "fromToken": {
+          "tradeType": "SWAP",
+          "swapAmountIn": "3351405114",
+          "swapAmountOut": "1094643603804553368",
+          "swapFromToken": {
             "id": "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab",
             "decimals": 6
           },
-          "toToken": {
+          "swapToToken": {
             "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "decimals": 18
           },
@@ -48,13 +51,14 @@
           "logIndex": 194
         },
         {
-          "amountIn": "10000000000",
-          "amountOut": "3269377213099025460",
-          "fromToken": {
+          "tradeType": "SWAP",
+          "swapAmountIn": "10000000000",
+          "swapAmountOut": "3269377213099025460",
+          "swapFromToken": {
             "id": "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab",
             "decimals": 6
           },
-          "toToken": {
+          "swapToToken": {
             "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "decimals": 18
           },
@@ -63,13 +67,14 @@
           "logIndex": 417
         },
         {
-          "amountIn": "95676849",
-          "amountOut": "31303213763521321",
-          "fromToken": {
+          "tradeType": "SWAP",
+          "swapAmountIn": "95676849",
+          "swapAmountOut": "31303213763521321",
+          "swapFromToken": {
             "id": "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab",
             "decimals": 6
           },
-          "toToken": {
+          "swapToToken": {
             "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "decimals": 18
           },
@@ -78,13 +83,14 @@
           "logIndex": 166
         },
         {
-          "amountIn": "1026995528",
-          "amountOut": "336002541531334128",
-          "fromToken": {
+          "tradeType": "SWAP",
+          "swapAmountIn": "1026995528",
+          "swapAmountOut": "336002541531334128",
+          "swapFromToken": {
             "id": "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab",
             "decimals": 6
           },
-          "toToken": {
+          "swapToToken": {
             "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "decimals": 18
           },
@@ -93,13 +99,14 @@
           "logIndex": 348
         },
         {
-          "amountIn": "947804302",
-          "amountOut": "310137813044956371",
-          "fromToken": {
+          "tradeType": "SWAP",
+          "swapAmountIn": "947804302",
+          "swapAmountOut": "310137813044956371",
+          "swapFromToken": {
             "id": "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab",
             "decimals": 6
           },
-          "toToken": {
+          "swapToToken": {
             "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "decimals": 18
           },
@@ -108,13 +115,14 @@
           "logIndex": 377
         },
         {
-          "amountIn": "1856781829",
-          "amountOut": "607694116854445958",
-          "fromToken": {
+          "tradeType": "SWAP",
+          "swapAmountIn": "1856781829",
+          "swapAmountOut": "607694116854445958",
+          "swapFromToken": {
             "id": "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab",
             "decimals": 6
           },
-          "toToken": {
+          "swapToToken": {
             "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "decimals": 18
           },
@@ -123,13 +131,14 @@
           "logIndex": 119
         },
         {
-          "amountIn": "462377515790747244",
-          "amountOut": "1412728161",
-          "fromToken": {
+          "tradeType": "SWAP",
+          "swapAmountIn": "462377515790747244",
+          "swapAmountOut": "1412728161",
+          "swapFromToken": {
             "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "decimals": 18
           },
-          "toToken": {
+          "swapToToken": {
             "id": "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab",
             "decimals": 6
           },
@@ -138,13 +147,14 @@
           "logIndex": 270
         },
         {
-          "amountIn": "1419390950",
-          "amountOut": "464558430713920015",
-          "fromToken": {
+          "tradeType": "SWAP",
+          "swapAmountIn": "1419390950",
+          "swapAmountOut": "464558430713920015",
+          "swapFromToken": {
             "id": "0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab",
             "decimals": 6
           },
-          "toToken": {
+          "swapToToken": {
             "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
             "decimals": 18
           },

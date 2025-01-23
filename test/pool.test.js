@@ -29,9 +29,7 @@ describe('Pool Math', () => {
       reserves: {
         raw: [14263546671971n, 2216675511188549508768n]
       },
-      rates: {
-        raw: [6434657034n, 155408438179298n]
-      },
+      rates: [6434.657034, 0.000155408438179298],
       tokenDecimals: () => [6, 18],
       wellFunction: {
         id: 'abc',
