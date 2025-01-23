@@ -3,8 +3,8 @@ const { createNumberSpread } = require('../utils/number');
 const BasinSubgraphRepository = require('../repository/subgraph/basin-subgraph');
 const PromiseUtil = require('../utils/async/promise');
 const LiquidityUtil = require('./utils/pool/liquidity');
-const NumberUtil = require('../utils/number');
 const { C } = require('../constants/runtime-constants');
+const TradeDto = require('../repository/dto/TradeDto');
 
 const ONE_DAY = 60 * 60 * 24;
 
@@ -15,22 +15,21 @@ class CoingeckoService {
 
     // Retrieve all results upfront from Basin subgraph.
     // This strategy is optimized for performance/minimal load against subgraph api rate limits.
-    const allWells = await BasinSubgraphRepository.getAllWells(block.number);
-    const allPriceEvents = await CoingeckoService.getAllPriceChanges(allWells, block.timestamp);
+    const [allWells, allTrades] = await Promise.all([
+      BasinSubgraphRepository.getAllWells(block.number),
+      BasinSubgraphRepository.getAllTrades(block.timestamp - ONE_DAY, block.timestamp)
+    ]);
+    const allPriceEvents = CoingeckoService.priceEventsByWell(allWells, allTrades);
 
     // For each well in the subgraph, construct a formatted response
     const batchPromiseGenerators = [];
     for (const well of Object.values(allWells)) {
       batchPromiseGenerators.push(async () => {
-        // Filter pools having < 1k liquidity
-        const poolLiquidity = await LiquidityUtil.calcWellLiquidityUSD(well, block.number);
-        if (poolLiquidity < 1000) {
-          return;
-        }
-
+        const [poolLiquidity, depth2] = await Promise.all([
+          LiquidityUtil.calcWellLiquidityUSD(well, block.number),
+          LiquidityUtil.calcDepth(well, 2)
+        ]);
         const [base_currency, target_currency] = well.tokens.map((t) => t.address);
-
-        const depth2 = await LiquidityUtil.calcDepth(well, 2);
         const priceRange = CoingeckoService.getWellPriceRange(well, allPriceEvents);
 
         const ticker = {
@@ -96,23 +95,15 @@ class CoingeckoService {
     return retval;
   }
 
-  /**
-   * Retrieves all trades/LP events for all wells in the given time range.
-   * @param {*} allWells - contains all wells represented as WellDto
-   * @param {number} timestamp - the upper bound timestamp
-   * @param {number} lookback - amount of time to look in the past
-   * @returns all changes in price rates for each well
-   */
-  static async getAllPriceChanges(allWells, timestamp, lookback = ONE_DAY) {
-    const allTrades = await BasinSubgraphRepository.getAllTrades(timestamp - lookback, timestamp);
-
-    const flattened = allTrades.map((trade) => ({
+  // Organizes all trades by well, extracting price change information
+  static priceEventsByWell(allWells, allTrades) {
+    const formatted = allTrades.map((trade) => ({
       well: trade.well.id,
       rates: trade.afterTokenRates,
       timestamp: trade.timestamp
     }));
 
-    const byWell = flattened.reduce(
+    const byWell = formatted.reduce(
       (acc, next) => {
         acc[next.well].push({
           rates: next.rates,

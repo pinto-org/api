@@ -1,7 +1,7 @@
 const BlockUtil = require('../../src/utils/block');
 jest.spyOn(BlockUtil, 'blockForSubgraphFromOptions').mockResolvedValue({ number: 19000000, timestamp: 1705173443 });
 
-const { getTickers, getWellPriceRange, getTrades, getAllPriceChanges } = require('../../src/service/coingecko-service');
+const { getTickers, getWellPriceRange, getTrades, priceEventsByWell } = require('../../src/service/coingecko-service');
 const {
   ADDRESSES: { BEANWETH, BEANWSTETH, WETH, BEAN }
 } = require('../../src/constants/raw/beanstalk-eth');
@@ -10,6 +10,8 @@ const { mockBasinSG } = require('../util/mock-sg');
 const LiquidityUtil = require('../../src/service/utils/pool/liquidity');
 const CoingeckoService = require('../../src/service/coingecko-service');
 const { mockBeanstalkConstants } = require('../util/mock-constants');
+const BasinSubgraphRepository = require('../../src/repository/subgraph/basin-subgraph');
+const TradeDto = require('../../src/repository/dto/TradeDto');
 
 const testTimestamp = 1715020584;
 
@@ -21,8 +23,9 @@ describe('CoingeckoService', () => {
   it('should return all Basin tickers in the expected format', async () => {
     const wellsResponse = require('../mock-responses/subgraph/basin/wells.json');
     jest.spyOn(mockBasinSG, 'request').mockResolvedValueOnce(wellsResponse);
-    // In practice this value is not necessary since the subsequent getWellPriceRange is also mocked.
-    jest.spyOn(CoingeckoService, 'getAllPriceChanges').mockResolvedValueOnce(undefined);
+    // In practice these 2 values are not necessary since the subsequent getWellPriceRange is also mocked.
+    jest.spyOn(BasinSubgraphRepository, 'getAllTrades').mockResolvedValueOnce(undefined);
+    jest.spyOn(CoingeckoService, 'priceEventsByWell').mockResolvedValueOnce(undefined);
     jest.spyOn(LiquidityUtil, 'calcWellLiquidityUSD').mockResolvedValueOnce(27491579.59267346);
     jest.spyOn(LiquidityUtil, 'calcDepth').mockResolvedValueOnce({
       buy: {
@@ -98,7 +101,7 @@ describe('CoingeckoService', () => {
 
   test('Identifies price changes', async () => {
     const tradesResponse = require('../mock-responses/subgraph/basin/trades.json');
-    jest.spyOn(SubgraphQueryUtil, 'allPaginatedSG').mockResolvedValueOnce(tradesResponse);
+    const tradeDtos = tradesResponse.map((t) => new TradeDto(t));
 
     const mockWells = {
       [BEANWETH.toLowerCase()]: {
@@ -109,7 +112,7 @@ describe('CoingeckoService', () => {
       }
     };
 
-    const priceRange = await getAllPriceChanges(mockWells, testTimestamp);
+    const priceRange = await priceEventsByWell(mockWells, tradeDtos);
     expect(priceRange[BEANWETH.toLowerCase()].length).toEqual(5);
     expect(priceRange[BEANWSTETH.toLowerCase()].length).toEqual(2);
   });
