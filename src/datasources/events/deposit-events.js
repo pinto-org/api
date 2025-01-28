@@ -52,12 +52,12 @@ module.exports = DepositEvents;
 
 if (require.main === module) {
   (async () => {
-    await AlchemyUtil.ready('arb');
+    await AlchemyUtil.ready('base');
     // const logs = await DepositEvents.getSiloDepositEvents(264547404);
     // console.log(logs.filter((l) => l.name === 'AddDeposit')[0]);
     // console.log(logs.filter((l) => l.name === 'RemoveDeposit')[0]);
     // console.log(logs.filter((l) => l.name === 'RemoveDeposits')[0].args.stems);
     // console.log(await DepositEvents.getSiloDepositEvents(264547404));
-    console.log(await DepositEvents.getStalkBalanceChangedEvents(264547404));
+    console.log(await DepositEvents.getStalkBalanceChangedEvents(25600457, 25602057));
   })();
 }
