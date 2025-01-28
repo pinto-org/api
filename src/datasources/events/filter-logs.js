@@ -34,7 +34,7 @@ class FilterLogs {
     if (range > 500000) {
       // While it could be retrieved through this method without error, protect against runaway retrievals
       throw new Error(`Excessively large log range requested (${range})`);
-    } else if (range <= -1) {
+    } else if (range < 0) {
       throw new Error(`toBlock must not be less than fromBlock (${filter.fromBlock}, ${originalTo})`);
     }
 
@@ -51,7 +51,7 @@ class FilterLogs {
       } catch (e) {
         if (--retries <= 0) {
           // Rethrow if errors were not resolved by repeatedly reducing the block range
-          throw new Error('safeGetBatchLogs failed to retrieve the requested logs');
+          throw new Error('safeGetBatchLogs could not retrieve the requested logs.');
         }
         Log.info('WARNING! getLogs failed, reducing block range and retrying...', filter.fromBlock, range);
 
