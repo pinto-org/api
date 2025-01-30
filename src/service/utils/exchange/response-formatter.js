@@ -4,9 +4,9 @@
 class ExchangeResponseFormatter {
   static formatTickersCG(tickers) {
     return tickers.map((t) => ({
-      ticker_id: `${t.beanToken}_${t.nonBeanToken}`,
-      base_currency: t.beanToken,
-      target_currency: t.nonBeanToken,
+      ticker_id: `${t.beanToken.address}_${t.nonBeanToken.address}`,
+      base_currency: t.beanToken.address,
+      target_currency: t.nonBeanToken.address,
       pool_id: t.wellAddress,
       last_price: t.exchangeRates.float[1],
       base_volume: t.tokenVolume24h.float[0],
@@ -20,14 +20,13 @@ class ExchangeResponseFormatter {
 
   static formatTickersCMC(tickers) {
     return tickers.reduce((acc, t) => {
-      acc[`${t.beanToken}_${t.nonBeanToken}`] = {
-        base_id: t.beanToken,
-        // TODO: build ERC20 info cache similar to python bots
-        base_name: 'TODO',
-        base_symbol: 'TODO',
-        quote_id: t.nonBeanToken,
-        quote_name: 'TODO',
-        quote_symbol: 'TODO',
+      acc[`${t.beanToken.address}_${t.nonBeanToken.address}`] = {
+        base_id: t.beanToken.address,
+        base_name: t.beanToken.name,
+        base_symbol: t.beanToken.symbol,
+        quote_id: t.nonBeanToken.address,
+        quote_name: t.nonBeanToken.name,
+        quote_symbol: t.nonBeanToken.symbol,
         last_price: t.exchangeRates.float[1],
         base_volume: t.tokenVolume24h.float[0],
         quote_volume: t.tokenVolume24h.float[1],

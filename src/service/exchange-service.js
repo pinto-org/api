@@ -5,6 +5,7 @@ const PromiseUtil = require('../utils/async/promise');
 const LiquidityUtil = require('./utils/pool/liquidity');
 const NumberUtil = require('../utils/number');
 const { C } = require('../constants/runtime-constants');
+const ERC20Info = require('../datasources/erc20-info');
 
 const ONE_DAY = 60 * 60 * 24;
 
@@ -28,7 +29,7 @@ class ExchangeService {
           return;
         }
 
-        const [beanToken, nonBeanToken] = well.tokens.map((t) => t.address);
+        const [beanToken, nonBeanToken] = await Promise.all(well.tokens.map((t) => ERC20Info.getTokenInfo(t.address)));
 
         const depth2 = await LiquidityUtil.calcDepth(well, 2);
         const priceRange = ExchangeService.getWellPriceRange(well, allPriceEvents);

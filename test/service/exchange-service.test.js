@@ -16,12 +16,16 @@ const { mockBasinSG } = require('../util/mock-sg');
 const LiquidityUtil = require('../../src/service/utils/pool/liquidity');
 const ExchangeService = require('../../src/service/exchange-service');
 const { mockBeanstalkConstants } = require('../util/mock-constants');
+const ERC20Info = require('../../src/datasources/erc20-info');
 
 const testTimestamp = 1715020584;
 
 describe('ExchangeService', () => {
   beforeEach(() => {
     mockBeanstalkConstants();
+    jest
+      .spyOn(ERC20Info, 'getTokenInfo')
+      .mockImplementation((token) => ({ address: token, name: 'a', symbol: 'b', decimals: 6 }));
   });
 
   it('should return all Basin tickers in the expected format', async () => {
@@ -51,8 +55,8 @@ describe('ExchangeService', () => {
 
     expect(tickers).toHaveLength(1);
     expect(tickers[0].wellAddress).toEqual('0xbea0e11282e2bb5893bece110cf199501e872bad');
-    expect(tickers[0].beanToken).toEqual('0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab');
-    expect(tickers[0].nonBeanToken).toEqual('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2');
+    expect(tickers[0].beanToken.address).toEqual('0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab');
+    expect(tickers[0].nonBeanToken.address).toEqual('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2');
     expect(tickers[0].exchangeRates.float[1]).toBeCloseTo(0.000389236771196659);
     expect(tickers[0].tokenVolume24h.float[0]).toBeCloseTo(362621.652657);
     expect(tickers[0].tokenVolume24h.float[1]).toBeCloseTo(141.01800893122126);
