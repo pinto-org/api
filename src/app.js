@@ -1,5 +1,5 @@
 const priceRoutes = require('./routes/price-routes.js');
-const coingeckoRoutes = require('./routes/coingecko-routes.js');
+const exchangeRoutes = require('./routes/exchange-routes.js');
 const siloRoutes = require('./routes/silo-routes.js');
 const snapshotRoutes = require('./routes/snapshot-routes.js');
 
@@ -89,8 +89,8 @@ async function appStartup() {
 
   app.use(priceRoutes.routes());
   app.use(priceRoutes.allowedMethods());
-  app.use(coingeckoRoutes.routes());
-  app.use(coingeckoRoutes.allowedMethods());
+  app.use(exchangeRoutes.routes());
+  app.use(exchangeRoutes.allowedMethods());
   app.use(siloRoutes.routes());
   app.use(siloRoutes.allowedMethods());
   app.use(snapshotRoutes.routes());

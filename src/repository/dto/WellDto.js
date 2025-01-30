@@ -12,6 +12,7 @@ class WellDto {
     symbol
     tokenPrice
     rollingDailyBiTradeVolumeReserves
+    rollingDailyTradeVolumeUSD
     wellFunction {
       id
     }
@@ -28,6 +29,7 @@ class WellDto {
       subgraphWell.rollingDailyBiTradeVolumeReserves.map(BigInt),
       this.tokenDecimals()
     );
+    this.tradeVolume24h = parseFloat(subgraphWell.rollingDailyTradeVolumeUSD);
     this.wellFunction = {
       id: subgraphWell.wellFunction.id,
       data: subgraphWell.wellFunctionData

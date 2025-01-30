@@ -7,19 +7,19 @@ const {
   getWellPriceRange,
   getTrades,
   getAllPriceChanges
-} = require('../../src/service/coingecko-service');
+} = require('../../src/service/exchange-service');
 const {
   ADDRESSES: { BEANWETH, BEANWSTETH, WETH, BEAN }
 } = require('../../src/constants/raw/beanstalk-eth');
 const SubgraphQueryUtil = require('../../src/utils/subgraph-query');
 const { mockBasinSG } = require('../util/mock-sg');
 const LiquidityUtil = require('../../src/service/utils/pool/liquidity');
-const CoingeckoService = require('../../src/service/coingecko-service');
+const ExchangeService = require('../../src/service/exchange-service');
 const { mockBeanstalkConstants } = require('../util/mock-constants');
 
 const testTimestamp = 1715020584;
 
-describe('CoingeckoService', () => {
+describe('ExchangeService', () => {
   beforeEach(() => {
     mockBeanstalkConstants();
   });
@@ -28,7 +28,7 @@ describe('CoingeckoService', () => {
     const wellsResponse = require('../mock-responses/subgraph/basin/wells.json');
     jest.spyOn(mockBasinSG, 'request').mockResolvedValueOnce(wellsResponse);
     // In practice this value is not necessary since the subsequent getWellPriceRange is also mocked.
-    jest.spyOn(CoingeckoService, 'getAllPriceChanges').mockResolvedValueOnce(undefined);
+    jest.spyOn(ExchangeService, 'getAllPriceChanges').mockResolvedValueOnce(undefined);
     jest.spyOn(LiquidityUtil, 'calcWellLiquidityUSD').mockResolvedValueOnce(27491579.59267346);
     jest.spyOn(LiquidityUtil, 'calcDepth').mockResolvedValueOnce({
       buy: {
@@ -38,7 +38,7 @@ describe('CoingeckoService', () => {
         float: [139870.493345, 54.44273966436485]
       }
     });
-    jest.spyOn(CoingeckoService, 'getWellPriceRange').mockReturnValueOnce({
+    jest.spyOn(ExchangeService, 'getWellPriceRange').mockReturnValueOnce({
       high: {
         float: [2544.664349, 0.000392979136931714]
       },
@@ -69,7 +69,7 @@ describe('CoingeckoService', () => {
   });
 
   test('Returns correct high/low prices over the given period', () => {
-    const mockPriceEvents = require('../mock-responses/coingecko/priceChanges.json');
+    const mockPriceEvents = require('../mock-responses/exchange/priceChanges.json');
     const mockWellDto = {
       address: BEANWSTETH.toLowerCase(),
       tokenDecimals: () => [6, 18]
