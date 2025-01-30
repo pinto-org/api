@@ -18,24 +18,27 @@ class ExchangeResponseFormatter {
     }));
   }
 
-  // wellAddress: well.address,
-  //         beanToken,
-  //         nonBeanToken,
-  //         exchangeRates: well.rates,
-  //         tokenVolume24h: well.biTokenVolume24h,
-  //         tradeVolume24h: well.tradeVolume24h,
-  //         liquidityUSD: parseFloat(poolLiquidity.toFixed(0)),
-  //         depth2: {
-  //           buy: depth2.buy.float,
-  //           sell: depth2.sell.float
-  //         },
-  //         high: priceRange.high,
-  //         low: priceRange.low
-
   static formatTickersCMC(tickers) {
-    return tickers.map((t) => ({
-      //
-    }));
+    return tickers.reduce((acc, t) => {
+      acc[`${t.beanToken}_${t.nonBeanToken}`] = {
+        base_id: t.beanToken,
+        // TODO: build ERC20 info cache similar to python bots
+        base_name: 'TODO',
+        base_symbol: 'TODO',
+        quote_id: t.nonBeanToken,
+        quote_name: 'TODO',
+        quote_symbol: 'TODO',
+        last_price: t.exchangeRates.float[1],
+        base_volume: t.tokenVolume24h.float[0],
+        quote_volume: t.tokenVolume24h.float[1],
+        // Not required fields but we provide them anyway
+        liquidity_in_usd: t.liquidityUSD,
+        depth2: t.depth2,
+        high: t.high.float[1],
+        low: t.low.float[1]
+      };
+      return acc;
+    }, {});
   }
 }
 module.exports = ExchangeResponseFormatter;

@@ -50,22 +50,19 @@ describe('ExchangeService', () => {
     const tickers = await getTickers({ blockNumber: 19000000 });
 
     expect(tickers).toHaveLength(1);
-    expect(tickers[0].ticker_id).toEqual(
-      '0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab_0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    );
-    expect(tickers[0].base_currency).toEqual('0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab');
-    expect(tickers[0].target_currency).toEqual('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2');
-    expect(tickers[0].pool_id).toEqual('0xbea0e11282e2bb5893bece110cf199501e872bad');
-    expect(tickers[0].last_price).toBeCloseTo(0.000389236771196659);
-    expect(tickers[0].base_volume).toBeCloseTo(362621.652657);
-    expect(tickers[0].target_volume).toBeCloseTo(141.01800893122126);
-    expect(tickers[0].liquidity_in_usd).toEqual(27491580);
+    expect(tickers[0].wellAddress).toEqual('0xbea0e11282e2bb5893bece110cf199501e872bad');
+    expect(tickers[0].beanToken).toEqual('0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab');
+    expect(tickers[0].nonBeanToken).toEqual('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2');
+    expect(tickers[0].exchangeRates.float[1]).toBeCloseTo(0.000389236771196659);
+    expect(tickers[0].tokenVolume24h.float[0]).toBeCloseTo(362621.652657);
+    expect(tickers[0].tokenVolume24h.float[1]).toBeCloseTo(141.01800893122126);
+    expect(tickers[0].liquidityUSD).toEqual(27491580);
     expect(tickers[0].depth2.buy[0]).toEqual(135736.220357);
     expect(tickers[0].depth2.buy[1]).toBeCloseTo(52.8335281459809, 5);
     expect(tickers[0].depth2.sell[0]).toEqual(139870.493345);
     expect(tickers[0].depth2.sell[1]).toBeCloseTo(54.44273921546687, 5);
-    expect(tickers[0].high).toBeCloseTo(0.000392979136931714, 5);
-    expect(tickers[0].low).toBeCloseTo(0.000383640247389837, 5);
+    expect(tickers[0].high.float[1]).toBeCloseTo(0.000392979136931714, 5);
+    expect(tickers[0].low.float[1]).toBeCloseTo(0.000383640247389837, 5);
   });
 
   test('Returns correct high/low prices over the given period', () => {
