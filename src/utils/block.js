@@ -17,9 +17,10 @@ class BlockUtil {
   // Returns the block data to use for the given options,
   // constrained by the maximal indexed block of the given subgraph.
   static async blockForSubgraphFromOptions(subgraphClient, options) {
-    const subgraphMeta = await CommonSubgraphRepository.getMeta(subgraphClient);
-
-    const optionsBlock = await BlockUtil.blockFromOptions(options);
+    const [subgraphMeta, optionsBlock] = await Promise.all([
+      CommonSubgraphRepository.getMeta(subgraphClient),
+      BlockUtil.blockFromOptions(options)
+    ]);
     const blockToUse = Math.min(subgraphMeta.block, optionsBlock.number);
 
     return await C().RPC.getBlock(blockToUse);
@@ -29,7 +30,7 @@ class BlockUtil {
   static async findBlockByTimestamp(timestamp) {
     const provider = C().RPC;
     let upper = await provider.getBlockNumber();
-    let lower = 12900000; // Beanstalk did not exist prior to this block
+    let lower = 22622961; // Pinto did not exist prior to this block
     let bestBlock = null;
 
     while (lower <= upper) {
