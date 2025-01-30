@@ -14,7 +14,7 @@ describe('ExchangeResponseFormatter', () => {
     const input = require('../mock-responses/routes/exchangeTickers.json');
     const output = require('../mock-responses/routes/expectedTickersCMC.json');
 
-    const formatted = ExchangeResponseFormatter.formatTickersCG(input);
+    const formatted = ExchangeResponseFormatter.formatTickersCMC(input);
 
     expect(formatted).toEqual(output);
   });

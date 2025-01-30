@@ -3,7 +3,6 @@ const RestParsingUtil = require('../utils/rest-parsing');
 const InputError = require('../error/input-error');
 const ExchangeService = require('../service/exchange-service');
 const ExchangeResponseFormatter = require('../service/utils/exchange/response-formatter');
-const { formatBigintDecimal } = require('../utils/bigint');
 
 const router = new Router({
   prefix: '/exchange'
@@ -27,7 +26,6 @@ router.get('/cmc/historical_trades', historicalTrades);
 async function tickers(ctx, formatter) {
   const options = RestParsingUtil.parseQuery(ctx.query);
   const tickers = await ExchangeService.getTickers(options);
-  console.log(JSON.stringify(tickers, formatBigintDecimal, 2));
   ctx.body = formatter(tickers);
 }
 
