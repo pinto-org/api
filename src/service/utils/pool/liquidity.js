@@ -22,7 +22,9 @@ class LiquidityUtil {
    * @returns buy/sell depth in terms of each token
    */
   static async calcDepth(well, percent = 2) {
-    const [reserves, rates, decimals] = [well.reserves.raw, well.rates.raw, well.tokenDecimals()];
+    const [reserves, decimals] = [well.reserves.raw, well.tokenDecimals()];
+    // Rates are provided in decimal form for extra precision, convert to BigInt with truncated precision
+    const rates = well.rates.map((r, idx) => BigInt(Math.floor(r * Math.pow(10, decimals[idx]))));
     const oneToken = decimals.map((d) => BigInt(10 ** d));
 
     const ratesBuy0 = [BigInt_applyPercent(rates[0], 100 + percent), oneToken[1]];

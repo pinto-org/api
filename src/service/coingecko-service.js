@@ -3,7 +3,6 @@ const { createNumberSpread } = require('../utils/number');
 const BasinSubgraphRepository = require('../repository/subgraph/basin-subgraph');
 const PromiseUtil = require('../utils/async/promise');
 const LiquidityUtil = require('./utils/pool/liquidity');
-const NumberUtil = require('../utils/number');
 const { C } = require('../constants/runtime-constants');
 
 const ONE_DAY = 60 * 60 * 24;
@@ -15,22 +14,23 @@ class CoingeckoService {
 
     // Retrieve all results upfront from Basin subgraph.
     // This strategy is optimized for performance/minimal load against subgraph api rate limits.
-    const allWells = await BasinSubgraphRepository.getAllWells(block.number);
-    const allPriceEvents = await CoingeckoService.getAllPriceChanges(allWells, block.timestamp);
+    // Trades are only needed to produce the high/low over the period, in the future can improve
+    // performance by sourcing this information elsewhere. There are often > 1k trades in a day
+    const [allWells, allTrades] = await Promise.all([
+      BasinSubgraphRepository.getAllWells(block.number),
+      BasinSubgraphRepository.getAllTrades(block.timestamp - ONE_DAY, block.timestamp)
+    ]);
+    const allPriceEvents = CoingeckoService.priceEventsByWell(allWells, allTrades);
 
     // For each well in the subgraph, construct a formatted response
     const batchPromiseGenerators = [];
     for (const well of Object.values(allWells)) {
       batchPromiseGenerators.push(async () => {
-        // Filter pools having < 1k liquidity
-        const poolLiquidity = await LiquidityUtil.calcWellLiquidityUSD(well, block.number);
-        if (poolLiquidity < 1000) {
-          return;
-        }
-
+        const [poolLiquidity, depth2] = await Promise.all([
+          LiquidityUtil.calcWellLiquidityUSD(well, block.number),
+          LiquidityUtil.calcDepth(well, 2)
+        ]);
         const [base_currency, target_currency] = well.tokens.map((t) => t.address);
-
-        const depth2 = await LiquidityUtil.calcDepth(well, 2);
         const priceRange = CoingeckoService.getWellPriceRange(well, allPriceEvents);
 
         const ticker = {
@@ -38,7 +38,7 @@ class CoingeckoService {
           base_currency,
           target_currency,
           pool_id: well.address,
-          last_price: well.rates.float[1],
+          last_price: well.rates[1],
           base_volume: well.biTokenVolume24h.float[0],
           target_volume: well.biTokenVolume24h.float[1],
           liquidity_in_usd: parseFloat(poolLiquidity.toFixed(0)),
@@ -46,8 +46,8 @@ class CoingeckoService {
             buy: depth2.buy.float,
             sell: depth2.sell.float
           },
-          high: priceRange.high.float[1],
-          low: priceRange.low.float[1]
+          high: priceRange.high[1],
+          low: priceRange.low[1]
         };
         return ticker;
       });
@@ -96,33 +96,15 @@ class CoingeckoService {
     return retval;
   }
 
-  /**
-   * Retrieves all swaps/deposits/withdraws for all wells in the given time range.
-   * @param {*} allWells - contains all wells represented as WellDto
-   * @param {number} timestamp - the upper bound timestamp
-   * @param {number} lookback - amount of time to look in the past
-   * @returns all changes in price rates for each well
-   */
-  static async getAllPriceChanges(allWells, timestamp, lookback = ONE_DAY) {
-    // Each is queried separately so they can be paginated.
-    const allPriceChangeEvents = await Promise.all([
-      BasinSubgraphRepository.getAllSwaps(timestamp - lookback, timestamp),
-      BasinSubgraphRepository.getAllDeposits(timestamp - lookback, timestamp),
-      BasinSubgraphRepository.getAllWithdraws(timestamp - lookback, timestamp)
-    ]);
+  // Organizes all trades by well, extracting price change information
+  static priceEventsByWell(allWells, allTrades) {
+    const formatted = allTrades.map((trade) => ({
+      well: trade.well.id,
+      rates: trade.afterTokenRates,
+      timestamp: trade.timestamp
+    }));
 
-    const flattened = allPriceChangeEvents
-      .reduce((acc, next) => {
-        acc.push(...next);
-        return acc;
-      }, [])
-      .map((event) => ({
-        well: event.well.id,
-        rates: NumberUtil.createNumberSpread(event.tokenPrice, allWells[event.well.id].tokenDecimals()),
-        timestamp: event.timestamp
-      }));
-
-    const byWell = flattened.reduce(
+    const byWell = formatted.reduce(
       (acc, next) => {
         acc[next.well].push({
           rates: next.rates,
@@ -142,7 +124,8 @@ class CoingeckoService {
    * Gets the high/low over the given time range
    * @param {WellDto} well - the well
    * @param {*} priceEvents - the price events for this well in the desired period
-   * @returns high/low price over the given time period, in terms of the underlying tokens
+   * @returns high/low price over the given time period, in terms of the underlying tokens,
+   *  with decimal precision alrady applied
    */
   static getWellPriceRange(well, allPriceEvents) {
     const priceEvents = allPriceEvents[well.address];
@@ -159,37 +142,9 @@ class CoingeckoService {
     // Return the min/max token price from the perspective of token0.
     // The maximal value of token0 is when fewer of its tokens can be bought with token1
     return {
-      high: rates.reduce((max, next) => (next.float[0] < max.float[0] ? next : max), rates[0]),
-      low: rates.reduce((min, next) => (next.float[0] > min.float[0] ? next : min), rates[0])
+      high: rates.reduce((max, next) => (next[0] < max[0] ? next : max), rates[0]),
+      low: rates.reduce((min, next) => (next[0] > min[0] ? next : min), rates[0])
     };
-  }
-
-  /// Deprecated in favor of using the precomputed 24h rolling volumes from the subgraph
-  // Gets the swap volume in terms of token amounts in the well over the requested period
-  static async deprecated_calcWellSwapVolume(wellAddress, timestamp, lookback = ONE_DAY) {
-    const allSwaps = await BasinSubgraphRepository.getAllSwaps(timestamp - lookback, timestamp);
-    const wellSwaps = allSwaps.filter((s) => s.well.id === wellAddress.toLowerCase());
-
-    if (wellSwaps.length === 0) {
-      return createNumberSpread([0n, 0n], [1, 1]);
-    }
-
-    // Add all of the swap amounts for each token
-    const swapVolume = {};
-    for (const swap of wellSwaps) {
-      swapVolume[swap.fromToken.id] = (swapVolume[swap.fromToken.id] ?? 0n) + BigInt(swap.amountIn);
-      swapVolume[swap.toToken.id] = (swapVolume[swap.toToken.id] ?? 0n) + BigInt(swap.amountOut);
-    }
-
-    const decimals = {
-      [wellSwaps[0].fromToken.id]: wellSwaps[0].fromToken.decimals,
-      [wellSwaps[0].toToken.id]: wellSwaps[0].toToken.decimals
-    };
-    // Convert to the appropriate precision
-    for (const token in swapVolume) {
-      swapVolume[token] = createNumberSpread(swapVolume[token], decimals[token]);
-    }
-    return swapVolume;
   }
 }
 

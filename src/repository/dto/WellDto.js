@@ -10,7 +10,7 @@ class WellDto {
     tokenOrder
     reserves
     symbol
-    tokenPrice
+    tokenRates
     rollingDailyBiTradeVolumeReserves
     wellFunction {
       id
@@ -18,19 +18,19 @@ class WellDto {
     wellFunctionData
   `;
 
-  constructor(subgraphWell) {
-    this.address = subgraphWell.id;
-    this.symbol = subgraphWell.symbol;
-    this.tokens = this.#orderedTokens(subgraphWell.tokens, subgraphWell.tokenOrder);
-    this.rates = NumberUtil.createNumberSpread(subgraphWell.tokenPrice.map(BigInt), this.tokenDecimals());
-    this.reserves = NumberUtil.createNumberSpread(subgraphWell.reserves.map(BigInt), this.tokenDecimals());
+  constructor(sg) {
+    this.address = sg.id;
+    this.symbol = sg.symbol;
+    this.tokens = this.#orderedTokens(sg.tokens, sg.tokenOrder);
+    this.rates = sg.tokenRates.map((r) => parseFloat(r));
+    this.reserves = NumberUtil.createNumberSpread(sg.reserves.map(BigInt), this.tokenDecimals());
     this.biTokenVolume24h = NumberUtil.createNumberSpread(
-      subgraphWell.rollingDailyBiTradeVolumeReserves.map(BigInt),
+      sg.rollingDailyBiTradeVolumeReserves.map(BigInt),
       this.tokenDecimals()
     );
     this.wellFunction = {
-      id: subgraphWell.wellFunction.id,
-      data: subgraphWell.wellFunctionData
+      id: sg.wellFunction.id,
+      data: sg.wellFunctionData
     };
   }
 
