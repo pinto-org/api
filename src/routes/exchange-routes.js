@@ -3,8 +3,7 @@ const RestParsingUtil = require('../utils/rest-parsing');
 const InputError = require('../error/input-error');
 const ExchangeService = require('../service/exchange-service');
 const ExchangeResponseFormatter = require('../service/utils/exchange/response-formatter');
-const SiloApyService = require('../service/silo-apy');
-const ExchangeYieldsService = require('../service/utils/exchange/yields');
+const ExchangeYieldsService = require('../service/utils/exchange/exchange-yields');
 
 const router = new Router({
   prefix: '/exchange'

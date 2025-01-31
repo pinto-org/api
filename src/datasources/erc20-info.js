@@ -7,7 +7,7 @@ class ERC20Info {
     if (!cachedInfo[token]) {
       const contract = Contracts.get(token);
       const [name, symbol, decimals] = await Promise.all([contract.name(), contract.symbol(), contract.decimals()]);
-      cachedInfo[token] = { address: token, name, symbol, decimals };
+      cachedInfo[token] = { address: token, name, symbol, decimals: Number(decimals) };
     }
     return cachedInfo[token];
   }
