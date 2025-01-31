@@ -17,13 +17,27 @@ class SuperContract {
         }
 
         return async (...args) => {
-          const rawResult = await retryable(() => contract[property](...args));
+          const { superOptions, contractArgs } = SuperContract._identifySuperArgs(args);
+          const rawResult = await retryable(() => contract[property](...contractArgs));
+
+          if (superOptions?.skipTransform) {
+            return rawResult;
+          }
           return SuperContract._transformAll(rawResult);
         };
       }
     };
 
     return new Proxy(this, proxyHandler);
+  }
+
+  static _identifySuperArgs(args) {
+    const superArgsIndex = args.findIndex((a) => a.target === 'SuperContract');
+    if (superArgsIndex !== -1) {
+      const superOptions = args.splice(superArgsIndex, 1)[0];
+      return { superOptions, contractArgs: args };
+    }
+    return { contractArgs: args };
   }
 
   // Transforms everything in this result to be a BigInt.

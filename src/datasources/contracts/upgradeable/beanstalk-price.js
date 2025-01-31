@@ -37,8 +37,8 @@ class BeanstalkPrice {
     this.contract = UpgradeableContract.make(mapping, c, block);
   }
 
-  async price() {
-    return await this.contract.price();
+  async price(options = {}) {
+    return await this.contract.price({ target: 'SuperContract', ...options });
   }
 
   async poolPrice(poolAddress) {

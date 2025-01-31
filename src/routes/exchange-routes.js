@@ -3,6 +3,7 @@ const RestParsingUtil = require('../utils/rest-parsing');
 const InputError = require('../error/input-error');
 const ExchangeService = require('../service/exchange-service');
 const ExchangeResponseFormatter = require('../service/utils/exchange/response-formatter');
+const SiloApyService = require('../service/silo-apy');
 
 const router = new Router({
   prefix: '/exchange'
@@ -11,12 +12,17 @@ const router = new Router({
 router.get('/cg/tickers', async (ctx) => {
   await tickers(ctx, ExchangeResponseFormatter.formatTickersCG);
 });
+router.get('/cg/trades', historicalTrades);
+
 router.get('/cmc/tickers', async (ctx) => {
   await tickers(ctx, ExchangeResponseFormatter.formatTickersCMC);
 });
-
-router.get('/cg/historical_trades', historicalTrades);
-router.get('/cmc/historical_trades', historicalTrades);
+router.get('/cmc/yields', async (ctx) => {
+  const apy = await SiloApyService.getApy({});
+  const maxWindow = Math.max(...Object.keys(apy.yields).map((w) => parseInt(w)));
+  ctx.body = await ExchangeResponseFormatter.formatYieldsCMC(apy.yields[maxWindow]);
+});
+router.get('/cmc/trades', historicalTrades);
 
 /**
  * Gets past 24h stats on dex tickers.

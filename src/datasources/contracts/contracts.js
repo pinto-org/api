@@ -24,6 +24,7 @@ class Contracts {
   }
 
   static _getDefaultContract(address, c = C()) {
+    address = address.toLowerCase();
     const network = c.CHAIN;
     const key = JSON.stringify({ address, network });
     if (!Contracts._contracts[key]) {
