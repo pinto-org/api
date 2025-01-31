@@ -33,7 +33,7 @@ const mapping = [
 ];
 
 class BeanstalkPrice {
-  constructor({ block = 'latest', c = C() } = {}) {
+  constructor(block, c) {
     this.contract = UpgradeableContract.make(mapping, c, block);
   }
 
@@ -43,6 +43,10 @@ class BeanstalkPrice {
 
   async poolPrice(poolAddress) {
     return await this.contract.poolPrice(poolAddress);
+  }
+
+  static make({ block = 'latest', c = C() } = {}) {
+    return new BeanstalkPrice(block, c);
   }
 }
 

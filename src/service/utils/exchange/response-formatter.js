@@ -1,10 +1,7 @@
+const ERC20Info = require('../../../datasources/erc20-info');
+
 // Formats exchange route responses according to the respective API documentation
 // CG:  https://docs.google.com/document/d/1v27QFoQq1SKT3Priq3aqPgB70Xd_PnDzbOCiuoCyixw/edit
-
-const BeanstalkPrice = require('../../../datasources/contracts/upgradeable/beanstalk-price');
-const ERC20Info = require('../../../datasources/erc20-info');
-const { fromBigInt } = require('../../../utils/number');
-
 // CMC: https://docs.google.com/document/d/1S4urpzUnO2t7DmS_1dc4EL4tgnnbTObPYXvDeBnukCg/edit
 class ExchangeResponseFormatter {
   static formatTickersCG(tickers) {
@@ -45,16 +42,8 @@ class ExchangeResponseFormatter {
     }, {});
   }
 
-  static async formatYieldsCMC(poolYields) {
-    const price = await new BeanstalkPrice().price({ skipTransform: true });
-    const poolPriceInfo = price.ps.reduce((acc, next) => {
-      acc[next.pool.toLowerCase()] = {
-        nonBeanToken: next.tokens[1],
-        liquidity: fromBigInt(BigInt(next.liquidity), 6)
-      };
-      return acc;
-    }, {});
-
+  // async due to using ERC20Info, which resolves instantly if cached
+  static async formatYieldsCMC({ poolYields, poolPriceInfo }) {
     return {
       provider: 'Pinto',
       provider_logo: 'https://assets.pinto.money/tokens/PINTO_72x72.png',

@@ -4,6 +4,7 @@ const InputError = require('../error/input-error');
 const ExchangeService = require('../service/exchange-service');
 const ExchangeResponseFormatter = require('../service/utils/exchange/response-formatter');
 const SiloApyService = require('../service/silo-apy');
+const ExchangeYieldsService = require('../service/utils/exchange/yields');
 
 const router = new Router({
   prefix: '/exchange'
@@ -18,9 +19,8 @@ router.get('/cmc/tickers', async (ctx) => {
   await tickers(ctx, ExchangeResponseFormatter.formatTickersCMC);
 });
 router.get('/cmc/yields', async (ctx) => {
-  const apy = await SiloApyService.getApy({});
-  const maxWindow = Math.max(...Object.keys(apy.yields).map((w) => parseInt(w)));
-  ctx.body = await ExchangeResponseFormatter.formatYieldsCMC(apy.yields[maxWindow]);
+  const yields = await ExchangeYieldsService.getYields();
+  ctx.body = await ExchangeResponseFormatter.formatYieldsCMC(yields);
 });
 router.get('/cmc/trades', historicalTrades);
 
