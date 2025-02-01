@@ -8,7 +8,6 @@ class BasinSubgraphRepository {
   static async getAllWells(blockNumber, c = C()) {
     const allWells = await SubgraphQueryUtil.allPaginatedSG(
       c.SG.BASIN,
-      // TODO: Filter whitelisted wells here, or separate method for whitelisted wells
       gql`
       {
         wells {
@@ -16,7 +15,7 @@ class BasinSubgraphRepository {
         }
       }`,
       `block: {number: ${blockNumber}}`,
-      '',
+      'isBeanstalk: true',
       {
         field: 'symbol',
         lastValue: ' ',
