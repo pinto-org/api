@@ -37,7 +37,7 @@ const mapping = [
 ];
 
 class UsdOracle {
-  constructor({ block = 'latest', c = C() } = {}) {
+  constructor(block, c) {
     this.contract = UpgradeableContract.make(mapping, c, block);
   }
 
@@ -62,6 +62,10 @@ class UsdOracle {
 
   async getTokenUsdTwap(token, lookback = 3600) {
     return await this.contract.getTokenUsdTwap(token, lookback);
+  }
+
+  static make({ block = 'latest', c = C() } = {}) {
+    return new UsdOracle(block, c);
   }
 }
 

@@ -1,0 +1,267 @@
+[
+  {
+    "wellAddress": "0x3e11226fe3d85142b734abce6e58918d5828d1b4",
+    "beanToken": {
+      "address": "0xb170000aeefa790fa61d6e837d1035906839a3c8",
+      "name": "Pinto",
+      "symbol": "PINTO",
+      "decimals": "6"
+    },
+    "nonBeanToken": {
+      "address": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+      "name": "Coinbase Wrapped BTC",
+      "symbol": "cbBTC",
+      "decimals": "8"
+    },
+    "exchangeRates": [
+      104780.043355,
+      0.00000954
+    ],
+    "tokenVolume24h": {
+      "raw": [
+        "143796863455",
+        "136190709"
+      ],
+      "string": [
+        "143796.863455",
+        "1.36190709"
+      ],
+      "float": [
+        143796.863455,
+        1.36190709
+      ]
+    },
+    "tradeVolume24h": 143342.05,
+    "liquidityUSD": 3567497,
+    "depth2": {
+      "buy": [
+        17216.108664,
+        0.16837449
+      ],
+      "sell": [
+        19430.867069,
+        0.17350286
+      ]
+    },
+    "high": [
+      103927.887493,
+      0.00000962
+    ],
+    "low": [
+      107010.7861,
+      0.00000934
+    ]
+  },
+  {
+    "wellAddress": "0x3e111115a82df6190e36adf0d552880663a4dbf1",
+    "beanToken": {
+      "address": "0xb170000aeefa790fa61d6e837d1035906839a3c8",
+      "name": "Pinto",
+      "symbol": "PINTO",
+      "decimals": "6"
+    },
+    "nonBeanToken": {
+      "address": "0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22",
+      "name": "Coinbase Wrapped Staked ETH",
+      "symbol": "cbETH",
+      "decimals": "18"
+    },
+    "exchangeRates": [
+      3580.990642,
+      0.000279252335428424
+    ],
+    "tokenVolume24h": {
+      "raw": [
+        "98936199277",
+        "26932007588705669775"
+      ],
+      "string": [
+        "98936.199277",
+        "26.932007588705669775"
+      ],
+      "float": [
+        98936.199277,
+        26.93200758870567
+      ]
+    },
+    "tradeVolume24h": 98505.3,
+    "liquidityUSD": 1656489,
+    "depth2": {
+      "buy": [
+        8191.520344,
+        2.2875011518079527
+      ],
+      "sell": [
+        8441.018828,
+        2.3571742353476033
+      ]
+    },
+    "high": [
+      3580.990642,
+      0.000279252335428424
+    ],
+    "low": [
+      3729.656943,
+      0.000268121174474809
+    ]
+  },
+  {
+    "wellAddress": "0x3e1133ac082716ddc3114bbefeed8b1731ea9cb1",
+    "beanToken": {
+      "address": "0xb170000aeefa790fa61d6e837d1035906839a3c8",
+      "name": "Pinto",
+      "symbol": "PINTO",
+      "decimals": "6"
+    },
+    "nonBeanToken": {
+      "address": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "name": "USD Coin",
+      "symbol": "USDC",
+      "decimals": "6"
+    },
+    "exchangeRates": [
+      1.004676,
+      0.995348
+    ],
+    "tokenVolume24h": {
+      "raw": [
+        "557953859414",
+        "555431638040"
+      ],
+      "string": [
+        "557953.859414",
+        "555431.63804"
+      ],
+      "float": [
+        557953.859414,
+        555431.63804
+      ]
+    },
+    "tradeVolume24h": 555681.32,
+    "liquidityUSD": 3233876,
+    "depth2": {
+      "buy": [
+        47962.863377,
+        47706.402078
+      ],
+      "sell": [
+        49396.678614,
+        49210.876241
+      ]
+    },
+    "high": [
+      0.997487,
+      1.002521
+    ],
+    "low": [
+      1.011232,
+      0.988894
+    ]
+  },
+  {
+    "wellAddress": "0x3e11001cfbb6de5737327c59e10afab47b82b5d3",
+    "beanToken": {
+      "address": "0xb170000aeefa790fa61d6e837d1035906839a3c8",
+      "name": "Pinto",
+      "symbol": "PINTO",
+      "decimals": "6"
+    },
+    "nonBeanToken": {
+      "address": "0x4200000000000000000000000000000000000006",
+      "name": "Wrapped Ether",
+      "symbol": "WETH",
+      "decimals": "18"
+    },
+    "exchangeRates": [
+      3300.815369,
+      0.000302955448273478
+    ],
+    "tokenVolume24h": {
+      "raw": [
+        "118291418697",
+        "35251839798667593590"
+      ],
+      "string": [
+        "118291.418697",
+        "35.25183979866759359"
+      ],
+      "float": [
+        118291.418697,
+        35.251839798667596
+      ]
+    },
+    "tradeVolume24h": 117859.6,
+    "liquidityUSD": 1541930,
+    "depth2": {
+      "buy": [
+        7629.530873,
+        2.311407907241453
+      ],
+      "sell": [
+        7861.912202,
+        2.3818091838622575
+      ]
+    },
+    "high": [
+      3245.040984,
+      0.000308162517752444
+    ],
+    "low": [
+      3422.396881,
+      0.000292192879653276
+    ]
+  },
+  {
+    "wellAddress": "0x3e11444c7650234c748d743d8d374fce2ee5e6c9",
+    "beanToken": {
+      "address": "0xb170000aeefa790fa61d6e837d1035906839a3c8",
+      "name": "Pinto",
+      "symbol": "PINTO",
+      "decimals": "6"
+    },
+    "nonBeanToken": {
+      "address": "0x1c61629598e4a901136a81bc138e5828dc150d67",
+      "name": "Wrapped SOL",
+      "symbol": "SOL",
+      "decimals": "9"
+    },
+    "exchangeRates": [
+      248.74755,
+      0.00402014
+    ],
+    "tokenVolume24h": {
+      "raw": [
+        "211033911681",
+        "809162349074"
+      ],
+      "string": [
+        "211033.911681",
+        "809.162349074"
+      ],
+      "float": [
+        211033.911681,
+        809.162349074
+      ]
+    },
+    "tradeVolume24h": 210752.21,
+    "liquidityUSD": 3100877,
+    "depth2": {
+      "buy": [
+        15324.060741,
+        61.605533108
+      ],
+      "sell": [
+        15791.031919,
+        63.48194064
+      ]
+    },
+    "high": [
+      248.74755,
+      0.00402014
+    ],
+    "low": [
+      269.169039,
+      0.003715137
+    ]
+  }
+]

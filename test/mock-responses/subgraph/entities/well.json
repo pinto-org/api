@@ -27,6 +27,10 @@
     "123456",
     "182758923758913789"
   ],
+  "rollingDailyTradeVolumeUSD": [
+    "15002",
+    "25002"
+  ],
   "wellFunction": {
     "id": "0xba150c2ae0f8450d4b832beefa3338d4b5982d26"
   },

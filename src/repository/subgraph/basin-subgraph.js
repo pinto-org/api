@@ -15,7 +15,7 @@ class BasinSubgraphRepository {
         }
       }`,
       `block: {number: ${blockNumber}}`,
-      '',
+      'isBeanstalk: true',
       {
         field: 'symbol',
         lastValue: ' ',

@@ -7,6 +7,7 @@ const router = new Router({
 });
 
 /**
+ * (DEPRECATED for Pinto)
  * Gets the governance voting power for the specified accounts and block
  * ?addresses: comma-separated EVM addresses for which to compute voting power
  * ?snapshot: the block number for which to compute voting power

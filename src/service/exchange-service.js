@@ -4,52 +4,58 @@ const BasinSubgraphRepository = require('../repository/subgraph/basin-subgraph')
 const PromiseUtil = require('../utils/async/promise');
 const LiquidityUtil = require('./utils/pool/liquidity');
 const { C } = require('../constants/runtime-constants');
+const ERC20Info = require('../datasources/erc20-info');
 
 const ONE_DAY = 60 * 60 * 24;
 
-class CoingeckoService {
+class ExchangeService {
   static async getTickers(options = {}) {
     // Determine block
     const block = await BlockUtil.blockForSubgraphFromOptions(C().SG.BASIN, options);
 
     // Retrieve all results upfront from Basin subgraph.
     // This strategy is optimized for performance/minimal load against subgraph api rate limits.
+
     // Trades are only needed to produce the high/low over the period, in the future can improve
     // performance by sourcing this information elsewhere. There are often > 1k trades in a day
     const [allWells, allTrades] = await Promise.all([
       BasinSubgraphRepository.getAllWells(block.number),
       BasinSubgraphRepository.getAllTrades(block.timestamp - ONE_DAY, block.timestamp)
     ]);
-    const allPriceEvents = CoingeckoService.priceEventsByWell(allWells, allTrades);
+    const allPriceEvents = ExchangeService.priceEventsByWell(allWells, allTrades);
 
     // For each well in the subgraph, construct a formatted response
     const batchPromiseGenerators = [];
     for (const well of Object.values(allWells)) {
       batchPromiseGenerators.push(async () => {
+        const [beanToken, nonBeanToken] = await Promise.all(well.tokens.map((t) => ERC20Info.getTokenInfo(t.address)));
+
         const [poolLiquidity, depth2] = await Promise.all([
           LiquidityUtil.calcWellLiquidityUSD(well, block.number),
           LiquidityUtil.calcDepth(well, 2)
         ]);
-        const [base_currency, target_currency] = well.tokens.map((t) => t.address);
-        const priceRange = CoingeckoService.getWellPriceRange(well, allPriceEvents);
+        const priceRange = ExchangeService.getWellPriceRange(well, allPriceEvents);
 
-        const ticker = {
-          ticker_id: `${base_currency}_${target_currency}`,
-          base_currency,
-          target_currency,
-          pool_id: well.address,
-          last_price: well.rates[1],
-          base_volume: well.biTokenVolume24h.float[0],
-          target_volume: well.biTokenVolume24h.float[1],
-          liquidity_in_usd: parseFloat(poolLiquidity.toFixed(0)),
+        // Filter pools having < 1k liquidity
+        if (poolLiquidity < 1000) {
+          return;
+        }
+
+        return {
+          wellAddress: well.address,
+          beanToken,
+          nonBeanToken,
+          exchangeRates: well.rates,
+          tokenVolume24h: well.biTokenVolume24h,
+          tradeVolume24h: well.tradeVolume24h,
+          liquidityUSD: parseFloat(poolLiquidity.toFixed(0)),
           depth2: {
             buy: depth2.buy.float,
             sell: depth2.sell.float
           },
-          high: priceRange.high[1],
-          low: priceRange.low[1]
+          high: priceRange.high,
+          low: priceRange.low
         };
-        return ticker;
       });
     }
 
@@ -148,4 +154,4 @@ class CoingeckoService {
   }
 }
 
-module.exports = CoingeckoService;
+module.exports = ExchangeService;

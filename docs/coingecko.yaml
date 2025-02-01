@@ -3,7 +3,7 @@ info:
   title: Pinto Exchange API
   version: 1.0.0
   description: >
-    REST API for the Pinto Exchange.
+    REST API for CoinGecko <> Pinto Exchange.
 
 
     - [Full API docs](https://api.pinto.money/docs/#/)
@@ -17,12 +17,12 @@ tags:
   - name: Exchange
 
 paths:
-  /basin/tickers:
+  /exchange/cg/tickers:
     get:
       tags:
         - Exchange
       summary: Retrieve tickers and 24h stats
-      operationId: getTickers
+      operationId: getCGTickers
       parameters:
         - $ref: "#/components/parameters/blockNumber"
         - $ref: "#/components/parameters/timestamp"
@@ -55,7 +55,7 @@ paths:
                     last_price:
                       type: number
                       format: float
-                      description: Last recorded price
+                      description: Last recorded price in target currency
                       example: 0.000389236771196659
                     base_volume:
                       type: number
@@ -92,19 +92,19 @@ paths:
                     high:
                       type: number
                       format: float
-                      description: Highest 24h price
+                      description: Highest 24h price in target currency
                       example: 0.000392979136931714
                     low:
                       type: number
                       format: float
-                      description: Lowest 24h price
+                      description: Lowest 24h price in target currency
                       example: 0.000383640247389837
-  /basin/historical_trades:
+  /exchange/cg/trades:
     get:
       tags:
         - Exchange
       summary: Retrieve historical trades
-      operationId: getHistoricalTrades
+      operationId: getCGTrades
       parameters:
         - name: ticker_id
           in: query
