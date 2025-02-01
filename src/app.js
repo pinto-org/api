@@ -67,7 +67,8 @@ async function appStartup() {
       ctx.body = JSON.stringify(ctx.body, formatBigintDecimal);
       if (!ctx.originalUrl.includes('healthcheck')) {
         console.log(
-          `${new Date().toISOString()} [success] ${ctx.method} ${ctx.originalUrl} - ${ctx.status} - Response Body: ${ctx.body}`
+          `${new Date().toISOString()} [success] ${ctx.method} ${ctx.originalUrl} - ${ctx.status}`
+          // + ` - Response Body: ${ctx.body}`
         );
       }
     } catch (err) {
@@ -79,9 +80,11 @@ async function appStartup() {
         message: err.showMessage ? err.message : 'Internal Server Error.',
         reference_id: Math.floor(Math.random() * 1000000)
       };
-      // Include a reference number in the logs so it can be found easily
-      console.log(`ref ${ctx.body.reference_id}`);
-      ctx.app.emit('error', err, ctx);
+      if (ctx.status >= 500) {
+        // Include a reference number in the logs so it can be found easily
+        console.log(`ref ${ctx.body.reference_id}`);
+        ctx.app.emit('error', err, ctx);
+      }
 
       console.log(`${new Date().toISOString()} [failure] ${ctx.method} ${ctx.originalUrl}`);
     }
