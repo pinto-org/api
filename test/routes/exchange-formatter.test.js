@@ -21,15 +21,30 @@ describe('ExchangeResponseFormatter', () => {
   });
 
   test('Formats Coingecko Trades', () => {
-    //TODO
+    const input = require('../mock-responses/routes/exchangeTrades.json');
+    const output = require('../mock-responses/routes/expectedTradesCG.json');
+
+    const formatted = ExchangeResponseFormatter.formatTradesCG(input);
+
+    expect(formatted).toEqual(output);
   });
 
   test('Formats Coinmarketcap Trades', () => {
-    //TODO
+    const input = require('../mock-responses/routes/exchangeTrades.json');
+    const output = require('../mock-responses/routes/expectedTradesCMC.json');
+
+    const formatted = ExchangeResponseFormatter.formatTradesCMC(input);
+
+    expect(formatted).toEqual(output);
   });
 
   test('Formats Coinmarketcap Tickers', () => {
-    //TODO
+    const input = require('../mock-responses/routes/exchangeTickers.json');
+    const output = require('../mock-responses/routes/expectedTickersCMC.json');
+
+    const formatted = ExchangeResponseFormatter.formatTickersCMC(input);
+
+    expect(formatted).toEqual(output);
   });
 
   test('Formats Coinmarketcap Yields', async () => {

@@ -1,0 +1,42 @@
+{
+  "PINTO_cbBTC": {
+    "base_id": "0",
+    "quote_id": "32994",
+    "last_price": 0.00000954,
+    "quote_volume": 1.36190709,
+    "base_volume": 143796.863455,
+    "isFrozen": "0"
+  },
+  "PINTO_cbETH": {
+    "base_id": "0",
+    "quote_id": "21535",
+    "last_price": 0.000279252335428424,
+    "quote_volume": 26.93200758870567,
+    "base_volume": 98936.199277,
+    "isFrozen": "0"
+  },
+  "PINTO_USDC": {
+    "base_id": "0",
+    "quote_id": "3408",
+    "last_price": 0.995348,
+    "quote_volume": 555431.63804,
+    "base_volume": 557953.859414,
+    "isFrozen": "0"
+  },
+  "PINTO_WETH": {
+    "base_id": "0",
+    "quote_id": "2396",
+    "last_price": 0.000302955448273478,
+    "quote_volume": 35.251839798667596,
+    "base_volume": 118291.418697,
+    "isFrozen": "0"
+  },
+  "PINTO_SOL": {
+    "base_id": "0",
+    "quote_id": "0",
+    "last_price": 0.00402014,
+    "quote_volume": 809.162349074,
+    "base_volume": 211033.911681,
+    "isFrozen": "0"
+  }
+}
