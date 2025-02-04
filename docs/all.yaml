@@ -147,11 +147,11 @@ paths:
                   buy:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Trade"
+                      $ref: "#/components/schemas/CGTrade"
                   sell:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Trade"
+                      $ref: "#/components/schemas/CGTrade"
   /exchange/cmc/assets:
     get:
       tags:
@@ -302,7 +302,7 @@ paths:
                       sell: [19430.867069, 0.17350286]
                     high: 0.00000962205644818416
                     low: 0.000009344852387696
-  /exchange/cmc/trades:
+  /exchange/cmc/trades/market_pair:
     get:
       tags:
         - Exchange
@@ -349,16 +349,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  buy:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Trade"
-                  sell:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Trade"
+                type: array
+                items:
+                  $ref: "#/components/schemas/CMCTrade"
   /exchange/cmc/yields:
     get:
       tags:
@@ -893,7 +886,7 @@ components:
         type: integer
         example: 1715204400
   schemas:
-    Trade:
+    CGTrade:
       type: object
       properties:
         trade_id:
@@ -913,6 +906,33 @@ components:
           format: float
           example: 0.03897351970073168
         trade_timestamp:
+          type: integer
+          format: int64
+          description: Unix timestamp of the trade, in milliseconds
+          example: 1715161115000
+        type:
+          type: string
+          example: "buy | sell"
+    CMCTrade:
+      type: object
+      properties:
+        trade_id:
+          type: integer
+          format: int64
+          example: 198245000283
+        price:
+          type: number
+          format: float
+          example: 0.000318525481173441
+        base_volume:
+          type: number
+          format: float
+          example: 122.35605
+        quote_volume:
+          type: number
+          format: float
+          example: 0.03897351970073168
+        timestamp:
           type: integer
           format: int64
           description: Unix timestamp of the trade, in milliseconds

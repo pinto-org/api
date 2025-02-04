@@ -75,29 +75,24 @@ class ExchangeService {
       Math.min(options.limit, 1000)
     );
 
-    // Format the response
-    const retval = {
-      buy: [],
-      sell: []
-    };
+    // Gather swap info
+    const retval = [];
     for (const swap of swaps) {
       const type = swap.fromToken.id === tokens[0] ? 'sell' : 'buy';
       const effectivePrice = (swap.amountOut * BigInt(10 ** swap.fromToken.decimals)) / swap.amountIn;
-      retval[type].push({
-        trade_id: swap.blockNumber * 10000 + swap.logIndex,
-        price: createNumberSpread(effectivePrice, swap.toToken.decimals).float,
-        base_volume: createNumberSpread(swap.amountIn, swap.fromToken.decimals).float,
-        target_volume: createNumberSpread(swap.amountOut, swap.toToken.decimals).float,
-        trade_timestamp: parseInt(swap.timestamp) * 1000,
-        type: type
+      retval.push({
+        id: swap.blockNumber * 10000 + swap.logIndex,
+        rate: createNumberSpread(effectivePrice, swap.toToken.decimals).float,
+        token0Volume: createNumberSpread(swap.amountIn, swap.fromToken.decimals).float,
+        token1Volume: createNumberSpread(swap.amountOut, swap.toToken.decimals).float,
+        timestamp: parseInt(swap.timestamp) * 1000,
+        type
       });
     }
 
     if (options.type) {
       // One of buy/sell was explicitly requested
-      return {
-        [options.type]: retval[options.type]
-      };
+      return retval.filter((t) => t.type === options.type);
     }
     return retval;
   }

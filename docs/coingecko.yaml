@@ -151,11 +151,11 @@ paths:
                   buy:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Trade"
+                      $ref: "#/components/schemas/CGTrade"
                   sell:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Trade"
+                      $ref: "#/components/schemas/CGTrade"
 components:
   parameters:
     blockNumber:
@@ -175,7 +175,7 @@ components:
         type: integer
         example: 1715204400
   schemas:
-    Trade:
+    CGTrade:
       type: object
       properties:
         trade_id:

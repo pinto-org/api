@@ -42,6 +42,39 @@ class ExchangeResponseFormatter {
     }, {});
   }
 
+  static formatTradesCG(trades) {
+    const formatted = {
+      buy: [],
+      sell: []
+    };
+    for (const trade of trades) {
+      formatted[trade.type].push({
+        trade_id: trade.id,
+        price: trade.rate,
+        base_volume: trade.token0Volume,
+        target_volume: trade.token1Volume,
+        trade_timestamp: trade.timestamp,
+        type: trade.type
+      });
+    }
+    return formatted;
+  }
+
+  static formatTradesCMC(trades) {
+    const formatted = [];
+    for (const trade of trades) {
+      formatted.push({
+        trade_id: trade.id,
+        price: trade.rate,
+        base_volume: trade.token0Volume,
+        quote_volume: trade.token1Volume,
+        timestamp: trade.timestamp,
+        type: trade.type
+      });
+    }
+    return formatted;
+  }
+
   static getAssetsCMC() {
     return {
       PINTO: {

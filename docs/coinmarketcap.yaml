@@ -167,7 +167,7 @@ paths:
                       sell: [19430.867069, 0.17350286]
                     high: 0.00000962205644818416
                     low: 0.000009344852387696
-  /exchange/cmc/trades:
+  /exchange/cmc/trades/market_pair:
     get:
       tags:
         - Exchange
@@ -214,16 +214,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  buy:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Trade"
-                  sell:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Trade"
+                type: array
+                items:
+                  $ref: "#/components/schemas/CMCTrade"
   /exchange/cmc/yields:
     get:
       tags:
@@ -434,7 +427,7 @@ components:
         type: integer
         example: 1715204400
   schemas:
-    Trade:
+    CMCTrade:
       type: object
       properties:
         trade_id:
@@ -449,11 +442,11 @@ components:
           type: number
           format: float
           example: 122.35605
-        target_volume:
+        quote_volume:
           type: number
           format: float
           example: 0.03897351970073168
-        trade_timestamp:
+        timestamp:
           type: integer
           format: int64
           description: Unix timestamp of the trade, in milliseconds
