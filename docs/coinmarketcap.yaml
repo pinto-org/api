@@ -265,6 +265,114 @@ paths:
                           format: float
                           description: Total USD liquidity in the pool
                           example: 1460662
+  https://graph.pinto.money/exchange:
+    post:
+      tags:
+        - Exchange
+      summary: Exchange Subgraph GraphQL API
+      operationId: exchangeSubgraph
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  example: See schema description
+                  description: |
+                    Example GraphQL query:
+                    ```graphql
+                    query GetTrades($tradeType: TradeType!) {
+                      trades(where: { tradeType: $tradeType }) {
+                        id
+                        swapAmountIn
+                        swapAmountOut
+                        tradeVolumeUSD
+                        timestamp
+                        well {
+                          id
+                        }
+                        swapFromToken {
+                          id
+                          decimals
+                          symbol
+                        }
+                        swapToToken {
+                          id
+                          decimals
+                          symbol
+                        }
+                      }
+                    }```
+                variables:
+                  type: object
+                  properties:
+                    tradeType:
+                      type: string
+                      example: "SWAP"
+      responses:
+        "200":
+          description: Successful response containing trade data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      trades:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: "SWAP-0x000028704a651439e067ff40dbe9baf09654641ec68d878538ef7681685d3492-0x3e11001cfbb6de5737327c59e10afab47b82b5d3-200137434751662853"
+                            swapAmountIn:
+                              type: string
+                              example: "745687343"
+                            swapAmountOut:
+                              type: string
+                              example: "200137434751662853"
+                            tradeVolumeUSD:
+                              type: string
+                              example: "739.47"
+                            timestamp:
+                              type: string
+                              example: "1734554573"
+                            well:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                  example: "0x3e11001cfbb6de5737327c59e10afab47b82b5d3"
+                            swapFromToken:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                  example: "0xb170000aeefa790fa61d6e837d1035906839a3c8"
+                                decimals:
+                                  type: integer
+                                  example: 6
+                                symbol:
+                                  type: string
+                                  example: "PINTO"
+                            swapToToken:
+                              type: object
+                              properties:
+                                id:
+                                  type: string
+                                  example: "0x4200000000000000000000000000000000000006"
+                                decimals:
+                                  type: integer
+                                  example: 18
+                                symbol:
+                                  type: string
+                                  example: "WETH"
 components:
   parameters:
     blockNumber:
