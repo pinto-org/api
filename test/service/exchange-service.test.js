@@ -91,13 +91,16 @@ describe('ExchangeService', () => {
     };
     const trades = await getTrades(options);
 
-    expect(trades.buy.length).toEqual(1);
-    expect(trades.sell.length).toEqual(9);
-    expect(trades.buy[0].price).toBeCloseTo(3055.356527);
-    expect(trades.buy[0].base_volume).toBeCloseTo(0.46237751579074726);
-    expect(trades.buy[0].target_volume).toBeCloseTo(1412.728161);
-    expect(trades.buy[0].trade_timestamp).toEqual(1714613735000);
-    expect(trades.buy[0].type).toEqual('buy');
+    const buy = trades.filter((t) => t.type === 'buy');
+    const sell = trades.filter((t) => t.type === 'sell');
+
+    expect(buy.length).toEqual(1);
+    expect(sell.length).toEqual(9);
+    expect(buy[0].rate).toBeCloseTo(3055.356527);
+    expect(buy[0].token0Volume).toBeCloseTo(0.46237751579074726);
+    expect(buy[0].token1Volume).toBeCloseTo(1412.728161);
+    expect(buy[0].timestamp).toEqual(1714613735000);
+    expect(buy[0].type).toEqual('buy');
   });
 
   test('Identifies price changes', async () => {

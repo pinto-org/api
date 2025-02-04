@@ -17,49 +17,7 @@ tags:
   - name: Exchange
 
 paths:
-  /exchange/cmc/assets:
-    get:
-      tags:
-        - Exchange
-      summary: All assets in use by the exchange
-      operationId: getCMCAssets
-      description: Get a list of assets available on the exchange with their details.
-      responses:
-        '200':
-          description: A list of exchange assets
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  WETH:
-                    type: object
-                    properties:
-                      name:
-                        type: string
-                        example: Wrapped Ether
-                      unified_cryptoasset_id:
-                        type: string
-                        example: "2396"
-                      can_withdraw:
-                        type: boolean
-                        example: true
-                      can_deposit:
-                        type: boolean
-                        example: true
-                      maker_fee:
-                        type: string
-                        example: "0.00"
-                      taker_fee:
-                        type: string
-                        example: "0.00"
-                      contractAddressUrl:
-                        type: string
-                        example: "https://basescan.org/address/0x4200000000000000000000000000000000000006"
-                      contractAddress:
-                        type: string
-                        example: "0x4200000000000000000000000000000000000006"
-  /exchange/cmc/tickers:
+  /exchange/cmc/summary:
     get:
       tags:
         - Exchange
@@ -167,6 +125,48 @@ paths:
                       sell: [19430.867069, 0.17350286]
                     high: 0.00000962205644818416
                     low: 0.000009344852387696
+  /exchange/cmc/assets:
+    get:
+      tags:
+        - Exchange
+      summary: All assets in use by the exchange
+      operationId: getCMCAssets
+      description: Get a list of assets available on the exchange with their details.
+      responses:
+        '200':
+          description: A list of exchange assets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  WETH:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: Wrapped Ether
+                      unified_cryptoasset_id:
+                        type: string
+                        example: "2396"
+                      can_withdraw:
+                        type: boolean
+                        example: true
+                      can_deposit:
+                        type: boolean
+                        example: true
+                      maker_fee:
+                        type: string
+                        example: "0.00"
+                      taker_fee:
+                        type: string
+                        example: "0.00"
+                      contractAddressUrl:
+                        type: string
+                        example: "https://basescan.org/address/0x4200000000000000000000000000000000000006"
+                      contractAddress:
+                        type: string
+                        example: "0x4200000000000000000000000000000000000006"
   /exchange/cmc/trades/market_pair:
     get:
       tags:

@@ -20,7 +20,7 @@ class ExchangeResponseFormatter {
     }));
   }
 
-  static formatTickersCMC(tickers) {
+  static formatSummaryCMC(tickers) {
     return tickers.reduce((acc, t) => {
       acc[`${t.beanToken.address}_${t.nonBeanToken.address}`] = {
         base_id: t.beanToken.address,
