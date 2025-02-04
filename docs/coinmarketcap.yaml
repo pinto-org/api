@@ -21,8 +21,8 @@ paths:
     get:
       tags:
         - Exchange
-      summary: Retrieve tickers and 24h stats
-      operationId: getCMCTickers
+      summary: Retrieve summary of each trading pool
+      operationId: getCMCSummary
       parameters:
         - $ref: "#/components/parameters/blockNumber"
         - $ref: "#/components/parameters/timestamp"
@@ -33,7 +33,7 @@ paths:
             application/json:
               schema:
                 type: object
-                description: A mapping of **ticker IDs** to their respective ticker data.
+                description: A mapping of **ticker IDs** to their respective data.
                 additionalProperties:
                   type: object
                   properties:
@@ -167,6 +167,58 @@ paths:
                       contractAddress:
                         type: string
                         example: "0x4200000000000000000000000000000000000006"
+  /exchange/cmc/ticker:
+    get:
+      tags:
+        - Exchange
+      summary: Retrieve tickers and 24h stats
+      operationId: getCMCTickers
+      parameters:
+        - $ref: "#/components/parameters/blockNumber"
+        - $ref: "#/components/parameters/timestamp"
+      responses:
+        '200':
+          description: Tickers and 24h stats
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    base_id:
+                      type: string
+                      description: The UCID of the base asset.
+                    quote_id:
+                      type: string
+                      description: The UCID of the quote asset.
+                    last_price:
+                      type: number
+                      format: double
+                      description: The last transacted price of base currency in quote currency
+                      example: 0.00000954380212086768
+                    quote_volume:
+                      type: number
+                      format: double
+                      description: 24h trading volume in quote currency
+                      example: 1.36190709
+                    base_volume:
+                      type: number
+                      format: double
+                      description: 24h trading volume in base currency
+                      example: 143796.863455
+                    isFrozen:
+                      type: string
+                      description: Indicates if trading is frozen (1 for frozen, 0 for active).
+                      example: "0"
+                example:
+                  "PINTO_WETH":
+                    base_id: "0"
+                    quote_id: "2396"
+                    last_price: 0.0003029554482734783
+                    quote_volume: 35.251839798667596
+                    base_volume: 118291.418697
+                    isFrozen: "0"
   /exchange/cmc/trades/market_pair:
     get:
       tags:

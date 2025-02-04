@@ -16,11 +16,14 @@ router.get('/cg/trades', async (ctx) => {
   await historicalTrades(ctx, ExchangeResponseFormatter.formatTradesCG);
 });
 
+router.get('/cmc/summary', async (ctx) => {
+  await tickers(ctx, ExchangeResponseFormatter.formatSummaryCMC);
+});
 router.get('/cmc/assets', async (ctx) => {
   ctx.body = ExchangeResponseFormatter.getAssetsCMC();
 });
-router.get('/cmc/summary', async (ctx) => {
-  await tickers(ctx, ExchangeResponseFormatter.formatSummaryCMC);
+router.get('/cmc/ticker', async (ctx) => {
+  await tickers(ctx, ExchangeResponseFormatter.formatTickersCMC);
 });
 router.get('/cmc/trades/market_pair', async (ctx) => {
   await historicalTrades(ctx, ExchangeResponseFormatter.formatTradesCMC);
