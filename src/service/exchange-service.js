@@ -41,11 +41,18 @@ class ExchangeService {
           return;
         }
 
+        // Find 24h price change. Trades are already sorted by timestamp ascending.
+        const fromRate = allPriceEvents[well.address][0].rates[1];
+        const toRate = allPriceEvents[well.address].at(-1).rates[1];
+        const delta = toRate - fromRate;
+        const percentRateChange = delta / fromRate;
+
         return {
           wellAddress: well.address,
           beanToken,
           nonBeanToken,
           exchangeRates: well.rates,
+          rateChange24h: percentRateChange,
           tokenVolume24h: well.biTokenVolume24h,
           tradeVolume24h: well.tradeVolume24h,
           liquidityUSD: parseFloat(poolLiquidity.toFixed(0)),

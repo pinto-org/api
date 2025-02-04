@@ -76,6 +76,21 @@ paths:
                       format: float
                       description: 24h volume of the quote currency
                       example: 1.36190709
+                    price_change_percent_24h:
+                      type: number
+                      format: float
+                      description: 24h percent price change of the pair
+                      example: 0.008573747096112947
+                    highest_price_24h:
+                      type: number
+                      format: float
+                      description: Highest 24h price in quote currency
+                      example: 0.00000962205644818416
+                    lowest_price_24h:
+                      type: number
+                      format: float
+                      description: Lowest 24h price in quote currency
+                      example: 0.000009344852387696
                     liquidity_in_usd:
                       type: integer
                       description: Liquidity in USD
@@ -98,16 +113,6 @@ paths:
                             type: number
                             format: float
                           example: [19430.867069, 0.17350286]
-                    high:
-                      type: number
-                      format: float
-                      description: Highest 24h price in quote currency
-                      example: 0.00000962205644818416
-                    low:
-                      type: number
-                      format: float
-                      description: Lowest 24h price in quote currency
-                      example: 0.000009344852387696
                 example:
                   "0xb170000aeefa790fa61d6e837d1035906839a3c8_0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf":
                     base_id: "0xb170000aeefa790fa61d6e837d1035906839a3c8"
@@ -119,12 +124,13 @@ paths:
                     last_price: 0.00000954380212086768
                     base_volume: 143796.863455
                     quote_volume: 1.36190709
+                    price_change_percent_24h: 0.008573747096112947
+                    highest_price_24h: 0.00000962205644818416
+                    lowest_price_24h: 0.000009344852387696
                     liquidity_in_usd: 3567497
                     depth2:
                       buy: [17216.108664, 0.16837449]
                       sell: [19430.867069, 0.17350286]
-                    high: 0.00000962205644818416
-                    low: 0.000009344852387696
   /exchange/cmc/assets:
     get:
       tags:

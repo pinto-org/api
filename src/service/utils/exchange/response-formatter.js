@@ -41,11 +41,12 @@ class ExchangeResponseFormatter {
         last_price: t.exchangeRates[1],
         base_volume: t.tokenVolume24h.float[0],
         quote_volume: t.tokenVolume24h.float[1],
+        price_change_percent_24h: t.rateChange24h,
+        highest_price_24h: t.high[1],
+        lowest_price_24h: t.low[1],
         // Not required fields but we provide them anyway
         liquidity_in_usd: t.liquidityUSD,
-        depth2: t.depth2,
-        high: t.high[1],
-        low: t.low[1]
+        depth2: t.depth2
       };
       return acc;
     }, {});

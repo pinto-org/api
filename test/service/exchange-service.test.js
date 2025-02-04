@@ -51,6 +51,7 @@ describe('ExchangeService', () => {
     expect(tickers[0].beanToken.address).toEqual('0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab');
     expect(tickers[0].nonBeanToken.address).toEqual('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2');
     expect(tickers[0].exchangeRates[1]).toBeCloseTo(0.000389236771196659);
+    expect(tickers[0].rateChange24h).toBeCloseTo(0);
     expect(tickers[0].tokenVolume24h.float[0]).toBeCloseTo(362621.652657);
     expect(tickers[0].tokenVolume24h.float[1]).toBeCloseTo(141.01800893122126);
     expect(tickers[0].liquidityUSD).toEqual(27491580);
