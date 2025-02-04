@@ -14,14 +14,17 @@ router.get('/cg/tickers', async (ctx) => {
 });
 router.get('/cg/trades', historicalTrades);
 
+router.get('/cmc/assets', async (ctx) => {
+  ctx.body = ExchangeResponseFormatter.getAssetsCMC();
+});
 router.get('/cmc/tickers', async (ctx) => {
   await tickers(ctx, ExchangeResponseFormatter.formatTickersCMC);
 });
+router.get('/cmc/trades', historicalTrades);
 router.get('/cmc/yields', async (ctx) => {
   const yields = await ExchangeYieldsService.getYields();
   ctx.body = await ExchangeResponseFormatter.formatYieldsCMC(yields);
 });
-router.get('/cmc/trades', historicalTrades);
 
 /**
  * Gets past 24h stats on dex tickers.

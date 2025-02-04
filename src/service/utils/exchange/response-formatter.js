@@ -42,6 +42,71 @@ class ExchangeResponseFormatter {
     }, {});
   }
 
+  static getAssetsCMC() {
+    return {
+      PINTO: {
+        name: 'Pinto',
+        unified_cryptoasset_id: undefined,
+        can_withdraw: true,
+        can_deposit: true,
+        maker_fee: '0.00',
+        taker_fee: '0.00',
+        contractAddressUrl: 'https://basescan.org/address/0xb170000aeeFa790fa61D6e837d1035906839a3c8',
+        contractAddress: '0xb170000aeeFa790fa61D6e837d1035906839a3c8'
+      },
+      WETH: {
+        name: 'Wrapped Ether',
+        unified_cryptoasset_id: '2396',
+        can_withdraw: true,
+        can_deposit: true,
+        maker_fee: '0.00',
+        taker_fee: '0.00',
+        contractAddressUrl: 'https://basescan.org/address/0x4200000000000000000000000000000000000006',
+        contractAddress: '0x4200000000000000000000000000000000000006'
+      },
+      cbETH: {
+        name: 'Coinbase Wrapped Staked ETH',
+        unified_cryptoasset_id: '21535',
+        can_withdraw: true,
+        can_deposit: true,
+        maker_fee: '0.00',
+        taker_fee: '0.00',
+        contractAddressUrl: 'https://basescan.org/address/0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22',
+        contractAddress: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22'
+      },
+      cbBTC: {
+        name: 'Coinbase Wrapped BTC',
+        unified_cryptoasset_id: '32994',
+        can_withdraw: true,
+        can_deposit: true,
+        maker_fee: '0.00',
+        taker_fee: '0.00',
+        contractAddressUrl: 'https://basescan.org/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf',
+        contractAddress: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf'
+      },
+      SOL: {
+        name: 'Wrapped SOL',
+        unified_cryptoasset_id: undefined,
+        can_withdraw: true,
+        can_deposit: true,
+        maker_fee: '0.00',
+        taker_fee: '0.00',
+        contractAddressUrl: 'https://basescan.org/address/0x1C61629598e4a901136a81BC138E5828dc150d67',
+        contractAddress: '0x1C61629598e4a901136a81BC138E5828dc150d67'
+      },
+      USDC: {
+        name: 'USD Coin',
+        unified_cryptoasset_id: '3408',
+        can_withdraw: true,
+        can_deposit: true,
+        maker_fee: '0.00',
+        taker_fee: '0.00',
+        contractAddressUrl: 'https://basescan.org/address/0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        contractAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+      }
+    };
+  }
+
   // async due to using ERC20Info, which resolves instantly if cached
   static async formatYieldsCMC({ poolYields, poolPriceInfo }) {
     return {
