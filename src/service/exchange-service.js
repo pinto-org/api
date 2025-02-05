@@ -34,7 +34,7 @@ class ExchangeService {
           LiquidityUtil.calcWellLiquidityUSD(well, block.number),
           LiquidityUtil.calcDepth(well, 2)
         ]);
-        const priceRange = ExchangeService.getWellPriceRange(well, allPriceEvents);
+        const priceStats = ExchangeService.getWellPriceStats(well, allPriceEvents);
 
         // Filter pools having < 1k liquidity
         if (poolLiquidity < 1000) {
@@ -46,6 +46,7 @@ class ExchangeService {
           beanToken,
           nonBeanToken,
           exchangeRates: well.rates,
+          rateChange24h: priceStats.percentRateChange,
           tokenVolume24h: well.biTokenVolume24h,
           tradeVolume24h: well.tradeVolume24h,
           liquidityUSD: parseFloat(poolLiquidity.toFixed(0)),
@@ -53,8 +54,8 @@ class ExchangeService {
             buy: depth2.buy.float,
             sell: depth2.sell.float
           },
-          high: priceRange.high,
-          low: priceRange.low
+          high: priceStats.high,
+          low: priceStats.low
         };
       });
     }
@@ -75,29 +76,24 @@ class ExchangeService {
       Math.min(options.limit, 1000)
     );
 
-    // Format the response
-    const retval = {
-      buy: [],
-      sell: []
-    };
+    // Gather swap info
+    const retval = [];
     for (const swap of swaps) {
       const type = swap.fromToken.id === tokens[0] ? 'sell' : 'buy';
       const effectivePrice = (swap.amountOut * BigInt(10 ** swap.fromToken.decimals)) / swap.amountIn;
-      retval[type].push({
-        trade_id: swap.blockNumber * 10000 + swap.logIndex,
-        price: createNumberSpread(effectivePrice, swap.toToken.decimals).float,
-        base_volume: createNumberSpread(swap.amountIn, swap.fromToken.decimals).float,
-        target_volume: createNumberSpread(swap.amountOut, swap.toToken.decimals).float,
-        trade_timestamp: parseInt(swap.timestamp) * 1000,
-        type: type
+      retval.push({
+        id: swap.blockNumber * 10000 + swap.logIndex,
+        rate: createNumberSpread(effectivePrice, swap.toToken.decimals).float,
+        token0Volume: createNumberSpread(swap.amountIn, swap.fromToken.decimals).float,
+        token1Volume: createNumberSpread(swap.amountOut, swap.toToken.decimals).float,
+        timestamp: parseInt(swap.timestamp) * 1000,
+        type
       });
     }
 
     if (options.type) {
       // One of buy/sell was explicitly requested
-      return {
-        [options.type]: retval[options.type]
-      };
+      return retval.filter((t) => t.type === options.type);
     }
     return retval;
   }
@@ -127,27 +123,35 @@ class ExchangeService {
   }
 
   /**
-   * Gets the high/low over the given time range
+   * Gets the change/high/low over the given time range
    * @param {WellDto} well - the well
-   * @param {*} priceEvents - the price events for this well in the desired period
-   * @returns high/low price over the given time period, in terms of the underlying tokens,
+   * @param {*} priceEvents - the price events for this well in the desired period, sorted by timestamp asc.
+   * @returns change/high/low price over the given time period, in terms of the underlying tokens,
    *  with decimal precision alrady applied
    */
-  static getWellPriceRange(well, allPriceEvents) {
+  static getWellPriceStats(well, allPriceEvents) {
     const priceEvents = allPriceEvents[well.address];
 
     if (priceEvents.length === 0) {
       // No trading activity over this period, returns the current rates
       return {
+        percentRateChange: 0,
         high: well.rates,
         low: well.rates
       };
     }
 
+    // Find 24h price change. Trades are already sorted by timestamp ascending.
+    const fromRate = allPriceEvents[well.address][0].rates[1];
+    const toRate = allPriceEvents[well.address].at(-1).rates[1];
+    const delta = toRate - fromRate;
+    const percentRateChange = delta / fromRate;
+
     const rates = priceEvents.map((e) => e.rates);
     // Return the min/max token price from the perspective of token0.
     // The maximal value of token0 is when fewer of its tokens can be bought with token1
     return {
+      percentRateChange,
       high: rates.reduce((max, next) => (next[0] < max[0] ? next : max), rates[0]),
       low: rates.reduce((min, next) => (next[0] > min[0] ? next : min), rates[0])
     };

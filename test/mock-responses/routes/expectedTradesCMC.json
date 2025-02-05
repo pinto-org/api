@@ -1,0 +1,82 @@
+[
+  {
+    "trade_id": 250981770368,
+    "price": 0.00000995,
+    "base_volume": 1035.47521,
+    "quote_volume": 0.01031266,
+    "timestamp": 1736985701000,
+    "type": "sell"
+  },
+  {
+    "trade_id": 250981330132,
+    "price": 0.00000996,
+    "base_volume": 862.361673,
+    "quote_volume": 0.0085975,
+    "timestamp": 1736985613000,
+    "type": "sell"
+  },
+  {
+    "trade_id": 250980790121,
+    "price": 0.00000997,
+    "base_volume": 689.020786,
+    "quote_volume": 0.00687517,
+    "timestamp": 1736985505000,
+    "type": "sell"
+  },
+  {
+    "trade_id": 250979910584,
+    "price": 0.00000998,
+    "base_volume": 689.510717,
+    "quote_volume": 0.00688526,
+    "timestamp": 1736985329000,
+    "type": "sell"
+  },
+  {
+    "trade_id": 250979300161,
+    "price": 0.00000999,
+    "base_volume": 688.012861,
+    "quote_volume": 0.00687549,
+    "timestamp": 1736985207000,
+    "type": "sell"
+  },
+  {
+    "trade_id": 250978790112,
+    "price": 0.00000999,
+    "base_volume": 172.180291,
+    "quote_volume": 0.00172145,
+    "timestamp": 1736985105000,
+    "type": "sell"
+  },
+  {
+    "trade_id": 250973350231,
+    "price": 100067.340191,
+    "base_volume": 0.01029954,
+    "quote_volume": 1030.647573,
+    "timestamp": 1736984017000,
+    "type": "buy"
+  },
+  {
+    "trade_id": 250972200170,
+    "price": 0.00000999,
+    "base_volume": 1375.131504,
+    "quote_volume": 0.013746,
+    "timestamp": 1736983787000,
+    "type": "sell"
+  },
+  {
+    "trade_id": 250971960216,
+    "price": 0.00001,
+    "base_volume": 858.891426,
+    "quote_volume": 0.00859612,
+    "timestamp": 1736983739000,
+    "type": "sell"
+  },
+  {
+    "trade_id": 250971690264,
+    "price": 0.00001001,
+    "base_volume": 686.550035,
+    "quote_volume": 0.00687709,
+    "timestamp": 1736983685000,
+    "type": "sell"
+  }
+]

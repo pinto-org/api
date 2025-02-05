@@ -147,17 +147,17 @@ paths:
                   buy:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Trade"
+                      $ref: "#/components/schemas/CGTrade"
                   sell:
                     type: array
                     items:
-                      $ref: "#/components/schemas/Trade"
-  /exchange/cmc/tickers:
+                      $ref: "#/components/schemas/CGTrade"
+  /exchange/cmc/summary:
     get:
       tags:
         - Exchange
-      summary: Retrieve tickers and 24h stats
-      operationId: getCMCTickers
+      summary: Retrieve summary of each trading pool
+      operationId: getCMCSummary
       parameters:
         - $ref: "#/components/parameters/blockNumber"
         - $ref: "#/components/parameters/timestamp"
@@ -168,7 +168,7 @@ paths:
             application/json:
               schema:
                 type: object
-                description: A mapping of **ticker IDs** to their respective ticker data.
+                description: A mapping of **ticker IDs** to their respective data.
                 additionalProperties:
                   type: object
                   properties:
@@ -211,6 +211,21 @@ paths:
                       format: float
                       description: 24h volume of the quote currency
                       example: 1.36190709
+                    price_change_percent_24h:
+                      type: number
+                      format: float
+                      description: 24h percent price change of the pair
+                      example: 0.008573747096112947
+                    highest_price_24h:
+                      type: number
+                      format: float
+                      description: Highest 24h price in quote currency
+                      example: 0.00000962205644818416
+                    lowest_price_24h:
+                      type: number
+                      format: float
+                      description: Lowest 24h price in quote currency
+                      example: 0.000009344852387696
                     liquidity_in_usd:
                       type: integer
                       description: Liquidity in USD
@@ -233,16 +248,6 @@ paths:
                             type: number
                             format: float
                           example: [19430.867069, 0.17350286]
-                    high:
-                      type: number
-                      format: float
-                      description: Highest 24h price in quote currency
-                      example: 0.00000962205644818416
-                    low:
-                      type: number
-                      format: float
-                      description: Lowest 24h price in quote currency
-                      example: 0.000009344852387696
                 example:
                   "0xb170000aeefa790fa61d6e837d1035906839a3c8_0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf":
                     base_id: "0xb170000aeefa790fa61d6e837d1035906839a3c8"
@@ -254,13 +259,108 @@ paths:
                     last_price: 0.00000954380212086768
                     base_volume: 143796.863455
                     quote_volume: 1.36190709
+                    price_change_percent_24h: 0.008573747096112947
+                    highest_price_24h: 0.00000962205644818416
+                    lowest_price_24h: 0.000009344852387696
                     liquidity_in_usd: 3567497
                     depth2:
                       buy: [17216.108664, 0.16837449]
                       sell: [19430.867069, 0.17350286]
-                    high: 0.00000962205644818416
-                    low: 0.000009344852387696
-  /exchange/cmc/trades:
+  /exchange/cmc/assets:
+    get:
+      tags:
+        - Exchange
+      summary: All assets in use by the exchange
+      operationId: getCMCAssets
+      description: Get a list of assets available on the exchange with their details.
+      responses:
+        '200':
+          description: A list of exchange assets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  WETH:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: Wrapped Ether
+                      unified_cryptoasset_id:
+                        type: string
+                        example: "2396"
+                      can_withdraw:
+                        type: boolean
+                        example: true
+                      can_deposit:
+                        type: boolean
+                        example: true
+                      maker_fee:
+                        type: string
+                        example: "0.00"
+                      taker_fee:
+                        type: string
+                        example: "0.00"
+                      contractAddressUrl:
+                        type: string
+                        example: "https://basescan.org/address/0x4200000000000000000000000000000000000006"
+                      contractAddress:
+                        type: string
+                        example: "0x4200000000000000000000000000000000000006"
+  /exchange/cmc/ticker:
+    get:
+      tags:
+        - Exchange
+      summary: Retrieve tickers and 24h stats
+      operationId: getCMCTickers
+      parameters:
+        - $ref: "#/components/parameters/blockNumber"
+        - $ref: "#/components/parameters/timestamp"
+      responses:
+        '200':
+          description: Tickers and 24h stats
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    base_id:
+                      type: string
+                      description: The UCID of the base asset.
+                    quote_id:
+                      type: string
+                      description: The UCID of the quote asset.
+                    last_price:
+                      type: number
+                      format: double
+                      description: The last transacted price of base currency in quote currency
+                      example: 0.00000954380212086768
+                    quote_volume:
+                      type: number
+                      format: double
+                      description: 24h trading volume in quote currency
+                      example: 1.36190709
+                    base_volume:
+                      type: number
+                      format: double
+                      description: 24h trading volume in base currency
+                      example: 143796.863455
+                    isFrozen:
+                      type: string
+                      description: Indicates if trading is frozen (1 for frozen, 0 for active).
+                      example: "0"
+                example:
+                  "PINTO_WETH":
+                    base_id: "0"
+                    quote_id: "2396"
+                    last_price: 0.0003029554482734783
+                    quote_volume: 35.251839798667596
+                    base_volume: 118291.418697
+                    isFrozen: "0"
+  /exchange/cmc/trades/market_pair:
     get:
       tags:
         - Exchange
@@ -307,16 +407,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  buy:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Trade"
-                  sell:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Trade"
+                type: array
+                items:
+                  $ref: "#/components/schemas/CMCTrade"
   /exchange/cmc/yields:
     get:
       tags:
@@ -851,7 +944,7 @@ components:
         type: integer
         example: 1715204400
   schemas:
-    Trade:
+    CGTrade:
       type: object
       properties:
         trade_id:
@@ -871,6 +964,33 @@ components:
           format: float
           example: 0.03897351970073168
         trade_timestamp:
+          type: integer
+          format: int64
+          description: Unix timestamp of the trade, in milliseconds
+          example: 1715161115000
+        type:
+          type: string
+          example: "buy | sell"
+    CMCTrade:
+      type: object
+      properties:
+        trade_id:
+          type: integer
+          format: int64
+          example: 198245000283
+        price:
+          type: number
+          format: float
+          example: 0.000318525481173441
+        base_volume:
+          type: number
+          format: float
+          example: 122.35605
+        quote_volume:
+          type: number
+          format: float
+          example: 0.03897351970073168
+        timestamp:
           type: integer
           format: int64
           description: Unix timestamp of the trade, in milliseconds

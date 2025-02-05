@@ -12,16 +12,26 @@ const router = new Router({
 router.get('/cg/tickers', async (ctx) => {
   await tickers(ctx, ExchangeResponseFormatter.formatTickersCG);
 });
-router.get('/cg/trades', historicalTrades);
+router.get('/cg/trades', async (ctx) => {
+  await historicalTrades(ctx, ExchangeResponseFormatter.formatTradesCG);
+});
 
-router.get('/cmc/tickers', async (ctx) => {
+router.get('/cmc/summary', async (ctx) => {
+  await tickers(ctx, ExchangeResponseFormatter.formatSummaryCMC);
+});
+router.get('/cmc/assets', async (ctx) => {
+  ctx.body = ExchangeResponseFormatter.getAssetsCMC();
+});
+router.get('/cmc/ticker', async (ctx) => {
   await tickers(ctx, ExchangeResponseFormatter.formatTickersCMC);
+});
+router.get('/cmc/trades/market_pair', async (ctx) => {
+  await historicalTrades(ctx, ExchangeResponseFormatter.formatTradesCMC);
 });
 router.get('/cmc/yields', async (ctx) => {
   const yields = await ExchangeYieldsService.getYields();
   ctx.body = await ExchangeResponseFormatter.formatYieldsCMC(yields);
 });
-router.get('/cmc/trades', historicalTrades);
 
 /**
  * Gets past 24h stats on dex tickers.
@@ -42,7 +52,7 @@ async function tickers(ctx, formatter) {
  * ?start_time: lower bound trade time. Defaults to end_time minus 7 days.
  * ?end_time: upper bound trade time. Defaults to the current time.
  */
-async function historicalTrades(ctx) {
+async function historicalTrades(ctx, formatter) {
   const options = RestParsingUtil.parseQuery(ctx.query);
   if (!options.ticker_id) {
     throw new InputError('Required parameter not provided');
@@ -56,7 +66,7 @@ async function historicalTrades(ctx) {
   );
 
   const trades = await ExchangeService.getTrades(options);
-  ctx.body = trades;
+  ctx.body = formatter(trades);
 }
 
 module.exports = router;
