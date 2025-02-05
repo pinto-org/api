@@ -1,7 +1,7 @@
 const BlockUtil = require('../../src/utils/block');
 jest.spyOn(BlockUtil, 'blockForSubgraphFromOptions').mockResolvedValue({ number: 19000000, timestamp: 1705173443 });
 
-const { getTickers, getWellPriceRange, getTrades } = require('../../src/service/exchange-service');
+const { getTickers, getWellPriceStats, getTrades } = require('../../src/service/exchange-service');
 const {
   ADDRESSES: { BEANWETH, BEANWSTETH, WETH, BEAN }
 } = require('../../src/constants/raw/beanstalk-eth');
@@ -28,7 +28,7 @@ describe('ExchangeService', () => {
     jest.spyOn(mockBasinSG, 'request').mockResolvedValueOnce(wellsResponse);
     // In practice these 2 values are not necessary since the subsequent getWellPriceRange is also mocked.
     jest.spyOn(BasinSubgraphRepository, 'getAllTrades').mockResolvedValueOnce(undefined);
-    jest.spyOn(ExchangeService, 'priceEventsByWell').mockResolvedValueOnce(undefined);
+    jest.spyOn(ExchangeService, 'priceEventsByWell').mockReturnValueOnce(undefined);
     jest.spyOn(LiquidityUtil, 'calcWellLiquidityUSD').mockResolvedValueOnce(27491579.59267346);
     jest.spyOn(LiquidityUtil, 'calcDepth').mockResolvedValueOnce({
       buy: {
@@ -39,9 +39,10 @@ describe('ExchangeService', () => {
       }
     });
 
-    jest.spyOn(ExchangeService, 'getWellPriceRange').mockReturnValueOnce({
+    jest.spyOn(ExchangeService, 'getWellPriceStats').mockReturnValueOnce({
       high: [2544.664349, 0.000392979136931714],
-      low: [2606.608683, 0.000383640247389837]
+      low: [2606.608683, 0.000383640247389837],
+      percentRateChange: 0.1234
     });
 
     const tickers = await getTickers({ blockNumber: 19000000 });
@@ -51,7 +52,7 @@ describe('ExchangeService', () => {
     expect(tickers[0].beanToken.address).toEqual('0xbea0000029ad1c77d3d5d23ba2d8893db9d1efab');
     expect(tickers[0].nonBeanToken.address).toEqual('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2');
     expect(tickers[0].exchangeRates[1]).toBeCloseTo(0.000389236771196659);
-    expect(tickers[0].rateChange24h).toBeCloseTo(0);
+    expect(tickers[0].rateChange24h).toBeCloseTo(0.1234);
     expect(tickers[0].tokenVolume24h.float[0]).toBeCloseTo(362621.652657);
     expect(tickers[0].tokenVolume24h.float[1]).toBeCloseTo(141.01800893122126);
     expect(tickers[0].liquidityUSD).toEqual(27491580);
@@ -70,12 +71,13 @@ describe('ExchangeService', () => {
       tokenDecimals: () => [6, 18]
     };
 
-    const priceRange = getWellPriceRange(mockWellDto, mockPriceEvents);
+    const priceStats = getWellPriceStats(mockWellDto, mockPriceEvents);
 
-    expect(priceRange.high[0]).toEqual(0.000065);
-    expect(priceRange.high[1]).toEqual(0.00000000000175889);
-    expect(priceRange.low[0]).toEqual(210.587245);
-    expect(priceRange.low[1]).toEqual(0.00000001717847889);
+    expect(priceStats.percentRateChange).toEqual(2.004360945496289);
+    expect(priceStats.high[0]).toEqual(60.000065);
+    expect(priceStats.high[1]).toEqual(0.0000001717847889);
+    expect(priceStats.low[0]).toEqual(120.000065);
+    expect(priceStats.low[1]).toEqual(0.00000004717847889);
   });
 
   test('Returns swap history', async () => {
@@ -117,8 +119,8 @@ describe('ExchangeService', () => {
       }
     };
 
-    const priceRange = ExchangeService.priceEventsByWell(mockWells, tradeDtos);
-    expect(priceRange[BEANWETH.toLowerCase()].length).toEqual(5);
-    expect(priceRange[BEANWSTETH.toLowerCase()].length).toEqual(2);
+    const priceEvents = ExchangeService.priceEventsByWell(mockWells, tradeDtos);
+    expect(priceEvents[BEANWETH.toLowerCase()].length).toEqual(5);
+    expect(priceEvents[BEANWSTETH.toLowerCase()].length).toEqual(2);
   });
 });

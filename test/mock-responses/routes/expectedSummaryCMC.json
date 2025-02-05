@@ -9,6 +9,9 @@
       "last_price": 0.00000954,
       "base_volume": 143796.863455,
       "quote_volume": 1.36190709,
+      "price_change_percent_24h": "0.123",
+      "highest_price_24h": 0.00000962,
+      "lowest_price_24h": 0.00000934,
       "liquidity_in_usd": 3567497,
       "depth2": {
           "buy": [
@@ -19,9 +22,7 @@
               19430.867069,
               0.17350286
           ]
-      },
-      "high": 0.00000962,
-      "low": 0.00000934
+      }
   },
   "0xb170000aeefa790fa61d6e837d1035906839a3c8_0x2ae3f1ec7f1f5012cfeab0185bfc7aa3cf0dec22": {
       "base_id": "0xb170000aeefa790fa61d6e837d1035906839a3c8",
@@ -33,6 +34,9 @@
       "last_price": 0.000279252335428424,
       "base_volume": 98936.199277,
       "quote_volume": 26.93200758870567,
+      "price_change_percent_24h": "0.0123",
+      "highest_price_24h": 0.000279252335428424,
+      "lowest_price_24h": 0.000268121174474809,
       "liquidity_in_usd": 1656489,
       "depth2": {
           "buy": [
@@ -43,9 +47,7 @@
               8441.018828,
               2.3571742353476033
           ]
-      },
-      "high": 0.000279252335428424,
-      "low": 0.000268121174474809
+      }
   },
   "0xb170000aeefa790fa61d6e837d1035906839a3c8_0x833589fcd6edb6e08f4c7c32d4f71b54bda02913": {
       "base_id": "0xb170000aeefa790fa61d6e837d1035906839a3c8",
@@ -57,6 +59,9 @@
       "last_price": 0.995348,
       "base_volume": 557953.859414,
       "quote_volume": 555431.63804,
+      "price_change_percent_24h": "0.0234",
+      "highest_price_24h": 1.002521,
+      "lowest_price_24h": 0.988894,
       "liquidity_in_usd": 3233876,
       "depth2": {
           "buy": [
@@ -67,9 +72,7 @@
               49396.678614,
               49210.876241
           ]
-      },
-      "high": 1.002521,
-      "low": 0.988894
+      }
   },
   "0xb170000aeefa790fa61d6e837d1035906839a3c8_0x4200000000000000000000000000000000000006": {
       "base_id": "0xb170000aeefa790fa61d6e837d1035906839a3c8",
@@ -81,6 +84,9 @@
       "last_price": 0.000302955448273478,
       "base_volume": 118291.418697,
       "quote_volume": 35.251839798667596,
+      "price_change_percent_24h": "0.00123",
+      "highest_price_24h": 0.000308162517752444,
+      "lowest_price_24h": 0.000292192879653276,
       "liquidity_in_usd": 1541930,
       "depth2": {
           "buy": [
@@ -91,9 +97,7 @@
               7861.912202,
               2.3818091838622575
           ]
-      },
-      "high": 0.000308162517752444,
-      "low": 0.000292192879653276
+      }
   },
   "0xb170000aeefa790fa61d6e837d1035906839a3c8_0x1c61629598e4a901136a81bc138e5828dc150d67": {
       "base_id": "0xb170000aeefa790fa61d6e837d1035906839a3c8",
@@ -105,6 +109,9 @@
       "last_price": 0.00402014,
       "base_volume": 211033.911681,
       "quote_volume": 809.162349074,
+      "price_change_percent_24h": "0.00789",
+      "highest_price_24h": 0.00402014,
+      "lowest_price_24h": 0.003715137,
       "liquidity_in_usd": 3100877,
       "depth2": {
           "buy": [
@@ -115,8 +122,6 @@
               15791.031919,
               63.48194064
           ]
-      },
-      "high": 0.00402014,
-      "low": 0.003715137
+      }
   }
 }

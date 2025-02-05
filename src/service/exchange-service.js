@@ -34,25 +34,19 @@ class ExchangeService {
           LiquidityUtil.calcWellLiquidityUSD(well, block.number),
           LiquidityUtil.calcDepth(well, 2)
         ]);
-        const priceRange = ExchangeService.getWellPriceRange(well, allPriceEvents);
+        const priceStats = ExchangeService.getWellPriceStats(well, allPriceEvents);
 
         // Filter pools having < 1k liquidity
         if (poolLiquidity < 1000) {
           return;
         }
 
-        // Find 24h price change. Trades are already sorted by timestamp ascending.
-        const fromRate = allPriceEvents[well.address][0].rates[1];
-        const toRate = allPriceEvents[well.address].at(-1).rates[1];
-        const delta = toRate - fromRate;
-        const percentRateChange = delta / fromRate;
-
         return {
           wellAddress: well.address,
           beanToken,
           nonBeanToken,
           exchangeRates: well.rates,
-          rateChange24h: percentRateChange,
+          rateChange24h: priceStats.percentRateChange,
           tokenVolume24h: well.biTokenVolume24h,
           tradeVolume24h: well.tradeVolume24h,
           liquidityUSD: parseFloat(poolLiquidity.toFixed(0)),
@@ -60,8 +54,8 @@ class ExchangeService {
             buy: depth2.buy.float,
             sell: depth2.sell.float
           },
-          high: priceRange.high,
-          low: priceRange.low
+          high: priceStats.high,
+          low: priceStats.low
         };
       });
     }
@@ -129,27 +123,35 @@ class ExchangeService {
   }
 
   /**
-   * Gets the high/low over the given time range
+   * Gets the change/high/low over the given time range
    * @param {WellDto} well - the well
-   * @param {*} priceEvents - the price events for this well in the desired period
-   * @returns high/low price over the given time period, in terms of the underlying tokens,
+   * @param {*} priceEvents - the price events for this well in the desired period, sorted by timestamp asc.
+   * @returns change/high/low price over the given time period, in terms of the underlying tokens,
    *  with decimal precision alrady applied
    */
-  static getWellPriceRange(well, allPriceEvents) {
+  static getWellPriceStats(well, allPriceEvents) {
     const priceEvents = allPriceEvents[well.address];
 
     if (priceEvents.length === 0) {
       // No trading activity over this period, returns the current rates
       return {
+        percentRateChange: 0,
         high: well.rates,
         low: well.rates
       };
     }
 
+    // Find 24h price change. Trades are already sorted by timestamp ascending.
+    const fromRate = allPriceEvents[well.address][0].rates[1];
+    const toRate = allPriceEvents[well.address].at(-1).rates[1];
+    const delta = toRate - fromRate;
+    const percentRateChange = delta / fromRate;
+
     const rates = priceEvents.map((e) => e.rates);
     // Return the min/max token price from the perspective of token0.
     // The maximal value of token0 is when fewer of its tokens can be bought with token1
     return {
+      percentRateChange,
       high: rates.reduce((max, next) => (next[0] < max[0] ? next : max), rates[0]),
       low: rates.reduce((min, next) => (next[0] > min[0] ? next : min), rates[0])
     };
