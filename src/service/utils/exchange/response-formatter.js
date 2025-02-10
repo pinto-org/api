@@ -171,7 +171,7 @@ class ExchangeResponseFormatter {
       provider_logo: 'https://assets.pinto.money/tokens/PINTO_72x72.png',
       provider_URL: 'https://pinto.money/',
       links: [
-        { title: 'X', link: 'https://x.com/pintocommunity' },
+        { title: 'X', link: 'https://x.com/pintodotmoney' },
         { title: 'Discord', link: 'https://pinto.money/discord' },
         { title: 'Telegram', link: 'https://t.me/pintoannouncements' },
         { title: 'GitHub', link: 'https://github.com/pinto-org' }
