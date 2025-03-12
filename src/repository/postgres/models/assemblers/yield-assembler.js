@@ -23,7 +23,7 @@ class YieldModelAssembler {
   // The model is expected to also have Token association loaded, so the token address can be used
   static fromModels(yieldModels) {
     const yieldResult = {
-      season: yieldModels[0].season,
+      season: yieldModels[0]?.season,
       yields: {},
       ema: {}
     };
