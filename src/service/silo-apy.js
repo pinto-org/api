@@ -37,7 +37,11 @@ class SiloApyService {
         }
       });
       if (yields.length > 0) {
-        return YieldModelAssembler.fromModels(yields);
+        return YieldModelAssembler.fromModels(
+          yields.filter(
+            (y) => !request.tokens || request.tokens.some((t) => t.toLowerCase() === y.Token.address.toLowerCase())
+          )
+        );
       }
     }
 
