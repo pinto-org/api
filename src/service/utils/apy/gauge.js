@@ -31,7 +31,7 @@ class GaugeApyUtil {
    * GERMINATING PARAMS - First index corresponds to Even germinating, second index is Odd.
    * These germinating amounts will be subtracted from the above values initially, and re-inlcuded once germination completes.
    *
-   * @param {number} season - The current season, required for germinating.
+   * @param {number} season - The current season, required for germinating and parameter changes over time.
    * @param {BigInt[]} germinatingBeanBdv - Germinating beans bdv
    * @param {BigInt[][]} gaugeLpGerminatingBdv - Germinating bdv of each gauge lp. Each outer array entry corresponds to one lp
    * @param {BigInt[]} nonGaugeGerminatingBdv - Germinating bdv of all non-gauge whitelisted assets
@@ -111,7 +111,7 @@ class GaugeApyUtil {
     }
 
     let r = fromBigInt(initialR, PRECISION.beanToMaxLpGpPerBdvRatio, PRECISION.beanToMaxLpGpPerBdvRatio / 2);
-    let rScaled;
+    let cropRatio;
     const siloReward = fromBigInt(beansPerSeason, PRECISION.bdv, PRECISION.bdv);
     let beanBdv = fromBigInt(siloDepositedBeanBdv, PRECISION.bdv, PRECISION.bdv / 3) - beanGerm;
     let totalStalk = fromBigInt(siloStalk, PRECISION.stalk, 0);
@@ -156,7 +156,7 @@ class GaugeApyUtil {
     const ownershipStart = stalkStart.map((s) => s / (totalStalk + sysGerm));
 
     for (let i = 0; i < duration; ++i) {
-      [r, rScaled] = GaugeApyUtil.#updateR(r, beansPerSeason);
+      [r, cropRatio] = GaugeApyUtil.#updateCropRatio(season, r, beansPerSeason);
 
       // Add germinating bdv to actual bdv in the first 2 simulated seasons
       if (i < 2) {
@@ -192,7 +192,7 @@ class GaugeApyUtil {
         largestLpGpPerBdv = Math.max(...lpGpPerBdv);
       }
 
-      const beanGpPerBdv = largestLpGpPerBdv * rScaled;
+      const beanGpPerBdv = largestLpGpPerBdv * cropRatio;
       const gpTotal = sum(gaugeLpPointsCopy) + beanGpPerBdv * beanBdv;
       const avgGsPerBdv = totalStalk / totalBdv - 1;
       const gs = (avgGsPerBdv / catchUpRate) * gaugeBdv;
@@ -234,7 +234,9 @@ class GaugeApyUtil {
     }, {});
   }
 
-  static #updateR(R, earnedBeans) {
+  // Updates the crop ratio, returning the raw beanToMaxLpGpPerBdvRatio and the scaled crop ratio
+  static #updateCropRatio(apySeason, R, earnedBeans) {
+    const range = apySeason <= 2710 ? [0.5, 1] : [0.5, 1.5];
     // For now we return an increasing R value only when there are no beans minted over the period.
     // In the future this needs to take into account beanstalk state and the frequency of how many seasons have mints
     const change = earnedBeans == 0 ? 0.01 : -0.01;
@@ -244,7 +246,7 @@ class GaugeApyUtil {
     } else if (newR < 0) {
       newR = 0;
     }
-    return [newR, 0.5 + 0.5 * newR];
+    return [newR, range[0] + (range[1] - range[0]) * newR];
   }
 
   /**
