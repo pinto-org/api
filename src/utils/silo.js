@@ -46,7 +46,7 @@ class SiloUtil {
   }
 
   static async getStorageStalkBalance(account, blockTag = 'latest') {
-    const { bs } = EVM.beanstalkContractAndStorage(C(), blockTag);
+    const { bs } = await EVM.beanstalkContractAndStorage(blockTag);
     const storageStalk = BigInt(await bs.s.accts[account].stalk);
     const germinatingOdd = BigInt(await bs.s.accts[account].germinatingStalk[0]);
     const germinatingEven = BigInt(await bs.s.accts[account].germinatingStalk[1]);
