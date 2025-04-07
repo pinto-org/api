@@ -31,7 +31,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@beanstalk/contract-storage": "^1.1.0",
+    "@beanstalk/contract-storage": "^1.1.1",
     "@koa/cors": "^5.0.0",
     "alchemy-sdk": "^3.4.2",
     "axios": "^1.7.2",
