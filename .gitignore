@@ -6,4 +6,4 @@ npm-debug.log
 docker/.data
 docker/.env
 
-misc-analysis.js
+_private
