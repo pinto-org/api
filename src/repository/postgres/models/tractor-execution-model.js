@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       /// TractorOrder blueprintHash added via association below ///
       ...bigintNumericColumn('nonce', DataTypes, { allowNull: false }),
       operator: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(42),
         allowNull: false
       },
       gasCostUsd: {
@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       executedTxn: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(66),
         allowNull: false
       }
     },

@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       /* Order information */
       // uint8[], in practice this list will be small so we store as comma separated string rather than ABI encoding
       sourceTokenIndices: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false
       },
       ...bigintNumericColumn('totalAmountToSow', DataTypes, { allowNull: false }),

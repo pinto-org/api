@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
     'TractorOrder',
     {
       blueprintHash: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(66),
         primaryKey: true
       },
       orderType: {
@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       publisher: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(42),
         allowNull: false
       },
       numExecutions: {
@@ -23,12 +23,12 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       data: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false
       },
       // abi encoded bytes32[]
       operatorPasteInstrs: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false
       },
       ...bigintNumericColumn('maxNonce', DataTypes, { allowNull: false }),
@@ -43,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       signature: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(132),
         allowNull: false
       },
       // Timestamp/block number of when this blueprint was published
