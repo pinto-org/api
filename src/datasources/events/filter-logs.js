@@ -38,7 +38,7 @@ class FilterLogs {
       throw new Error(`toBlock must not be less than fromBlock (${filter.fromBlock}, ${originalTo})`);
     }
 
-    const retries = 5;
+    let retries = 5;
     const all = [];
     while (filter.toBlock < originalTo) {
       filter.toBlock = Math.min(filter.fromBlock + range, originalTo);
