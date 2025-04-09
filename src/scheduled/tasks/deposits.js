@@ -3,11 +3,11 @@ const DepositEvents = require('../../datasources/events/deposit-events');
 const DepositDto = require('../../repository/dto/DepositDto');
 const DepositService = require('../../service/deposit-service');
 const AsyncContext = require('../../utils/async/context');
-const ChainUtil = require('../../utils/chain');
 const AppMetaService = require('../../service/meta-service');
 const { percentDiff } = require('../../utils/number');
 const Log = require('../../utils/logging');
 const SiloService = require('../../service/silo-service');
+const TaskRangeUtil = require('../util/task-range');
 
 // If the BDV has changed by at least these amounts, update lambda stats
 const DEFAULT_UPDATE_THRESHOLD = 0.01;
@@ -20,23 +20,11 @@ class DepositsTask {
   static __seasonUpdate = false;
 
   static async updateDeposits() {
-    const lambdaMeta = await AppMetaService.getLambdaMeta();
-    if (lambdaMeta.lastUpdate === null) {
-      Log.info(`Skipping deposit task, has not been initializd yet.`);
-      return;
-    }
-
-    let isCaughtUp = true;
-    const { lastUpdate, lastBdvs } = await AppMetaService.getLambdaMeta();
-
-    // Determine range of blocks to update on
-    const currentBlock = (await C().RPC.getBlock()).number;
-    // Buffer to avoid issues with a chain reorg
-    let updateBlock = currentBlock - ChainUtil.blocksPerInterval(C().CHAIN, 10000);
-    if (updateBlock - lastUpdate > MAX_BLOCKS) {
-      updateBlock = lastUpdate + MAX_BLOCKS;
-      isCaughtUp = false;
-    }
+    const { lastUpdate, updateBlock, isCaughtUp, meta } = await TaskRangeUtil.getUpdateInfo(
+      AppMetaService.getLambdaMeta,
+      MAX_BLOCKS
+    );
+    const { lastBdvs } = meta;
 
     Log.info(`Updating deposits for block range [${lastUpdate}, ${updateBlock}]`);
 

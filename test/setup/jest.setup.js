@@ -42,3 +42,5 @@ jest.mock('../../src/repository/postgres/models/index', () => {
 });
 // Disables any discord messaging
 jest.mock('../../src/utils/discord', () => ({}));
+// Disables logs
+console.log = () => {};
