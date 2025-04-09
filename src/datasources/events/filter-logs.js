@@ -38,7 +38,7 @@ class FilterLogs {
       throw new Error(`toBlock must not be less than fromBlock (${filter.fromBlock}, ${originalTo})`);
     }
 
-    const retries = 5;
+    let retries = 5;
     const all = [];
     while (filter.toBlock < originalTo) {
       filter.toBlock = Math.min(filter.fromBlock + range, originalTo);
@@ -51,14 +51,16 @@ class FilterLogs {
       } catch (e) {
         if (--retries <= 0) {
           // Rethrow if errors were not resolved by repeatedly reducing the block range
-          throw new Error('safeGetBatchLogs could not retrieve the requested logs.');
+          throw new Error(
+            `safeGetBatchLogs could not retrieve the requested logs. Original error: ${e instanceof Error ? e.message : String(e)}`
+          );
         }
         Log.info('WARNING! getLogs failed, reducing block range and retrying...', filter.fromBlock, range);
 
         // Prepare for next iteration, reset toBlock and decrease the range
         filter.toBlock = 0;
         // Large ranges may initially fail but will eventually reduce
-        range = Math.min(range / 2, 25000);
+        range = Math.floor(Math.min(range / 2, 25000));
       }
     }
     return all;
