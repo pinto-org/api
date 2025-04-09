@@ -26,11 +26,11 @@ module.exports = {
         allowNull: false
       },
       gasCostUsd: {
-        type: Sequelize.INTEGER,
-        allowNull: true
+        type: Sequelize.FLOAT,
+        allowNull: false
       },
       tipUsd: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.FLOAT,
         allowNull: true
       },
       executedTimestamp: {

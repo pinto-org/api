@@ -15,12 +15,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(42),
         allowNull: false
       },
+      // Gas cost of this tractor execution
       gasCostUsd: {
-        type: DataTypes.INTEGER,
-        allowNull: true
+        type: DataTypes.FLOAT,
+        allowNull: false
       },
+      // Will only price the tip if it was paid in bean
       tipUsd: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: true
       },
       executedTimestamp: {
