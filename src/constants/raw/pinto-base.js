@@ -8,7 +8,8 @@ const erc20Abi = require('../../datasources/abi/ERC20.json');
 const wrappedDepositAbi = require('../../datasources/abi/WrappedDepositERC20.json');
 const wellAbi = require('../../datasources/abi/basin/Well.json');
 const wellFunctionAbi = require('../../datasources/abi/basin/WellFunction.json');
-const siloHelpersAbi = require('../../datasources/abi/SiloHelpers.json');
+const tractorHelpersAbi = require('../../datasources/abi/tractor/TractorHelpers.json');
+const sowBlueprintv0Abi = require('../../datasources/abi/tractor/SowBlueprintV0.json');
 
 const contracts = {
   BEANSTALK: ['0xD1A0D188E861ed9d15773a2F3574a2e94134bA8f', null, pintoLaunchAbi],
@@ -26,7 +27,9 @@ const contracts = {
   USDC: ['0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', 8, erc20Abi],
   CP2: ['0xBA510C289fD067EBbA41335afa11F0591940d6fe', null, wellFunctionAbi],
   STABLE2: ['0xBA51055a97b40d7f41f3F64b57469b5D45B67c87', null, wellFunctionAbi],
-  SILO_HELPERS: ['0x0dEe24C99e8dF7f0E058F4F48f228CC07DB704Fc', null, siloHelpersAbi]
+  // TODO: update these
+  TRACTOR_HELPERS: ['?', null, tractorHelpersAbi],
+  SOW_V0: ['0xe58cbe144dd5556c84874dec1b3f2d0d6ac45f1b', null, sowBlueprintv0Abi]
 };
 
 // Extract values from the above contracts

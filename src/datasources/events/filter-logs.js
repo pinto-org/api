@@ -1,16 +1,20 @@
 const { C } = require('../../constants/runtime-constants');
 const Log = require('../../utils/logging');
 const AlchemyUtil = require('../alchemy');
-const Interfaces = require('../contracts/interfaces');
+const Contracts = require('../contracts/contracts');
 
 class FilterLogs {
   // Retrieves beanstalk events matching the requested names
   static async getBeanstalkEvents(eventNames, fromBlock, toBlock, c = C()) {
-    const iBeanstalk = Interfaces.getBeanstalk(c);
-    const topics = eventNames.map((n) => iBeanstalk.getEventTopic(n));
+    return this.getEvents(Contracts.getBeanstalk(c), eventNames, fromBlock, toBlock, c);
+  }
+
+  static async getEvents(contract, eventNames, fromBlock, toBlock, c = C()) {
+    const iface = contract.interface;
+    const topics = eventNames.map((n) => iface.getEventTopic(n));
 
     const filter = {
-      address: c.BEANSTALK,
+      address: contract.address,
       topics: [topics],
       fromBlock,
       toBlock
@@ -18,7 +22,7 @@ class FilterLogs {
     const logs = await FilterLogs.safeGetBatchLogs(filter, c);
 
     const events = logs.map((log) => {
-      const parsed = iBeanstalk.parseLog(log);
+      const parsed = iface.parseLog(log);
       parsed.rawLog = log;
       return parsed;
     });
