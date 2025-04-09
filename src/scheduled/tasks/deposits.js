@@ -20,12 +20,14 @@ class DepositsTask {
   static __seasonUpdate = false;
 
   static async updateDeposits() {
-    const { lastUpdate, updateBlock, isCaughtUp, meta } = await TaskRangeUtil.getUpdateInfo(
+    const { isInitialized, lastUpdate, updateBlock, isCaughtUp, meta } = await TaskRangeUtil.getUpdateInfo(
       AppMetaService.getLambdaMeta,
       MAX_BLOCKS
     );
-    const { lastBdvs } = meta;
-
+    if (!isInitialized) {
+      Log.info(`Skipping task, has not been initializd yet.`);
+      return;
+    }
     Log.info(`Updating deposits for block range [${lastUpdate}, ${updateBlock}]`);
 
     const tokenInfos = await SiloService.getWhitelistedTokenInfo({ block: updateBlock, chain: C().CHAIN });
@@ -46,6 +48,7 @@ class DepositsTask {
     });
 
     await AsyncContext.sequelizeTransaction(async () => {
+      const { lastBdvs } = meta;
       await DepositsTask.updateLambdaOnBdvChanged(
         lastBdvs,
         updateBlock,

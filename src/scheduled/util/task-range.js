@@ -7,8 +7,7 @@ class TaskRangeUtil {
   static async getUpdateInfo(metaFunction, maxUpdateBlocks) {
     const meta = await metaFunction();
     if (meta.lastUpdate === null) {
-      Log.info(`Skipping task, has not been initializd yet.`);
-      return;
+      return { isInitialized: false };
     }
 
     let isCaughtUp = true;
@@ -23,6 +22,7 @@ class TaskRangeUtil {
     }
 
     return {
+      isInitialized: true,
       lastUpdate: meta.lastUpdate,
       updateBlock,
       isCaughtUp,

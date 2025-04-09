@@ -1,5 +1,8 @@
 const { C } = require('../../constants/runtime-constants');
 const FilterLogs = require('../../datasources/events/filter-logs');
+const AppMetaService = require('../../service/meta-service');
+const Log = require('../../utils/logging');
+const TaskRangeUtil = require('../util/task-range');
 const TractorSowV0Task = require('./tractor-blueprints/sow-v0');
 
 // Maximum number of blocks to process in one invocation
@@ -9,8 +12,19 @@ const BLUEPRINTS = [TractorSowV0Task];
 
 class TractorTask {
   static async updateTractor() {
+    let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(
+      AppMetaService.getTractorMeta,
+      MAX_BLOCKS
+    );
+    if (!isInitialized) {
+      Log.info(`Skipping task, has not been initializd yet.`);
+      return;
+    }
+    Log.info(`Updating tractor for block range [${lastUpdate}, ${updateBlock}]`);
+
     // Find all PublishRequisiton and Tractor events
     const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], 28723812, 28723992);
+    // const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], lastUpdate, updateBlock); // TODO: put back
     const publishRequisitionEvts = events.filter((e) => e.name === 'PublishRequisition');
     const tractorEvts = events.filter((e) => e.name === 'Tractor');
 
@@ -20,10 +34,13 @@ class TractorTask {
     let i = 0;
 
     // Run specialized blueprint modules
+
+    return isCaughtUp;
   }
 
   static async handlePublishRequsition(event) {
     //
+    BLUEPRINTS.forEach((b) => b.tryAddRequisition(event['todo']));
   }
 
   static async handleTractor(event) {
