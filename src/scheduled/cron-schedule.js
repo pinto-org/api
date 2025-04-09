@@ -45,7 +45,7 @@ const ALL_JOBS = {
 // Error handling wrapper for scheduled task functions
 async function errorWrapper(fn) {
   try {
-    fn();
+    await fn();
   } catch (e) {
     Log.info(e);
     // Send message only without the stack trace
