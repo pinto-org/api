@@ -1,5 +1,6 @@
 const { C } = require('../../constants/runtime-constants');
 const FilterLogs = require('../../datasources/events/filter-logs');
+const TractorOrderDto = require('../../repository/dto/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
 const Log = require('../../utils/logging');
 const TaskRangeUtil = require('../util/task-range');
@@ -39,8 +40,9 @@ class TractorTask {
   }
 
   static async handlePublishRequsition(event) {
-    //
-    BLUEPRINTS.forEach((b) => b.tryAddRequisition(event['todo']));
+    const dto = await TractorOrderDto.fromRequisitionEvt(event);
+    // TODO: need to pass order entity here after it gets created
+    BLUEPRINTS.forEach((b) => b.tryAddRequisition(event.args.requisition.blueprint.data));
   }
 
   static async handleTractor(event) {

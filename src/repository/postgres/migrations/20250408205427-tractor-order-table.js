@@ -14,14 +14,10 @@ module.exports = {
       orderType: {
         type: Sequelize.ENUM,
         values: Object.values(TractorOrderType),
-        allowNull: false
+        allowNull: true
       },
       publisher: {
         type: Sequelize.STRING(42),
-        allowNull: false
-      },
-      numExecutions: {
-        type: Sequelize.INTEGER,
         allowNull: false
       },
       data: {
