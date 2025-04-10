@@ -21,9 +21,9 @@ const ALL_JOBS = {
 
       try {
         DepositsTask.__cronLock = true;
-        let caughtUp = false;
-        while (!caughtUp) {
-          caughtUp = await DepositsTask.updateDeposits();
+        let canExecuteAgain = true;
+        while (canExecuteAgain) {
+          canExecuteAgain = await DepositsTask.updateDeposits();
         }
       } finally {
         DepositsTask.__cronLock = false;

@@ -19,14 +19,15 @@ class DepositsTask {
   // Set by SunriseTask when a new season is encountered. Indicates that all deposits should be updated.
   static __seasonUpdate = false;
 
+  // Returns true if the task can be called again immediately
   static async updateDeposits() {
     const { isInitialized, lastUpdate, updateBlock, isCaughtUp, meta } = await TaskRangeUtil.getUpdateInfo(
       AppMetaService.getLambdaMeta.bind(AppMetaService),
       MAX_BLOCKS
     );
-    if (!isInitialized) {
-      Log.info(`Skipping task, has not been initializd yet.`);
-      return;
+    if (!isInitialized || lastUpdate === updateBlock) {
+      Log.info(`Skipping task, has not been initialized yet or last update is the same as the suggested update block.`);
+      return false;
     }
     Log.info(`Updating deposits for block range [${lastUpdate}, ${updateBlock}]`);
 
@@ -60,7 +61,7 @@ class DepositsTask {
     });
     DepositsTask.__seasonUpdate = false;
 
-    return isCaughtUp;
+    return !isCaughtUp;
   }
 
   // Updates the list of deposits in the database, adding/removing entries as needed

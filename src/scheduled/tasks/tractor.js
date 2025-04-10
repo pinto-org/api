@@ -16,14 +16,15 @@ class TractorTask {
     return [TractorSowV0Task];
   }
 
+  // Returns true if the task can be called again immediately
   static async updateTractor() {
     let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(
       AppMetaService.getTractorMeta.bind(AppMetaService),
       MAX_BLOCKS
     );
-    if (!isInitialized) {
-      Log.info(`Skipping task, has not been initializd yet.`);
-      return;
+    if (!isInitialized || lastUpdate === updateBlock) {
+      Log.info(`Skipping task, has not been initialized yet or last update is the same as the suggested update block.`);
+      return false;
     }
     Log.info(`Updating tractor for block range [${lastUpdate}, ${updateBlock}]`);
 
@@ -42,7 +43,7 @@ class TractorTask {
       await AppMetaService.setLastTractorUpdate(updateBlock);
     });
 
-    return isCaughtUp;
+    return !isCaughtUp;
   }
 
   static async handlePublishRequsition(event) {

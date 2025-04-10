@@ -4,6 +4,7 @@
  */
 
 const { C } = require('../constants/runtime-constants');
+const { sequelize } = require('../repository/postgres/models');
 const DepositModelAssembler = require('../repository/postgres/models/assemblers/deposit-assembler');
 const DepositRepository = require('../repository/postgres/queries/deposit-repository');
 const SharedRepository = require('../repository/postgres/queries/shared-repository');
