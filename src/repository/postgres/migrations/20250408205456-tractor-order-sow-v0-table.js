@@ -6,13 +6,9 @@ const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('tractor_order_sow_v0', {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-      },
       blueprintHash: {
         type: Sequelize.STRING(66),
+        primaryKey: true,
         references: {
           model: 'tractor_order',
           key: 'blueprintHash'
@@ -45,8 +41,6 @@ module.exports = {
       ...bigintNumericColumn('slippageRatio', Sequelize, { allowNull: false }),
       ...timestamps(Sequelize)
     });
-
-    await queryInterface.addIndex('tractor_order_sow_v0', ['blueprintHash']);
   },
 
   async down(queryInterface, Sequelize) {

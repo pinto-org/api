@@ -1,15 +1,13 @@
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
-  const TractorSowV0 = sequelize.define(
-    'TractorSowV0',
+  const TractorOrderSowV0 = sequelize.define(
+    'TractorOrderSowV0',
     {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
+      blueprintHash: {
+        type: DataTypes.STRING(66),
+        primaryKey: true
       },
-      /// TractorOrder blueprintHash added via association below ///
       /* Order state */
       ...bigintNumericColumn('pintoSownCounter', DataTypes, { allowNull: false }),
       lastExecutedSeason: {
@@ -40,19 +38,14 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('slippageRatio', DataTypes, { allowNull: false })
     },
     {
-      tableName: 'tractor_order_sow_v0',
-      indexes: [
-        {
-          fields: ['executionId']
-        }
-      ]
+      tableName: 'tractor_order_sow_v0'
     }
   );
 
   // Associations here
-  TractorSowV0.associate = (models) => {
-    TractorSowV0.belongsTo(models.TractorOrder, { foreignKey: 'blueprintHash', onDelete: 'RESTRICT' });
+  TractorOrderSowV0.associate = (models) => {
+    TractorOrderSowV0.belongsTo(models.TractorOrder, { foreignKey: 'blueprintHash', onDelete: 'RESTRICT' });
   };
 
-  return TractorSowV0;
+  return TractorOrderSowV0;
 };

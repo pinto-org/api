@@ -17,7 +17,21 @@ class SowOrderV0Dto {
       this.runBlocksAfterSunrise = d.sowParams.runBlocksAfterSunrise;
       this.slippageRatio = d.sowParams.slippageRatio;
     } else if (type === 'db') {
-      this.id = d.id;
+      this.blueprintHash = d.blueprintHash;
+      this.pintoSownCounter = d.pintoSownCounter;
+      this.lastExecutedSeason = d.lastExecutedSeason;
+      this.orderComplete = d.orderComplete;
+      this.amountFunded = d.amountFunded;
+      this.cascadeAmountFunded = d.cascadeAmountFunded;
+      this.sourceTokenIndices = d.sourceTokenIndices.split(',').map(BigInt);
+      this.totalAmountToSow = d.totalAmountToSow;
+      this.minAmountToSowPerSeason = d.minAmountToSowPerSeason;
+      this.maxAmountToSowPerSeason = d.maxAmountToSowPerSeason;
+      this.minTemp = d.minTemp;
+      this.maxPodlineLength = d.maxPodlineLength;
+      this.maxGrownStalkPerBdv = d.maxGrownStalkPerBdv;
+      this.runBlocksAfterSunrise = d.runBlocksAfterSunrise;
+      this.slippageRatio = d.slippageRatio;
     }
   }
 

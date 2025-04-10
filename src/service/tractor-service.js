@@ -16,7 +16,7 @@ class TractorService {
   // Via upsert
   static async updateSowV0Orders(orderDtos) {
     const models = orderDtos.map((d) => SowOrderV0Assembler.toModel(d));
-    const updatedOrders = await SharedRepository.genericUpsert(sequelize.models.TractorSowV0, models, true);
+    const updatedOrders = await SharedRepository.genericUpsert(sequelize.models.TractorOrderSowV0, models, true);
     const updatedOrderDtos = updatedOrders.map((d) => SowOrderV0Assembler.fromModel(d));
     return updatedOrderDtos;
   }
