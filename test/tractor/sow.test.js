@@ -1,4 +1,4 @@
-const SowOrderV0Dto = require('../../src/repository/dto/tractor/SowOrderV0Dto');
+const SowV0OrderDto = require('../../src/repository/dto/tractor/SowV0OrderDto');
 const TractorSowV0Task = require('../../src/scheduled/tasks/tractor-blueprints/sow-v0');
 const TractorService = require('../../src/service/tractor-service');
 
@@ -11,7 +11,7 @@ describe('TractorSowV0Task', () => {
     jest
       .spyOn(TractorSowV0Task, 'decodeBlueprintData')
       .mockReturnValue({ args: { params: { opParams: { operatorTipAmount: 456n } } } });
-    jest.spyOn(SowOrderV0Dto, 'fromBlueprintCalldata').mockReturnValue('dto');
+    jest.spyOn(SowV0OrderDto, 'fromBlueprintCalldata').mockReturnValue('dto');
     const upsertSpy = jest.spyOn(TractorService, 'updateSowV0Orders').mockImplementation(() => {});
 
     const result = await TractorSowV0Task.tryAddRequisition({ blueprintHash: 123 }, 'data');
@@ -21,7 +21,7 @@ describe('TractorSowV0Task', () => {
   });
 
   test('Ignores other requisitions', async () => {
-    const dtoSpy = jest.spyOn(SowOrderV0Dto, 'fromBlueprintCalldata');
+    const dtoSpy = jest.spyOn(SowV0OrderDto, 'fromBlueprintCalldata');
 
     const result = await TractorSowV0Task.tryAddRequisition({ blueprintHash: 123 }, 'data');
 

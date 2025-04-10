@@ -1,8 +1,7 @@
 const { sequelize } = require('../repository/postgres/models');
-const TractorOrderAssembler = require('../repository/postgres/models/assemblers/tractor-order-assembler');
-const SowOrderV0Assembler = require('../repository/postgres/models/assemblers/tractor-order-sow-v0-assembler');
+const TractorOrderAssembler = require('../repository/postgres/models/assemblers/tractor/tractor-order-assembler');
+const SowOrderV0Assembler = require('../repository/postgres/models/assemblers/tractor/tractor-order-sow-v0-assembler');
 const SharedRepository = require('../repository/postgres/queries/shared-repository');
-const TractorOrderRepository = require('../repository/postgres/queries/tractor-order-repository');
 
 class TractorService {
   // Via upsert

@@ -1,4 +1,4 @@
-class SowOrderV0Dto {
+class SowV0OrderDto {
   constructor(type, d) {
     if (type === 'data') {
       this.blueprintHash = d.blueprintHash;
@@ -23,7 +23,7 @@ class SowOrderV0Dto {
       this.orderComplete = d.orderComplete;
       this.amountFunded = d.amountFunded;
       this.cascadeAmountFunded = d.cascadeAmountFunded;
-      this.sourceTokenIndices = d.sourceTokenIndices.split(',').map(BigInt);
+      this.sourceTokenIndices = d.sourceTokenIndices.split(',');
       this.totalAmountToSow = d.totalAmountToSow;
       this.minAmountToSowPerSeason = d.minAmountToSowPerSeason;
       this.maxAmountToSowPerSeason = d.maxAmountToSowPerSeason;
@@ -36,11 +36,12 @@ class SowOrderV0Dto {
   }
 
   static fromBlueprintCalldata(blueprintData) {
-    return new SowOrderV0Dto('data', blueprintData);
+    return new SowV0OrderDto('data', blueprintData);
   }
 
   static fromModel(dbModel) {
-    return new SowOrderV0Dto('db', dbModel);
+    return new SowV0OrderDto('db', dbModel);
   }
 }
-module.exports = SowOrderV0Dto;
+
+module.exports = SowV0OrderDto;

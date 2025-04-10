@@ -1,6 +1,6 @@
 const { C } = require('../../../constants/runtime-constants');
 const Interfaces = require('../../../datasources/contracts/interfaces');
-const SowOrderV0Dto = require('../../../repository/dto/tractor/SowOrderV0Dto');
+const SowV0OrderDto = require('../../../repository/dto/tractor/SowV0OrderDto');
 const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
 const TractorService = require('../../../service/tractor-service');
 
@@ -20,7 +20,7 @@ class TractorSowV0Task {
       return;
     }
 
-    const dto = SowOrderV0Dto.fromBlueprintCalldata({
+    const dto = SowV0OrderDto.fromBlueprintCalldata({
       blueprintHash: orderModel.blueprintHash,
       sowParams: sowV0Call.args.params.sowParams
     });

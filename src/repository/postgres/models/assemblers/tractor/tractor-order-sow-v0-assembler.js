@@ -1,9 +1,8 @@
-const SowOrderV0Dto = require('../../../dto/tractor/SowOrderV0Dto');
+const SowV0OrderDto = require('../../../../dto/tractor/SowV0OrderDto');
 
 class SowOrderV0Assembler {
   static toModel(orderDto) {
     return {
-      id: orderDto.id,
       blueprintHash: orderDto.blueprintHash,
       pintoSownCounter: orderDto.pintoSownCounter,
       lastExecutedSeason: orderDto.lastExecutedSeason,
@@ -23,7 +22,8 @@ class SowOrderV0Assembler {
   }
 
   static fromModel(orderModel) {
-    return SowOrderV0Dto.fromModel(orderModel);
+    return SowV0OrderDto.fromModel(orderModel);
   }
 }
+
 module.exports = SowOrderV0Assembler;
