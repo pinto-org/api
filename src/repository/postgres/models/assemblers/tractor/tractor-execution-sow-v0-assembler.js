@@ -1,6 +1,6 @@
 const SowV0ExecutionDto = require('../../../../dto/tractor/SowV0ExecutionDto');
 
-class TractorExecutionSowV0Assembler {
+class SowV0ExecutionAssembler {
   static toModel(executionDto) {
     return {
       id: executionDto.id,
@@ -19,4 +19,4 @@ class TractorExecutionSowV0Assembler {
   }
 }
 
-module.exports = TractorExecutionSowV0Assembler;
+module.exports = SowV0ExecutionAssembler;

@@ -1,6 +1,6 @@
 const SowV0OrderDto = require('../../../../dto/tractor/SowV0OrderDto');
 
-class SowOrderV0Assembler {
+class SowV0OrderAssembler {
   static toModel(orderDto) {
     return {
       blueprintHash: orderDto.blueprintHash,
@@ -26,4 +26,4 @@ class SowOrderV0Assembler {
   }
 }
 
-module.exports = SowOrderV0Assembler;
+module.exports = SowV0OrderAssembler;
