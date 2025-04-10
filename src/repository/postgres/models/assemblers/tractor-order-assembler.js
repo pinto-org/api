@@ -1,4 +1,4 @@
-const TractorOrderDto = require('../../../dto/TractorOrderDto');
+const TractorOrderDto = require('../../../dto/tractor/TractorOrderDto');
 
 class TractorOrderAssembler {
   static toModel(orderDto) {

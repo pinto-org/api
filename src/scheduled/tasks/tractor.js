@@ -1,5 +1,5 @@
 const FilterLogs = require('../../datasources/events/filter-logs');
-const TractorOrderDto = require('../../repository/dto/TractorOrderDto');
+const TractorOrderDto = require('../../repository/dto/tractor/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
 const TractorService = require('../../service/tractor-service');
 const Concurrent = require('../../utils/async/concurrent');

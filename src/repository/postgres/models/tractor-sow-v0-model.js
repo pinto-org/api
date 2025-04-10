@@ -49,6 +49,8 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
+  // TODO: fixme, the association should be to order, not execution
+
   // Associations here
   TractorSowV0.associate = (models) => {
     TractorSowV0.belongsTo(models.TractorExecution, { foreignKey: 'executionId', onDelete: 'RESTRICT' });
