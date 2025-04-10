@@ -1,4 +1,3 @@
-const { C } = require('../../constants/runtime-constants');
 const FilterLogs = require('../../datasources/events/filter-logs');
 const TractorOrderDto = require('../../repository/dto/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
@@ -17,7 +16,7 @@ const BLUEPRINTS = [TractorSowV0Task];
 class TractorTask {
   static async updateTractor() {
     let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(
-      AppMetaService.getTractorMeta,
+      AppMetaService.getTractorMeta.bind(AppMetaService),
       MAX_BLOCKS
     );
     if (!isInitialized) {
@@ -28,34 +27,44 @@ class TractorTask {
 
     // Find all PublishRequisiton and Tractor events
     const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], 28723812, 28723992);
-    // const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], lastUpdate, updateBlock); // TODO: put back
+    // const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], lastUpdate+1, updateBlock); // TODO: put back
 
-    // TODO: verify events sorted?
+    // Event processing can occur in parallel, but ensure all requisitions are created first
     await AsyncContext.sequelizeTransaction(async () => {
-      const TAG = Concurrent.tag('processTractorEvt');
-      for (const event of events) {
-        await Concurrent.run(TAG, 50, async () => {
-          if (event.name === 'PublishRequisition') {
-            this.handlePublishRequsition(event);
-          } else if (event.name === 'Tractor') {
-            this.handleTractor(event);
-          }
-        });
-      }
-      await Concurrent.allResolved(TAG);
-    });
+      await this.processEventsConcurrently(events, 'PublishRequisition', this.handlePublishRequsition.bind(this));
+      await this.processEventsConcurrently(events, 'Tractor', this.handleTractor.bind(this));
 
-    // Run specialized blueprint modules
+      // Run periodicUpdate on specialized blueprint modules
+      await Promise.all(BLUEPRINTS.map((b) => b.periodicUpdate(lastUpdate + 1, updateBlock)));
+    });
 
     return isCaughtUp;
   }
 
+  static async processEventsConcurrently(allEvents, eventName, handler) {
+    const events = allEvents.filter((e) => e.name === eventName);
+    const TAG = Concurrent.tag(eventName);
+    for (const event of events) {
+      await Concurrent.run(TAG, 50, async () => {
+        await handler(event);
+      });
+    }
+    await Concurrent.allResolved(TAG);
+  }
+
   static async handlePublishRequsition(event) {
     const dto = await TractorOrderDto.fromRequisitionEvt(event);
-    const orders = await TractorService.updateOrders([dto]);
+    const [inserted] = await TractorService.updateOrders([dto]);
 
-    // TODO: need to pass order entity here after it gets created
-    BLUEPRINTS.forEach((b) => b.tryAddRequisition(event.args.requisition.blueprint.data));
+    // Additional processing if this requisition corresponds to a known blueprint
+    for (const blueprintTask of BLUEPRINTS) {
+      const tipAmount = blueprintTask.tryAddRequisition(inserted, event.args.requisition.blueprint.data);
+      if (tipAmount) {
+        inserted.orderType = blueprintTask.orderType;
+        inserted.beanTip = tipAmount;
+        await TractorService.updateOrders([inserted]);
+      }
+    }
   }
 
   static async handleTractor(event) {

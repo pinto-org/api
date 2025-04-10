@@ -6,7 +6,8 @@ class TractorService {
   static async updateOrders(orderDtos) {
     const models = orderDtos.map((d) => TractorOrderAssembler.toModel(d));
     const updatedOrders = await TractorOrderRepository.upsertOrders(models);
-    return updatedOrders;
+    const updatedOrderDtos = updatedOrders.map((d) => TractorOrderAssembler.fromModel(d));
+    return updatedOrderDtos;
   }
 }
 module.exports = TractorService;

@@ -21,7 +21,7 @@ class DepositsTask {
 
   static async updateDeposits() {
     const { isInitialized, lastUpdate, updateBlock, isCaughtUp, meta } = await TaskRangeUtil.getUpdateInfo(
-      AppMetaService.getLambdaMeta,
+      AppMetaService.getLambdaMeta.bind(AppMetaService),
       MAX_BLOCKS
     );
     if (!isInitialized) {
