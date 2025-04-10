@@ -37,20 +37,6 @@ class DepositRepository {
     return deposits;
   }
 
-  // Inserts/Updates the given deposit rows
-  static async upsertDeposits(deposits) {
-    const TAG = Concurrent.tag('upsertDeposits');
-    for (const row of deposits) {
-      await Concurrent.run(TAG, 50, async () => {
-        await sequelize.models.Deposit.upsert(row, {
-          validate: true,
-          transaction: AsyncContext.getOrUndef('transaction')
-        });
-      });
-    }
-    await Concurrent.allResolved(TAG);
-  }
-
   static async destroyByIds(depositIds) {
     await sequelize.models.Deposit.destroy({
       where: {

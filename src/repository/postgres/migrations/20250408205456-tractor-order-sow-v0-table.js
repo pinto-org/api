@@ -5,17 +5,17 @@ const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tractor_sow_v0', {
+    await queryInterface.createTable('tractor_order_sow_v0', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true
       },
-      executionId: {
-        type: Sequelize.INTEGER,
+      blueprintHash: {
+        type: Sequelize.STRING(66),
         references: {
-          model: 'tractor_execution',
-          key: 'id'
+          model: 'tractor_order',
+          key: 'blueprintHash'
         },
         onDelete: 'RESTRICT',
         allowNull: false
@@ -46,10 +46,10 @@ module.exports = {
       ...timestamps(Sequelize)
     });
 
-    await queryInterface.addIndex('tractor_sow_v0', ['executionId']);
+    await queryInterface.addIndex('tractor_order_sow_v0', ['blueprintHash']);
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tractor_sow_v0');
+    await queryInterface.dropTable('tractor_order_sow_v0');
   }
 };

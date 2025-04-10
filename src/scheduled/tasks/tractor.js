@@ -58,7 +58,7 @@ class TractorTask {
 
     // Additional processing if this requisition corresponds to a known blueprint
     for (const blueprintTask of BLUEPRINTS) {
-      const tipAmount = blueprintTask.tryAddRequisition(inserted, event.args.requisition.blueprint.data);
+      const tipAmount = await blueprintTask.tryAddRequisition(inserted, event.args.requisition.blueprint.data);
       if (tipAmount) {
         inserted.orderType = blueprintTask.orderType;
         inserted.beanTip = tipAmount;

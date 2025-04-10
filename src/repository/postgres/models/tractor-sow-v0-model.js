@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
         autoIncrement: true
       },
-      /// TractorExecution executionId added via association below ///
+      /// TractorOrder blueprintHash added via association below ///
       /* Order state */
       ...bigintNumericColumn('pintoSownCounter', DataTypes, { allowNull: false }),
       lastExecutedSeason: {
@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('slippageRatio', DataTypes, { allowNull: false })
     },
     {
-      tableName: 'tractor_sow_v0',
+      tableName: 'tractor_order_sow_v0',
       indexes: [
         {
           fields: ['executionId']
@@ -49,11 +49,9 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  // TODO: fixme, the association should be to order, not execution
-
   // Associations here
   TractorSowV0.associate = (models) => {
-    TractorSowV0.belongsTo(models.TractorExecution, { foreignKey: 'executionId', onDelete: 'RESTRICT' });
+    TractorSowV0.belongsTo(models.TractorOrder, { foreignKey: 'blueprintHash', onDelete: 'RESTRICT' });
   };
 
   return TractorSowV0;

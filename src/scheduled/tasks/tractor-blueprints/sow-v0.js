@@ -1,7 +1,10 @@
 const { C } = require('../../../constants/runtime-constants');
 const Interfaces = require('../../../datasources/contracts/interfaces');
 const SowOrderV0Dto = require('../../../repository/dto/tractor/SowOrderV0Dto');
+const { sequelize } = require('../../../repository/postgres/models');
 const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
+const SharedRepository = require('../../../repository/postgres/queries/shared-repository');
+const TractorService = require('../../../service/tractor-service');
 
 class TractorSowV0Task {
   static orderType = TractorOrderType.SOW_V0;
@@ -12,11 +15,17 @@ class TractorSowV0Task {
   }
 
   // Invoked upon PublishRequisition. Does nothing if the requision is not of this blueprint type
-  static tryAddRequisition(orderModel, blueprintData) {
+  static async tryAddRequisition(orderModel, blueprintData) {
     // Decode data
     const sowV0Call = this.decodeBlueprintData(blueprintData);
-    const dto = SowOrderV0Dto.fromBlueprintCalldata(sowV0Call);
+    const dto = SowOrderV0Dto.fromBlueprintCalldata({
+      blueprintHash: orderModel.blueprintHash,
+      sowParams: sowV0Call.args.params.sowParams
+    });
+
     // Insert entity
+    await TractorService.updateSowV0Orders([dto]);
+
     // Return amount of tip offered
     return sowV0Call.args.params.opParams.operatorTipAmount;
   }
