@@ -11,9 +11,11 @@ const TractorSowV0Task = require('./tractor-blueprints/sow-v0');
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 2000;
 
-const BLUEPRINTS = [TractorSowV0Task];
-
 class TractorTask {
+  static knownBlueprints() {
+    return [TractorSowV0Task];
+  }
+
   static async updateTractor() {
     let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(
       AppMetaService.getTractorMeta.bind(AppMetaService),
@@ -35,7 +37,7 @@ class TractorTask {
       await this.processEventsConcurrently(events, 'Tractor', this.handleTractor.bind(this));
 
       // Run periodicUpdate on specialized blueprint modules
-      await Promise.all(BLUEPRINTS.map((b) => b.periodicUpdate(lastUpdate + 1, updateBlock)));
+      await Promise.all(this.knownBlueprints().map((b) => b.periodicUpdate(lastUpdate + 1, updateBlock)));
     });
 
     return isCaughtUp;
@@ -57,7 +59,7 @@ class TractorTask {
     const [inserted] = await TractorService.updateOrders([dto]);
 
     // Additional processing if this requisition corresponds to a known blueprint
-    for (const blueprintTask of BLUEPRINTS) {
+    for (const blueprintTask of this.knownBlueprints()) {
       const tipAmount = await blueprintTask.tryAddRequisition(inserted, event.args.requisition.blueprint.data);
       if (tipAmount) {
         inserted.orderType = blueprintTask.orderType;

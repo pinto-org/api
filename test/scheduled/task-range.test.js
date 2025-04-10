@@ -13,13 +13,14 @@ describe('TaskRangeUtil', () => {
     jest.spyOn(ChainUtil, 'blocksPerInterval').mockReturnValue(BUFFER);
   });
 
-  test('Noop if task uninitialized', async () => {
+  test('Indicate if task uninitialized', async () => {
     const results = await TaskRangeUtil.getUpdateInfo(async () => ({ lastUpdate: null }), 100);
-    expect(results).toBeUndefined();
+    expect(results.isInitialized).toBeFalsy();
   });
 
   test('Assigns range when task catches up', async () => {
     const results = await TaskRangeUtil.getUpdateInfo(async () => ({ lastUpdate: 500, other: 5 }), CHAIN_HEAD * 2);
+    expect(results.isInitialized).toBeTruthy();
     expect(results.lastUpdate).toBe(500);
     expect(results.updateBlock).toBe(CHAIN_HEAD - BUFFER);
     expect(results.isCaughtUp).toBe(true);
@@ -28,6 +29,7 @@ describe('TaskRangeUtil', () => {
 
   test('Assigns range when task stays behind', async () => {
     const results = await TaskRangeUtil.getUpdateInfo(async () => ({ lastUpdate: 750 }), 25);
+    expect(results.isInitialized).toBeTruthy();
     expect(results.lastUpdate).toBe(750);
     expect(results.updateBlock).toBe(775);
     expect(results.isCaughtUp).toBe(false);

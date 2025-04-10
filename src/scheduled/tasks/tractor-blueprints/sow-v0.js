@@ -1,9 +1,7 @@
 const { C } = require('../../../constants/runtime-constants');
 const Interfaces = require('../../../datasources/contracts/interfaces');
 const SowOrderV0Dto = require('../../../repository/dto/tractor/SowOrderV0Dto');
-const { sequelize } = require('../../../repository/postgres/models');
 const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
-const SharedRepository = require('../../../repository/postgres/queries/shared-repository');
 const TractorService = require('../../../service/tractor-service');
 
 class TractorSowV0Task {
@@ -18,6 +16,10 @@ class TractorSowV0Task {
   static async tryAddRequisition(orderModel, blueprintData) {
     // Decode data
     const sowV0Call = this.decodeBlueprintData(blueprintData);
+    if (!sowV0Call) {
+      return;
+    }
+
     const dto = SowOrderV0Dto.fromBlueprintCalldata({
       blueprintHash: orderModel.blueprintHash,
       sowParams: sowV0Call.args.params.sowParams
