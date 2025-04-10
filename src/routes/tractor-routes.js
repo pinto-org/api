@@ -41,6 +41,8 @@ router.post('/orders', async (ctx) => {
     throw new InputError('Invalid type provided for body parameter.');
   }
 
+  body.publishedBetween = body.publishedBetween.map((v) => new Date(v));
+  body.validBetween = body.validBetween.map((v) => new Date(v));
   dateRangeValidation(body.publishedBetween);
   dateRangeValidation(body.validBetween);
 
@@ -72,6 +74,7 @@ router.post('/executions', async (ctx) => {
     throw new InputError('Invalid type provided for body parameter.');
   }
 
+  body.executedBetween = body.executedBetween.map((v) => new Date(v));
   dateRangeValidation(body.executedBetween);
 
   // TODO: validate blueprintParams (should go alongside whatever special module exists for each order type)
