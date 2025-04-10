@@ -6,6 +6,14 @@ const SowV0OrderAssembler = require('../repository/postgres/models/assemblers/tr
 const SharedService = require('./shared-service');
 
 class TractorService {
+  static async getOrders(request) {
+    //
+  }
+
+  static async getExecutions(request) {
+    //
+  }
+
   // Via upsert
   static async updateOrders(orderDtos) {
     SharedService.genericEntityUpdate(orderDtos, sequelize.models.TractorOrder, TractorOrderAssembler, true);

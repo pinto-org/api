@@ -4,6 +4,8 @@ const SowV0OrderDto = require('../../../repository/dto/tractor/SowV0OrderDto');
 const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
 const TractorService = require('../../../service/tractor-service');
 
+// TODO: consider whether this best lives elsewhere/not as a "Task" being that other logic
+// will be relevant. For example, filtering orders or executions (although that will likely be done at repository level)
 class TractorSowV0Task {
   static orderType = TractorOrderType.SOW_V0;
 
