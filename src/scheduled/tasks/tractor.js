@@ -38,20 +38,11 @@ class TractorTask {
 
       // Run periodicUpdate on specialized blueprint modules
       await Promise.all(this.knownBlueprints().map((b) => b.periodicUpdate(lastUpdate + 1, updateBlock)));
+
+      await AppMetaService.setLastTractorUpdate(updateBlock);
     });
 
     return isCaughtUp;
-  }
-
-  static async processEventsConcurrently(allEvents, eventName, handler) {
-    const events = allEvents.filter((e) => e.name === eventName);
-    const TAG = Concurrent.tag(eventName);
-    for (const event of events) {
-      await Concurrent.run(TAG, 50, async () => {
-        await handler(event);
-      });
-    }
-    await Concurrent.allResolved(TAG);
   }
 
   static async handlePublishRequsition(event) {
@@ -71,6 +62,17 @@ class TractorTask {
 
   static async handleTractor(event) {
     // Find all events for the txn and isolate to within log range
+  }
+
+  static async processEventsConcurrently(allEvents, eventName, handler) {
+    const events = allEvents.filter((e) => e.name === eventName);
+    const TAG = Concurrent.tag(eventName);
+    for (const event of events) {
+      await Concurrent.run(TAG, 50, async () => {
+        await handler(event);
+      });
+    }
+    await Concurrent.allResolved(TAG);
   }
 }
 module.exports = TractorTask;
