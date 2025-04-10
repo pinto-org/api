@@ -2,6 +2,9 @@ const { C } = require('../../constants/runtime-constants');
 const FilterLogs = require('../../datasources/events/filter-logs');
 const TractorOrderDto = require('../../repository/dto/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
+const TractorService = require('../../service/tractor-service');
+const Concurrent = require('../../utils/async/concurrent');
+const AsyncContext = require('../../utils/async/context');
 const Log = require('../../utils/logging');
 const TaskRangeUtil = require('../util/task-range');
 const TractorSowV0Task = require('./tractor-blueprints/sow-v0');
@@ -26,13 +29,21 @@ class TractorTask {
     // Find all PublishRequisiton and Tractor events
     const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], 28723812, 28723992);
     // const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], lastUpdate, updateBlock); // TODO: put back
-    const publishRequisitionEvts = events.filter((e) => e.name === 'PublishRequisition');
-    const tractorEvts = events.filter((e) => e.name === 'Tractor');
 
-    publishRequisitionEvts.forEach((e) => this.handlePublishRequsition(e));
-    tractorEvts.forEach((e) => this.handleTractor(e));
-
-    let i = 0;
+    // TODO: verify events sorted?
+    await AsyncContext.sequelizeTransaction(async () => {
+      const TAG = Concurrent.tag('processTractorEvt');
+      for (const event of events) {
+        await Concurrent.run(TAG, 50, async () => {
+          if (event.name === 'PublishRequisition') {
+            this.handlePublishRequsition(event);
+          } else if (event.name === 'Tractor') {
+            this.handleTractor(event);
+          }
+        });
+      }
+      await Concurrent.allResolved(TAG);
+    });
 
     // Run specialized blueprint modules
 
@@ -41,6 +52,8 @@ class TractorTask {
 
   static async handlePublishRequsition(event) {
     const dto = await TractorOrderDto.fromRequisitionEvt(event);
+    const orders = await TractorService.updateOrders([dto]);
+
     // TODO: need to pass order entity here after it gets created
     BLUEPRINTS.forEach((b) => b.tryAddRequisition(event.args.requisition.blueprint.data));
   }

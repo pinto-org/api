@@ -1,4 +1,4 @@
-const { bigintNumericColumn } = require('../util/sequelize-util');
+const { bigintNumericColumn, largeBigintTextColumn } = require('../util/sequelize-util');
 const { TractorOrderType } = require('./types/types');
 
 module.exports = (sequelize, DataTypes) => {
@@ -27,9 +27,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: false
       },
-      ...bigintNumericColumn('maxNonce', DataTypes, { allowNull: false }),
-      // TODO: will need special handling for start/end time to accommodate excessively large/out of range values
-      // which could be emitted onchain outside of the typical ui flow
+      ...largeBigintTextColumn('maxNonce', DataTypes, { allowNull: false }),
       startTime: {
         type: DataTypes.DATE,
         allowNull: false

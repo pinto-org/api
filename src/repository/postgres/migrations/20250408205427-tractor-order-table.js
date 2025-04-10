@@ -1,7 +1,7 @@
 'use strict';
 
 const { TractorOrderType } = require('../models/types/types');
-const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
+const { timestamps, bigintNumericColumn, largeBigintTextColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -28,7 +28,7 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false
       },
-      ...bigintNumericColumn('maxNonce', Sequelize, { allowNull: false }),
+      ...largeBigintTextColumn('maxNonce', Sequelize, { allowNull: false }),
       startTime: {
         type: Sequelize.DATE,
         allowNull: false
