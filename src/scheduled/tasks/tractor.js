@@ -29,13 +29,18 @@ class TractorTask {
     }
     Log.info(`Updating tractor for block range [${lastUpdate}, ${updateBlock}]`);
 
-    // Find all PublishRequisiton and Tractor events
-    const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], 28768735, 28768935);
-    // const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], lastUpdate+1, updateBlock); // TODO: put back
+    // Find all PublishRequisition and Tractor events
+    const events = await FilterLogs.getBeanstalkEvents(
+      ['PublishRequisition', 'CancelBlueprint', 'Tractor'],
+      28768735,
+      28768935
+    );
+    // const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'CancelBlueprint', 'Tractor'], lastUpdate+1, updateBlock); // TODO: put back
 
     // Event processing can occur in parallel, but ensure all requisitions are created first
     await AsyncContext.sequelizeTransaction(async () => {
       await this.processEventsConcurrently(events, 'PublishRequisition', this.handlePublishRequsition.bind(this));
+      await this.processEventsConcurrently(events, 'CancelBlueprint', this.handleCancelBlueprint.bind(this));
       await this.processEventsConcurrently(events, 'Tractor', this.handleTractor.bind(this));
 
       // Run periodicUpdate on specialized blueprint modules
@@ -60,6 +65,10 @@ class TractorTask {
         await TractorService.updateOrders([inserted]);
       }
     }
+  }
+
+  static async handleCancelBlueprint(event) {
+    await TractorService.cancelOrder(event.args.blueprintHash);
   }
 
   static async handleTractor(event) {

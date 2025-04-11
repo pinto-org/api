@@ -23,5 +23,12 @@ class TractorOrderRepository {
     const { rows: orders, count } = await sequelize.models.TractorOrder.findAndCountAll(options);
     return { orders, total: count };
   }
+
+  static async findByBlueprintHash(blueprintHash) {
+    return await sequelize.models.TractorOrder.findOne({
+      where: { blueprintHash },
+      transaction: AsyncContext.getOrUndef('transaction')
+    });
+  }
 }
 module.exports = TractorOrderRepository;

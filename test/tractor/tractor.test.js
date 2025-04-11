@@ -16,7 +16,7 @@ describe('TractorTask', () => {
 
     const retval = await TractorTask.updateTractor();
 
-    expect(retval).not.toBeDefined();
+    expect(retval).toBe(false);
     expect(filterLogSpy).not.toHaveBeenCalled();
   });
 
@@ -31,23 +31,26 @@ describe('TractorTask', () => {
       });
       jest.spyOn(FilterLogs, 'getBeanstalkEvents').mockResolvedValue([
         { name: 'PublishRequisition', value: 1 },
-        { name: 'Tractor', value: 2 },
-        { name: 'Tractor', value: 3 }
+        { name: 'CancelBlueprint', value: 2 },
+        { name: 'Tractor', value: 3 },
+        { name: 'Tractor', value: 4 }
       ]);
     });
 
     test('Passes events to correct handlers', async () => {
       jest.spyOn(TractorTask, 'knownBlueprints').mockReturnValue([]);
       const requisitionSpy = jest.spyOn(TractorTask, 'handlePublishRequsition').mockImplementation(() => {});
+      const cancelSpy = jest.spyOn(TractorTask, 'handleCancelBlueprint').mockImplementation(() => {});
       const tractorSpy = jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
       const metaSpy = jest.spyOn(AppMetaService, 'setLastTractorUpdate').mockImplementation(() => {});
 
       const retval = await TractorTask.updateTractor();
 
-      expect(retval).toBe(false);
+      expect(retval).toBe(true);
       expect(requisitionSpy).toHaveBeenCalledWith(expect.objectContaining({ value: 1 }));
-      expect(tractorSpy).toHaveBeenCalledWith(expect.objectContaining({ value: 2 }));
+      expect(cancelSpy).toHaveBeenCalledWith(expect.objectContaining({ value: 2 }));
       expect(tractorSpy).toHaveBeenCalledWith(expect.objectContaining({ value: 3 }));
+      expect(tractorSpy).toHaveBeenCalledWith(expect.objectContaining({ value: 4 }));
       expect(metaSpy).toHaveBeenCalledWith(4000);
     });
 
@@ -57,6 +60,7 @@ describe('TractorTask', () => {
       };
       jest.spyOn(TractorTask, 'knownBlueprints').mockReturnValue([blueprintSpy]);
       jest.spyOn(TractorTask, 'handlePublishRequsition').mockImplementation(() => {});
+      jest.spyOn(TractorTask, 'handleCancelBlueprint').mockImplementation(() => {});
       jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
       jest.spyOn(AppMetaService, 'setLastTractorUpdate').mockImplementation(() => {});
 

@@ -14,7 +14,8 @@ class TractorOrderAssembler {
       signature: orderDto.signature,
       publishedTimestamp: orderDto.publishedTimestamp,
       publishedBlock: orderDto.publishedBlock,
-      beanTip: orderDto.beanTip
+      beanTip: orderDto.beanTip,
+      cancelled: orderDto.cancelled
     };
   }
 

@@ -131,6 +131,7 @@ export type TractorOrderRequest = {
   publisher?: string;
   publishedBetween?: [Date, Date];
   validBetween?: [Date, Date];
+  cancelled?: boolean;
   blueprintParams?: BlueprintOrderRequestParams; // TODO: if this is provided, orderType must also be provided
   // Pagination
   limit?: number;

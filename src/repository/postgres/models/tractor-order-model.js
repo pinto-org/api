@@ -51,7 +51,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       // Amount of tip in beans (if applicable).
       // Tips aren't required or guaranteed to be in bean, but should be in practice.
-      ...bigintNumericColumn('beanTip', DataTypes, { allowNull: true })
+      ...bigintNumericColumn('beanTip', DataTypes, { allowNull: true }),
+      cancelled: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      }
     },
     {
       tableName: 'tractor_order',

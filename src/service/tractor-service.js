@@ -14,6 +14,7 @@ class TractorService {
    * @returns {Promise<import('../../types/types').TractorOrdersResult>}
    */
   static async getOrders(request) {
+    // TODO: add another param, `isCancelled` which checks whether the order was cancelled (new field to be added)
     // Retrieve all matching orders
     const criteriaList = [];
     if (request.orderType) {
@@ -49,6 +50,9 @@ class TractorService {
         ]
       });
     }
+    if (request.cancelled !== undefined) {
+      criteriaList.push({ cancelled: request.cancelled });
+    }
     request.limit ??= 100;
 
     const { orders, total, lastUpdated } = await AsyncContext.sequelizeTransaction(async () => {
@@ -64,8 +68,21 @@ class TractorService {
 
     const orderDtos = orders.map((d) => TractorOrderAssembler.fromModel(d));
 
+    // Group orders by type
+    const ordersByType = orderDtos.reduce((acc, order) => {
+      const type = order.orderType || 'UNKNOWN';
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(order);
+      return acc;
+    }, {});
+
     // If it is a known blueprint, retrieve the associated order data (batch by order type)
-    // .blueprintData = ?
+    for (const type in ordersByType) {
+      //
+      // .blueprintData = ?
+    }
 
     return {
       lastUpdated,
@@ -118,6 +135,16 @@ class TractorService {
       SowV0ExecutionAssembler,
       true
     );
+  }
+
+  // Sets the cancelled field to true
+  static async cancelOrder(blueprintHash) {
+    const order = await TractorOrderRepository.findByBlueprintHash(blueprintHash);
+    if (order) {
+      const dto = TractorOrderAssembler.fromModel(order);
+      dto.cancelled = true;
+      await this.updateOrders([dto]);
+    }
   }
 }
 module.exports = TractorService;

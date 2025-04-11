@@ -36,7 +36,8 @@ router.post('/orders', async (ctx) => {
     (body.blueprintHash && typeof body.blueprintHash !== 'string') ||
     (body.publisher && typeof body.publisher !== 'string') ||
     (body.limit && typeof body.limit !== 'number') ||
-    (body.skip && typeof body.skip !== 'number')
+    (body.skip && typeof body.skip !== 'number') ||
+    (body.cancelled !== undefined && typeof body.cancelled !== 'boolean')
   ) {
     throw new InputError('Invalid type provided for body parameter.');
   }

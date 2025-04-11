@@ -51,6 +51,11 @@ module.exports = {
         allowNull: false
       },
       ...bigintNumericColumn('beanTip', Sequelize, { allowNull: true }),
+      cancelled: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
       ...timestamps(Sequelize)
     });
 
