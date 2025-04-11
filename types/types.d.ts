@@ -131,7 +131,7 @@ export type TractorOrderRequest = {
   publisher?: string;
   publishedBetween?: [Date, Date];
   validBetween?: [Date, Date];
-  blueprintParams?: BlueprintOrderRequestParams;
+  blueprintParams?: BlueprintOrderRequestParams; // TODO: if this is provided, orderType must also be provided
   // Pagination
   limit?: number;
   skip?: number;
@@ -143,7 +143,7 @@ export type TractorExecutionRequest = {
   publisher?: string;
   operator?: string;
   executedBetween?: [Date, Date];
-  blueprintParams?: BlueprintExecutionRequestParams;
+  blueprintParams?: BlueprintExecutionRequestParams; // TODO: if this is provided, orderType must also be provided
   // Pagination
   limit?: number;
   skip?: number;
@@ -163,12 +163,12 @@ export type TractorOrdersResult = {
   // Block number
   lastUpdated: number;
   orders: TractorOrderResponse[];
-  total: number;
+  totalRecords: number;
 };
 
 export type TractorExecutionsResult = {
   // Block number
   lastUpdated: number;
   executions: TractorExecutionResponse[];
-  total: number;
+  totalRecords: number;
 };

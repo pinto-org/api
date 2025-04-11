@@ -28,7 +28,7 @@ router.post('/orders', async (ctx) => {
   /** @type {import('../../types/types').TractorOrderRequest} */
   const body = ctx.request.body;
 
-  if (body.orderType && ![...Object.keys(TractorOrderType), 'KNOWN', 'UKNOWN'].includes(body.orderType)) {
+  if (body.orderType && ![...Object.keys(TractorOrderType), 'KNOWN', 'UNKNOWN'].includes(body.orderType)) {
     throw new InputError('Invalid orderType provided.');
   }
 
@@ -41,10 +41,14 @@ router.post('/orders', async (ctx) => {
     throw new InputError('Invalid type provided for body parameter.');
   }
 
-  body.publishedBetween = body.publishedBetween.map((v) => new Date(v));
-  body.validBetween = body.validBetween.map((v) => new Date(v));
+  body.publishedBetween = body.publishedBetween?.map((v) => new Date(v));
+  body.validBetween = body.validBetween?.map((v) => new Date(v));
   dateRangeValidation(body.publishedBetween);
   dateRangeValidation(body.validBetween);
+
+  if (body.blueprintParams && !Object.keys(TractorOrderType).includes(body.orderType)) {
+    throw new InputError('orderType is required when blueprintHash is specified.');
+  }
 
   // TODO: validate blueprintParams (should go alongside whatever special module exists for each order type)
 
@@ -60,7 +64,7 @@ router.post('/executions', async (ctx) => {
   /** @type {import('../../types/types').TractorExecutionRequest} */
   const body = ctx.request.body;
 
-  if (body.orderType && ![...Object.keys(TractorOrderType), 'KNOWN', 'UKNOWN'].includes(body.orderType)) {
+  if (body.orderType && ![...Object.keys(TractorOrderType), 'KNOWN', 'UNKNOWN'].includes(body.orderType)) {
     throw new InputError('Invalid orderType provided.');
   }
 
@@ -74,8 +78,12 @@ router.post('/executions', async (ctx) => {
     throw new InputError('Invalid type provided for body parameter.');
   }
 
-  body.executedBetween = body.executedBetween.map((v) => new Date(v));
+  body.executedBetween = body.executedBetween?.map((v) => new Date(v));
   dateRangeValidation(body.executedBetween);
+
+  if (body.blueprintParams && !Object.keys(TractorOrderType).includes(body.orderType)) {
+    throw new InputError('orderType is required when blueprintHash is specified.');
+  }
 
   // TODO: validate blueprintParams (should go alongside whatever special module exists for each order type)
 
