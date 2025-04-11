@@ -16,12 +16,17 @@ class TractorService {
 
   // Via upsert
   static async updateOrders(orderDtos) {
-    SharedService.genericEntityUpdate(orderDtos, sequelize.models.TractorOrder, TractorOrderAssembler, true);
+    return await SharedService.genericEntityUpdate(
+      orderDtos,
+      sequelize.models.TractorOrder,
+      TractorOrderAssembler,
+      true
+    );
   }
 
   // Via upsert
   static async updateExecutions(executionDtos) {
-    SharedService.genericEntityUpdate(
+    return await SharedService.genericEntityUpdate(
       executionDtos,
       sequelize.models.TractorExecution,
       TractorExecutionAssembler,
@@ -31,12 +36,17 @@ class TractorService {
 
   // Via upsert
   static async updateSowV0Orders(orderDtos) {
-    SharedService.genericEntityUpdate(orderDtos, sequelize.models.TractorOrderSowV0, SowV0OrderAssembler, true);
+    return await SharedService.genericEntityUpdate(
+      orderDtos,
+      sequelize.models.TractorOrderSowV0,
+      SowV0OrderAssembler,
+      true
+    );
   }
 
   // Via upsert
   static async updateSowV0Executions(executionDtos) {
-    SharedService.genericEntityUpdate(
+    return await SharedService.genericEntityUpdate(
       executionDtos,
       sequelize.models.TractorExecutionSowV0,
       SowV0ExecutionAssembler,

@@ -41,7 +41,9 @@ class Concurrent {
   }
 
   static tag(name) {
-    return `${name}-${Date.now()}`;
+    const timestamp = Date.now();
+    const randomNum = Math.floor(Math.random() * 100000);
+    return `${name}-${timestamp}-${randomNum}`;
   }
 
   static allResolved(id) {

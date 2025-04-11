@@ -29,7 +29,7 @@ class TractorTask {
     Log.info(`Updating tractor for block range [${lastUpdate}, ${updateBlock}]`);
 
     // Find all PublishRequisiton and Tractor events
-    const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], 28723812, 28723992);
+    const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], 28768735, 28768935);
     // const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'Tractor'], lastUpdate+1, updateBlock); // TODO: put back
 
     // Event processing can occur in parallel, but ensure all requisitions are created first

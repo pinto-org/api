@@ -1,3 +1,5 @@
+const SharedRepository = require('../repository/postgres/queries/shared-repository');
+
 class SharedService {
   // Given dtos and an assembler, updates the underlying entities via upsert.
   static async genericEntityUpdate(dtos, model, assembler, returning) {
