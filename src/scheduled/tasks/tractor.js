@@ -13,6 +13,7 @@ const MAX_BLOCKS = 2000;
 
 class TractorTask {
   static knownBlueprints() {
+    // TODO: expand this logic to associate the name of an order to a task or other related module
     return [TractorSowV0Task];
   }
 

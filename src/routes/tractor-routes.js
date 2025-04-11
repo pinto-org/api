@@ -47,7 +47,7 @@ router.post('/orders', async (ctx) => {
   dateRangeValidation(body.validBetween);
 
   if (body.blueprintParams && !Object.keys(TractorOrderType).includes(body.orderType)) {
-    throw new InputError('orderType is required when blueprintHash is specified.');
+    throw new InputError('orderType is required when blueprintParams is specified.');
   }
 
   // TODO: validate blueprintParams (should go alongside whatever special module exists for each order type)
@@ -82,7 +82,7 @@ router.post('/executions', async (ctx) => {
   dateRangeValidation(body.executedBetween);
 
   if (body.blueprintParams && !Object.keys(TractorOrderType).includes(body.orderType)) {
-    throw new InputError('orderType is required when blueprintHash is specified.');
+    throw new InputError('orderType is required when blueprintParams is specified.');
   }
 
   // TODO: validate blueprintParams (should go alongside whatever special module exists for each order type)

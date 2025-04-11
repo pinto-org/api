@@ -29,17 +29,24 @@ class TractorService {
     if (request.publishedBetween) {
       criteriaList.push({
         publishedTimestamp: {
-          $gte: request.publishedBetween[0],
-          $lte: request.publishedBetween[1]
+          [Sequelize.Op.between]: request.publishedBetween
         }
       });
     }
     if (request.validBetween) {
       criteriaList.push({
-        validUntil: {
-          $gte: request.validBetween[0],
-          $lte: request.validBetween[1]
-        }
+        [Sequelize.Op.and]: [
+          {
+            startTime: {
+              [Sequelize.Op.lte]: request.validBetween[1]
+            }
+          },
+          {
+            endTime: {
+              [Sequelize.Op.gte]: request.validBetween[0]
+            }
+          }
+        ]
       });
     }
     request.limit ??= 100;
