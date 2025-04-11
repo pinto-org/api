@@ -1,3 +1,4 @@
+const TractorConstants = require('../../src/constants/tractor');
 const FilterLogs = require('../../src/datasources/events/filter-logs');
 const TractorOrderDto = require('../../src/repository/dto/tractor/TractorOrderDto');
 const TractorTask = require('../../src/scheduled/tasks/tractor');
@@ -38,7 +39,7 @@ describe('TractorTask', () => {
     });
 
     test('Passes events to correct handlers', async () => {
-      jest.spyOn(TractorTask, 'knownBlueprints').mockReturnValue([]);
+      jest.spyOn(TractorConstants, 'knownBlueprints').mockReturnValue({});
       const requisitionSpy = jest.spyOn(TractorTask, 'handlePublishRequsition').mockImplementation(() => {});
       const cancelSpy = jest.spyOn(TractorTask, 'handleCancelBlueprint').mockImplementation(() => {});
       const tractorSpy = jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
@@ -58,7 +59,7 @@ describe('TractorTask', () => {
       const blueprintSpy = {
         periodicUpdate: jest.fn().mockImplementation(() => {})
       };
-      jest.spyOn(TractorTask, 'knownBlueprints').mockReturnValue([blueprintSpy]);
+      jest.spyOn(TractorConstants, 'knownBlueprints').mockReturnValue({ a: blueprintSpy });
       jest.spyOn(TractorTask, 'handlePublishRequsition').mockImplementation(() => {});
       jest.spyOn(TractorTask, 'handleCancelBlueprint').mockImplementation(() => {});
       jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
@@ -77,7 +78,7 @@ describe('TractorTask', () => {
       };
       jest.spyOn(TractorOrderDto, 'fromRequisitionEvt').mockResolvedValue('dto');
       const upsertSpy = jest.spyOn(TractorService, 'updateOrders').mockResolvedValue(['model']);
-      jest.spyOn(TractorTask, 'knownBlueprints').mockReturnValue([]);
+      jest.spyOn(TractorConstants, 'knownBlueprints').mockReturnValue({});
 
       await TractorTask.handlePublishRequsition(event);
 
@@ -99,7 +100,7 @@ describe('TractorTask', () => {
       };
       jest.spyOn(TractorOrderDto, 'fromRequisitionEvt').mockResolvedValue('dto');
       const upsertSpy = jest.spyOn(TractorService, 'updateOrders').mockResolvedValue([{ model: true }]);
-      jest.spyOn(TractorTask, 'knownBlueprints').mockReturnValue([blueprintSpy]);
+      jest.spyOn(TractorConstants, 'knownBlueprints').mockReturnValue({ a: blueprintSpy });
 
       await TractorTask.handlePublishRequsition(event);
 

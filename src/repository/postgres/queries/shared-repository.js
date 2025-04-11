@@ -2,6 +2,13 @@ const Concurrent = require('../../../utils/async/concurrent');
 const AsyncContext = require('../../../utils/async/context');
 
 class SharedRepository {
+  // Retrieves all entities matching the criteria
+  static async genericFind(model, criteria) {
+    return await model.findAll({
+      where: criteria,
+      transaction: AsyncContext.getOrUndef('transaction')
+    });
+  }
   // Upserts entities for any model. Uses the active transaction
   static async genericUpsert(model, values, returning) {
     const upserted = [];

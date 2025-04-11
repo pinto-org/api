@@ -1,3 +1,4 @@
+const TractorConstants = require('../../constants/tractor');
 const FilterLogs = require('../../datasources/events/filter-logs');
 const TractorOrderDto = require('../../repository/dto/tractor/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
@@ -6,17 +7,11 @@ const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
 const Log = require('../../utils/logging');
 const TaskRangeUtil = require('../util/task-range');
-const TractorSowV0Task = require('./tractor-blueprints/sow-v0');
 
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 2000;
 
 class TractorTask {
-  static knownBlueprints() {
-    // TODO: expand this logic to associate the name of an order to a task or other related module
-    return [TractorSowV0Task];
-  }
-
   // Returns true if the task can be called again immediately
   static async updateTractor() {
     let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(
@@ -32,8 +27,8 @@ class TractorTask {
     // Find all PublishRequisition and Tractor events
     const events = await FilterLogs.getBeanstalkEvents(
       ['PublishRequisition', 'CancelBlueprint', 'Tractor'],
-      28768735,
-      28768935
+      28800192,
+      28802192
     );
     // const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'CancelBlueprint', 'Tractor'], lastUpdate+1, updateBlock); // TODO: put back
 
@@ -44,7 +39,9 @@ class TractorTask {
       await this.processEventsConcurrently(events, 'Tractor', this.handleTractor.bind(this));
 
       // Run periodicUpdate on specialized blueprint modules
-      await Promise.all(this.knownBlueprints().map((b) => b.periodicUpdate(lastUpdate + 1, updateBlock)));
+      await Promise.all(
+        Object.values(TractorConstants.knownBlueprints()).map((b) => b.periodicUpdate(lastUpdate + 1, updateBlock))
+      );
 
       await AppMetaService.setLastTractorUpdate(updateBlock);
     });
@@ -57,7 +54,7 @@ class TractorTask {
     const [inserted] = await TractorService.updateOrders([dto]);
 
     // Additional processing if this requisition corresponds to a known blueprint
-    for (const blueprintTask of this.knownBlueprints()) {
+    for (const blueprintTask of Object.values(TractorConstants.knownBlueprints())) {
       const tipAmount = await blueprintTask.tryAddRequisition(inserted, event.args.requisition.blueprint.data);
       if (tipAmount) {
         inserted.orderType = blueprintTask.orderType;

@@ -1,3 +1,4 @@
+const TractorConstants = require('../constants/tractor');
 const { sequelize, Sequelize } = require('../repository/postgres/models');
 const TractorExecutionAssembler = require('../repository/postgres/models/assemblers/tractor/tractor-execution-assembler');
 const SowV0ExecutionAssembler = require('../repository/postgres/models/assemblers/tractor/tractor-execution-sow-v0-assembler');
@@ -14,7 +15,6 @@ class TractorService {
    * @returns {Promise<import('../../types/types').TractorOrdersResult>}
    */
   static async getOrders(request) {
-    // TODO: add another param, `isCancelled` which checks whether the order was cancelled (new field to be added)
     // Retrieve all matching orders
     const criteriaList = [];
     if (request.orderType) {
@@ -80,8 +80,24 @@ class TractorService {
 
     // If it is a known blueprint, retrieve the associated order data (batch by order type)
     for (const type in ordersByType) {
-      //
-      // .blueprintData = ?
+      const service = TractorConstants.knownBlueprints()[type];
+      if (service) {
+        // Generic retrieval of all blueprint data matching these hashes
+        const blueprintHashes = ordersByType[type].map((d) => d.blueprintHash);
+        const blueprintData = await SharedService.genericEntityRetrieval(service.orderModel, service.orderAssembler, {
+          blueprintHash: { [Sequelize.Op.in]: blueprintHashes }
+        });
+
+        const dataByHash = blueprintData.reduce((acc, d) => {
+          acc[d.blueprintHash] = d;
+          return acc;
+        }, {});
+
+        // Attach the blueprint specific dto to the order dto
+        for (const order of ordersByType[type]) {
+          order.blueprintData = dataByHash[order.blueprintHash];
+        }
+      }
     }
 
     return {

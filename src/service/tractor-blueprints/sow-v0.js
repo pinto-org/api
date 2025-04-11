@@ -1,13 +1,18 @@
-const { C } = require('../../../constants/runtime-constants');
-const Interfaces = require('../../../datasources/contracts/interfaces');
-const SowV0OrderDto = require('../../../repository/dto/tractor/SowV0OrderDto');
-const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
-const TractorService = require('../../../service/tractor-service');
+const { C } = require('../../constants/runtime-constants');
+const Interfaces = require('../../datasources/contracts/interfaces');
+const SowV0OrderDto = require('../../repository/dto/tractor/SowV0OrderDto');
+const { sequelize } = require('../../repository/postgres/models');
+const SowV0ExecutionAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-execution-sow-v0-assembler');
+const SowV0OrderAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-order-sow-v0-assembler');
+const { TractorOrderType } = require('../../repository/postgres/models/types/types');
+const TractorService = require('../tractor-service');
 
-// TODO: consider whether this best lives elsewhere/not as a "Task" being that other logic
-// will be relevant. For example, filtering orders or executions (although that will likely be done at repository level)
-class TractorSowV0Task {
+class TractorSowV0Service {
   static orderType = TractorOrderType.SOW_V0;
+  static orderModel = sequelize.models.TractorOrderSowV0;
+  static orderAssembler = SowV0OrderAssembler;
+  static executionModel = sequelize.models.TractorExecutionSowV0;
+  static executionAssembler = SowV0ExecutionAssembler;
 
   // TractorTask will request periodic update to entities for this blueprint
   static async periodicUpdate(fromBlock, toBlock) {
@@ -66,4 +71,4 @@ class TractorSowV0Task {
     }
   }
 }
-module.exports = TractorSowV0Task;
+module.exports = TractorSowV0Service;

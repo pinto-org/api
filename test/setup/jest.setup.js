@@ -29,7 +29,17 @@ jest.mock('../../src/repository/postgres/models/index', () => {
       transaction: jest.fn().mockResolvedValue({
         commit: jest.fn(),
         rollback: jest.fn()
-      })
+      }),
+      models: {
+        Meta: {},
+        Token: {},
+        Deposit: {},
+        Yield: {},
+        TractorOrder: {},
+        TractorExecution: {},
+        TractorOrderSowV0: {},
+        TractorExecutionSowV0: {}
+      }
     },
     Sequelize: {
       Op: {

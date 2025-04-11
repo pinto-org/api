@@ -15,8 +15,8 @@ class TractorOrderDto {
       this.publishedTimestamp = null; // Needs async, will be set outside
       this.publishedBlock = d.rawLog.blockNumber;
       this.beanTip = null; // Will be updated later if this is a known blueprint and supports tips
-      this.blueprintData = null;
       this.cancelled = false; // Default to false for new orders
+      this.blueprintData = null;
     } else if (type === 'db') {
       this.blueprintHash = d.blueprintHash;
       this.orderType = d.orderType;
@@ -30,8 +30,8 @@ class TractorOrderDto {
       this.publishedTimestamp = d.publishedTimestamp;
       this.publishedBlock = d.publishedBlock;
       this.beanTip = d.beanTip;
-      this.blueprintData = null; // TBD, if d can include the associated blueprint order data
       this.cancelled = d.cancelled;
+      this.blueprintData = null; // TBD, if d can include the associated blueprint order data
     }
   }
 
