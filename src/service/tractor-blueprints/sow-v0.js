@@ -6,6 +6,8 @@ const { sequelize, Sequelize } = require('../../repository/postgres/models');
 const SowV0ExecutionAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-execution-sow-v0-assembler');
 const SowV0OrderAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-order-sow-v0-assembler');
 const { TractorOrderType } = require('../../repository/postgres/models/types/types');
+const { fromBigInt } = require('../../utils/number');
+const PriceService = require('../price-service');
 
 class TractorSowV0Service {
   static orderType = TractorOrderType.SOW_V0;
@@ -41,10 +43,22 @@ class TractorSowV0Service {
   }
 
   // Invoked upon tractor execution of this blueprint
-  static async orderExecuted(executionDto, innerEvents) {
+  static async orderExecuted(orderDto, executionDto, innerEvents) {
+    // TODO: these events may not have been parsed yet since innerEvents was from beanstalk events only
+    // SowOrder-Blueprint
+    // OperatorReward-TractorHelpers
+
     // Update entity state values. Check for SowOrderComplete emit also
+    const orderComplete = !!innerEvents.find((e) => e.name === 'SowOrderComplete');
     // Insert entity?
+
     // Return amount of tip paid in usd
+    const operatorReward = innerEvents.find((e) => e.name === 'OperatorReward');
+    if (operatorReward.args.token === C().BEAN) {
+      const beanPrice = await PriceService.getBeanPrice({ blockNumber: operatorReward.rawLog.blockNumber });
+      const tipUsd = fromBigInt(operatorReward.args.amount, 6) * beanPrice.usdPrice;
+      return tipUsd;
+    }
   }
 
   // Via upsert

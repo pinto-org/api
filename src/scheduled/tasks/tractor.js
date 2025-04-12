@@ -92,9 +92,10 @@ class TractorTask {
     );
 
     // Additional processing if this execution corresponds to a known blueprint
-    // TODO: avoid the loop, can call directly
-    for (const blueprintTask of Object.values(TractorConstants.knownBlueprints())) {
-      const tipUsd = await blueprintTask.orderExecuted(inserted, innerEvents);
+    const order = (await TractorService.getOrders({ blueprintHash: inserted.blueprintHash })).orders[0];
+    if (order.orderType) {
+      const blueprintTask = TractorConstants.knownBlueprints()[order.orderType];
+      const tipUsd = await blueprintTask.orderExecuted(order, inserted, innerEvents);
       if (tipUsd) {
         inserted.tipUsd = tipUsd;
         await TractorService.updateExecutions([inserted]);
