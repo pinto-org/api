@@ -1,9 +1,7 @@
 const TractorConstants = require('../constants/tractor');
 const { sequelize, Sequelize } = require('../repository/postgres/models');
 const TractorExecutionAssembler = require('../repository/postgres/models/assemblers/tractor/tractor-execution-assembler');
-const SowV0ExecutionAssembler = require('../repository/postgres/models/assemblers/tractor/tractor-execution-sow-v0-assembler');
 const TractorOrderAssembler = require('../repository/postgres/models/assemblers/tractor/tractor-order-assembler');
-const SowV0OrderAssembler = require('../repository/postgres/models/assemblers/tractor/tractor-order-sow-v0-assembler');
 const TractorOrderRepository = require('../repository/postgres/queries/tractor-order-repository');
 const AsyncContext = require('../utils/async/context');
 const AppMetaService = require('./meta-service');
@@ -66,7 +64,7 @@ class TractorService {
       return { orders, total, lastUpdated: tractorMeta.lastUpdate };
     });
 
-    const orderDtos = orders.map((d) => TractorOrderAssembler.fromModel(d));
+    let orderDtos = orders.map((d) => TractorOrderAssembler.fromModel(d));
 
     // Group orders by type
     const ordersByType = orderDtos.reduce((acc, order) => {
@@ -84,9 +82,16 @@ class TractorService {
       if (service) {
         // Generic retrieval of all blueprint data matching these hashes
         const blueprintHashes = ordersByType[type].map((d) => d.blueprintHash);
-        const blueprintData = await SharedService.genericEntityRetrieval(service.orderModel, service.orderAssembler, {
-          blueprintHash: { [Sequelize.Op.in]: blueprintHashes }
-        });
+        const whereClause = {
+          blueprintHash: { [Sequelize.Op.in]: blueprintHashes },
+          ...service.orderRequestParams(request.blueprintParams)
+        };
+
+        const blueprintData = await SharedService.genericEntityRetrieval(
+          service.orderModel,
+          service.orderAssembler,
+          whereClause
+        );
 
         const dataByHash = blueprintData.reduce((acc, d) => {
           acc[d.blueprintHash] = d;
@@ -97,6 +102,8 @@ class TractorService {
         for (const order of ordersByType[type]) {
           order.blueprintData = dataByHash[order.blueprintHash];
         }
+        // For orders which didnt match the blueprint params, remove from the outer response
+        orderDtos = orderDtos.filter((order) => !!dataByHash[order.blueprintHash]);
       }
     }
 
@@ -129,26 +136,6 @@ class TractorService {
       executionDtos,
       sequelize.models.TractorExecution,
       TractorExecutionAssembler,
-      true
-    );
-  }
-
-  // Via upsert
-  static async updateSowV0Orders(orderDtos) {
-    return await SharedService.genericEntityUpdate(
-      orderDtos,
-      sequelize.models.TractorOrderSowV0,
-      SowV0OrderAssembler,
-      true
-    );
-  }
-
-  // Via upsert
-  static async updateSowV0Executions(executionDtos) {
-    return await SharedService.genericEntityUpdate(
-      executionDtos,
-      sequelize.models.TractorExecutionSowV0,
-      SowV0ExecutionAssembler,
       true
     );
   }

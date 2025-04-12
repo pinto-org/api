@@ -27,8 +27,8 @@ class TractorTask {
     // Find all PublishRequisition and Tractor events
     const events = await FilterLogs.getBeanstalkEvents(
       ['PublishRequisition', 'CancelBlueprint', 'Tractor'],
-      28800192,
-      28802192
+      28810007,
+      28811807
     );
     // const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'CancelBlueprint', 'Tractor'], lastUpdate+1, updateBlock); // TODO: put back
 

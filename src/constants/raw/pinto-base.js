@@ -3,7 +3,7 @@
 const EnvUtil = require('../../utils/env');
 const SubgraphClients = require('../../datasources/subgraph-client');
 
-const pintoLaunchAbi = require('../../datasources/abi/beanstalk/Pinto-Launch.json');
+const pintoDiamondAbi = require('../../datasources/abi/beanstalk/Pinto-PI8.json');
 const erc20Abi = require('../../datasources/abi/ERC20.json');
 const wrappedDepositAbi = require('../../datasources/abi/WrappedDepositERC20.json');
 const wellAbi = require('../../datasources/abi/basin/Well.json');
@@ -12,7 +12,7 @@ const tractorHelpersAbi = require('../../datasources/abi/tractor/TractorHelpers.
 const sowBlueprintv0Abi = require('../../datasources/abi/tractor/SowBlueprintV0.json');
 
 const contracts = {
-  BEANSTALK: ['0xD1A0D188E861ed9d15773a2F3574a2e94134bA8f', null, pintoLaunchAbi],
+  BEANSTALK: ['0xD1A0D188E861ed9d15773a2F3574a2e94134bA8f', null, pintoDiamondAbi],
   BEAN: ['0xb170000aeeFa790fa61D6e837d1035906839a3c8', 6, erc20Abi],
   PINTOWETH: ['0x3e11001CfbB6dE5737327c59E10afAB47B82B5d3', 18, wellAbi],
   PINTOCBETH: ['0x3e111115A82dF6190e36ADf0d552880663A4dBF1', 18, wellAbi],

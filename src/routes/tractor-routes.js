@@ -1,3 +1,4 @@
+const TractorConstants = require('../constants/tractor');
 const InputError = require('../error/input-error');
 const { TractorOrderType } = require('../repository/postgres/models/types/types');
 const TractorService = require('../service/tractor-service');
@@ -47,11 +48,16 @@ router.post('/orders', async (ctx) => {
   dateRangeValidation(body.publishedBetween);
   dateRangeValidation(body.validBetween);
 
-  if (body.blueprintParams && !Object.keys(TractorOrderType).includes(body.orderType)) {
-    throw new InputError('orderType is required when blueprintParams is specified.');
+  if (body.blueprintParams) {
+    if (!body.orderType) {
+      throw new InputError('orderType is required when blueprintParams is specified.');
+    }
+    const blueprint = TractorConstants.knownBlueprints()[body.orderType];
+    if (!blueprint) {
+      throw new InputError('No blueprint found for the provided orderType.');
+    }
+    blueprint.validateOrderParams(body.blueprintParams);
   }
-
-  // TODO: validate blueprintParams (should go alongside whatever special module exists for each order type)
 
   /** @type {import('../../types/types').TractorOrdersResult} */
   const results = await TractorService.getOrders(body);

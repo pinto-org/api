@@ -1,11 +1,11 @@
 const { C } = require('../../constants/runtime-constants');
 const Interfaces = require('../../datasources/contracts/interfaces');
+const InputError = require('../../error/input-error');
 const SowV0OrderDto = require('../../repository/dto/tractor/SowV0OrderDto');
-const { sequelize } = require('../../repository/postgres/models');
+const { sequelize, Sequelize } = require('../../repository/postgres/models');
 const SowV0ExecutionAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-execution-sow-v0-assembler');
 const SowV0OrderAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-order-sow-v0-assembler');
 const { TractorOrderType } = require('../../repository/postgres/models/types/types');
-const TractorService = require('../tractor-service');
 
 class TractorSowV0Service {
   static orderType = TractorOrderType.SOW_V0;
@@ -17,6 +17,7 @@ class TractorSowV0Service {
   // TractorTask will request periodic update to entities for this blueprint
   static async periodicUpdate(fromBlock, toBlock) {
     // This will check all entities and try to update amountFunded/cascade amounts
+    // Verify not cancelled (order level) or completed (blueprint level)
   }
 
   // Invoked upon PublishRequisition. Does nothing if the requision is not of this blueprint type
@@ -33,7 +34,7 @@ class TractorSowV0Service {
     });
 
     // Insert entity
-    await TractorService.updateSowV0Orders([dto]);
+    await this.updateSowV0Orders([dto]);
 
     // Return amount of tip offered
     return sowV0Call.args.params.opParams.operatorTipAmount;
@@ -44,6 +45,16 @@ class TractorSowV0Service {
     // Update entity state values. Check for SowOrderComplete emit also
     // Insert entity?
     // Return amount of tip paid
+  }
+
+  // Via upsert
+  static async updateSowV0Orders(orderDtos) {
+    return await SharedService.genericEntityUpdate(orderDtos, this.orderModel, this.orderAssembler, true);
+  }
+
+  // Via upsert
+  static async updateSowV0Executions(executionDtos) {
+    return await SharedService.genericEntityUpdate(executionDtos, this.executionModel, this.executionAssembler, true);
   }
 
   // If possible, decodes blueprint data into the sowBlueprintv0 call
@@ -69,6 +80,24 @@ class TractorSowV0Service {
         return Interfaces.safeParseTxn(iSowV0, pipeCall.callData);
       }
     }
+  }
+
+  // Validates the blueprint-specific params for the order request
+  static validateOrderParams(blueprintParams) {
+    if (blueprintParams.orderComplete !== undefined && typeof blueprintParams.orderComplete !== 'boolean') {
+      throw new InputError('orderComplete must be a boolean');
+    }
+  }
+
+  // Returns a where clause used to filter on the blueprint order model
+  static orderRequestParams(blueprintParams) {
+    const where = {};
+    if (blueprintParams) {
+      if (blueprintParams.orderComplete !== undefined) {
+        where.orderComplete = { [Sequelize.Op.eq]: blueprintParams.orderComplete };
+      }
+    }
+    return where;
   }
 }
 module.exports = TractorSowV0Service;

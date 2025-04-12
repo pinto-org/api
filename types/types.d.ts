@@ -112,11 +112,11 @@ export type GetDepositsResult = {
 };
 
 type SowV0OrderRequestParams = {
-  orderComplete: boolean;
+  orderComplete?: boolean;
 };
 
 type SowV0ExecutionRequestParams = {
-  usedToken: number;
+  usedToken?: number;
 };
 
 // Union types for all possible blueprint-specific values
@@ -132,7 +132,7 @@ export type TractorOrderRequest = {
   publishedBetween?: [Date, Date];
   validBetween?: [Date, Date];
   cancelled?: boolean;
-  blueprintParams?: BlueprintOrderRequestParams; // TODO: if this is provided, orderType must also be provided
+  blueprintParams?: BlueprintOrderRequestParams;
   // Pagination
   limit?: number;
   skip?: number;
@@ -144,7 +144,7 @@ export type TractorExecutionRequest = {
   publisher?: string;
   operator?: string;
   executedBetween?: [Date, Date];
-  blueprintParams?: BlueprintExecutionRequestParams; // TODO: if this is provided, orderType must also be provided
+  blueprintParams?: BlueprintExecutionRequestParams;
   // Pagination
   limit?: number;
   skip?: number;
