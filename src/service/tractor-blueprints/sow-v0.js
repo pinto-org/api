@@ -21,7 +21,7 @@ class TractorSowV0Service {
   }
 
   // Invoked upon PublishRequisition. Does nothing if the requision is not of this blueprint type
-  static async tryAddRequisition(orderModel, blueprintData) {
+  static async tryAddRequisition(orderDto, blueprintData) {
     // Decode data
     const sowV0Call = this.decodeBlueprintData(blueprintData);
     if (!sowV0Call) {
@@ -29,7 +29,7 @@ class TractorSowV0Service {
     }
 
     const dto = SowV0OrderDto.fromBlueprintCalldata({
-      blueprintHash: orderModel.blueprintHash,
+      blueprintHash: orderDto.blueprintHash,
       sowParams: sowV0Call.args.params.sowParams
     });
 
@@ -41,10 +41,10 @@ class TractorSowV0Service {
   }
 
   // Invoked upon tractor execution of this blueprint
-  static async orderExecuted() {
+  static async orderExecuted(executionDto, innerEvents) {
     // Update entity state values. Check for SowOrderComplete emit also
     // Insert entity?
-    // Return amount of tip paid
+    // Return amount of tip paid in usd
   }
 
   // Via upsert

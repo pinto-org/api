@@ -1,7 +1,10 @@
+const { C } = require('../../constants/runtime-constants');
 const TractorConstants = require('../../constants/tractor');
 const FilterLogs = require('../../datasources/events/filter-logs');
+const TractorExecutionDto = require('../../repository/dto/tractor/TractorExecutionDto');
 const TractorOrderDto = require('../../repository/dto/tractor/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
+const PriceService = require('../../service/price-service');
 const TractorService = require('../../service/tractor-service');
 const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
@@ -69,7 +72,34 @@ class TractorTask {
   }
 
   static async handleTractor(event) {
-    // Find all events for the txn and isolate to within log range
+    const receipt = await C().RPC.getTransactionReceipt(event.rawLog.transactionHash);
+    const txnEvents = await FilterLogs.getBeanstalkTransactionEvents(receipt);
+
+    // Find events between TractorExecutionBegan and Tractor event indexes
+    const began = txnEvents.find(
+      (e) => e.name === 'TractorExecutionBegan' && e.args.blueprintHash === event.args.blueprintHash
+    );
+    if (!began) {
+      throw new Error('Could not find TractorExecutionBegan for this Tractor event');
+    }
+    const gasUsed = event.args.gasleft - began.args.gasleft;
+    const ethPriceUsd = await PriceService.getTokenPrice(C().WETH, { blockNumber: event.rawLog.blockNumber });
+    const dto = await TractorExecutionDto.fromTractorEvtContext({ tractorEvent: event, receipt, gasUsed, ethPriceUsd });
+    const [inserted] = await TractorService.updateExecutions([dto]);
+
+    const innerEvents = txnEvents.filter(
+      (e) => e.rawLog.logIndex > began.rawLog.logIndex && e.rawLog.logIndex < event.rawLog.logIndex
+    );
+
+    // Additional processing if this execution corresponds to a known blueprint
+    // TODO: avoid the loop, can call directly
+    for (const blueprintTask of Object.values(TractorConstants.knownBlueprints())) {
+      const tipUsd = await blueprintTask.orderExecuted(inserted, innerEvents);
+      if (tipUsd) {
+        inserted.tipUsd = tipUsd;
+        await TractorService.updateExecutions([inserted]);
+      }
+    }
   }
 
   static async processEventsConcurrently(allEvents, eventName, handler) {

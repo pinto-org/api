@@ -9,6 +9,11 @@ class FilterLogs {
     return this.getEvents(Contracts.getBeanstalk(c), eventNames, fromBlock, toBlock, c);
   }
 
+  // Retrieves beanstalk events from a specific transaction
+  static async getBeanstalkTransactionEvents(receipt, c = C()) {
+    return this.getTransactionEvents(Contracts.getBeanstalk(c), receipt, c);
+  }
+
   static async getEvents(contract, eventNames, fromBlock, toBlock, c = C()) {
     const iface = contract.interface;
     const topics = eventNames.map((n) => iface.getEventTopic(n));
@@ -68,6 +73,24 @@ class FilterLogs {
       }
     }
     return all;
+  }
+
+  // Gets all events from a specific transaction for a contract
+  static async getTransactionEvents(contract, receipt, c = C()) {
+    // Filter logs to only include those from this contract and parse them
+    const events = receipt.logs
+      .filter((log) => log.address.toLowerCase() === contract.address.toLowerCase())
+      .map((log) => {
+        try {
+          const parsed = contract.interface.parseLog(log);
+          parsed.rawLog = log;
+          return parsed;
+        } catch (e) {
+          return null;
+        }
+      })
+      .filter(Boolean);
+    return events;
   }
 }
 module.exports = FilterLogs;
