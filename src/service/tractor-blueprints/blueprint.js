@@ -57,6 +57,22 @@ class BlueprintService {
   }
 
   /**
+   * Validates blueprint-specific execution parameters
+   * @abstract
+   */
+  static validateExecutionParams(blueprintParams) {
+    throw new Error('validateExecutionParams must be implemented by subclass');
+  }
+
+  /**
+   * Returns a where clause for filtering blueprint executions
+   * @abstract
+   */
+  static executionRequestParams(blueprintParams) {
+    throw new Error('executionRequestParams must be implemented by subclass');
+  }
+
+  /**
    * Gets an order by its blueprint hash
    */
   static async getOrder(blueprintHash) {
@@ -79,6 +95,13 @@ class BlueprintService {
    */
   static async updateOrders(orderDtos) {
     return await SharedService.genericEntityUpdate(orderDtos, this.orderModel, this.orderAssembler, true);
+  }
+
+  /**
+   * Gets executions by a where clause
+   */
+  static async getExecutions(whereClause) {
+    return await SharedService.genericEntityRetrieval(this.executionModel, this.executionAssembler, whereClause);
   }
 
   /**

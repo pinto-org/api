@@ -8,7 +8,6 @@ class TractorOrderRepository {
       transaction: AsyncContext.getOrUndef('transaction')
     };
 
-    // Apply optional values when provided
     if (criteriaList && criteriaList.length > 0) {
       options.where = {
         [Sequelize.Op.and]: criteriaList

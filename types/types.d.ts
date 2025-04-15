@@ -116,7 +116,7 @@ type SowV0OrderRequestParams = {
 };
 
 type SowV0ExecutionRequestParams = {
-  usedToken?: number;
+  usedToken?: string;
 };
 
 // Union types for all possible blueprint-specific values

@@ -16,7 +16,6 @@ class TractorOrderDto {
       this.publishedBlock = d.rawLog.blockNumber;
       this.beanTip = null; // Will be updated later if this is a known blueprint and supports tips
       this.cancelled = false; // Default to false for new orders
-      this.blueprintData = null; // Not relevant to creation
     } else if (type === 'db') {
       this.blueprintHash = d.blueprintHash;
       this.orderType = d.orderType;
@@ -31,7 +30,9 @@ class TractorOrderDto {
       this.publishedBlock = d.publishedBlock;
       this.beanTip = d.beanTip;
       this.cancelled = d.cancelled;
-      this.blueprintData = null; // Associated blueprint data will go here upon retrieval
+
+      // Associated blueprint data will go here upon retrieval
+      this.blueprintData = null;
     }
   }
 

@@ -23,6 +23,13 @@ class TractorExecutionDto {
       this.executedTimestamp = d.executedTimestamp;
       this.executedBlock = d.executedBlock;
       this.executedTxn = d.executedTxn;
+
+      if (d.TractorOrder) {
+        this.orderInfo = {
+          orderType: d.TractorOrder.orderType,
+          publisher: d.TractorOrder.publisher
+        };
+      }
     }
   }
 

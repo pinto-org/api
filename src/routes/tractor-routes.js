@@ -88,11 +88,16 @@ router.post('/executions', async (ctx) => {
   body.executedBetween = body.executedBetween?.map((v) => new Date(v));
   dateRangeValidation(body.executedBetween);
 
-  if (body.blueprintParams && !Object.keys(TractorOrderType).includes(body.orderType)) {
-    throw new InputError('orderType is required when blueprintParams is specified.');
+  if (body.blueprintParams) {
+    if (!body.orderType) {
+      throw new InputError('orderType is required when blueprintParams is specified.');
+    }
+    const blueprint = TractorConstants.knownBlueprints()[body.orderType];
+    if (!blueprint) {
+      throw new InputError('No blueprint found for the provided orderType.');
+    }
+    blueprint.validateExecutionParams(body.blueprintParams);
   }
-
-  // TODO: validate blueprintParams (should go alongside whatever special module exists for each order type)
 
   /** @type {import('../../types/types').TractorExecutionsResult} */
   const results = await TractorService.getExecutions(body);

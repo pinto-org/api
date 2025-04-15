@@ -104,19 +104,33 @@ class TractorSowV0Service extends Blueprint {
     }
   }
 
-  // Validates the blueprint-specific params for the order request
   static validateOrderParams(blueprintParams) {
     if (blueprintParams.orderComplete !== undefined && typeof blueprintParams.orderComplete !== 'boolean') {
       throw new InputError('orderComplete must be a boolean');
     }
   }
 
-  // Returns a where clause used to filter on the blueprint order model
   static orderRequestParams(blueprintParams) {
     const where = {};
     if (blueprintParams) {
       if (blueprintParams.orderComplete !== undefined) {
         where.orderComplete = { [Sequelize.Op.eq]: blueprintParams.orderComplete };
+      }
+    }
+    return where;
+  }
+
+  static validateExecutionParams(blueprintParams) {
+    if (blueprintParams.usedToken !== undefined && !this.tokenIndexMap()[blueprintParams.usedToken.toLowerCase()]) {
+      throw new InputError('usedToken must correspond to a valid silo token address');
+    }
+  }
+
+  static executionRequestParams(blueprintParams) {
+    const where = {};
+    if (blueprintParams) {
+      if (blueprintParams.usedToken !== undefined) {
+        // TODO
       }
     }
     return where;

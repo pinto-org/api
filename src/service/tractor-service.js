@@ -2,6 +2,7 @@ const TractorConstants = require('../constants/tractor');
 const { sequelize, Sequelize } = require('../repository/postgres/models');
 const TractorExecutionAssembler = require('../repository/postgres/models/assemblers/tractor/tractor-execution-assembler');
 const TractorOrderAssembler = require('../repository/postgres/models/assemblers/tractor/tractor-order-assembler');
+const TractorExecutionRepository = require('../repository/postgres/queries/tractor-execution-repository');
 const TractorOrderRepository = require('../repository/postgres/queries/tractor-order-repository');
 const AsyncContext = require('../utils/async/context');
 const AppMetaService = require('./meta-service');
@@ -24,6 +25,7 @@ class TractorService {
         criteriaList.push({ orderType: request.orderType });
       }
     }
+    request.blueprintHash && criteriaList.push({ blueprintHash: request.blueprintHash });
     request.publisher && criteriaList.push({ publisher: request.publisher });
     if (request.publishedBetween) {
       criteriaList.push({
@@ -63,7 +65,6 @@ class TractorService {
       ]);
       return { orders, total, lastUpdated: tractorMeta.lastUpdate };
     });
-
     let orderDtos = orders.map((d) => TractorOrderAssembler.fromModel(d));
 
     // Group orders by type
@@ -102,6 +103,8 @@ class TractorService {
       }
     }
 
+    // TODO: include some basic info about executions; count, last time etc
+
     return {
       lastUpdated,
       orders: orderDtos,
@@ -109,10 +112,84 @@ class TractorService {
     };
   }
 
+  /**
+   * @param {import('../../types/types').TractorExecutionRequest} request
+   * @returns {Promise<import('../../types/types').TractorExecutionsResult>}
+   */
   static async getExecutions(request) {
     // Retrieve all matching executions
+    const criteriaList = [];
+    if (request.orderType) {
+      if (request.orderType === 'KNOWN') {
+        criteriaList.push({ '$TractorOrder.orderType$': { [Sequelize.Op.ne]: null } });
+      } else if (request.orderType === 'UNKNOWN') {
+        criteriaList.push({ '$TractorOrder.orderType$': null });
+      } else {
+        criteriaList.push({ '$TractorOrder.orderType$': request.orderType });
+      }
+    }
+    request.blueprintHash && criteriaList.push({ blueprintHash: request.blueprintHash });
+    request.publisher && criteriaList.push({ publisher: request.publisher });
+    request.operator && criteriaList.push({ operator: request.operator });
+    if (request.executedBetween) {
+      criteriaList.push({
+        executedTimestamp: {
+          [Sequelize.Op.between]: request.executedBetween
+        }
+      });
+    }
+    request.limit ??= 100;
+
+    const { executions, total, lastUpdated } = await AsyncContext.sequelizeTransaction(async () => {
+      const [{ executions, count }, tractorMeta] = await Promise.all([
+        TractorExecutionRepository.findAllWithOptions({ joinOrder: true, criteriaList, ...request }),
+        AppMetaService.getTractorMeta()
+      ]);
+      return { executions, total: count, lastUpdated: tractorMeta.lastUpdate };
+    });
+    let executionDtos = executions.map((d) => TractorExecutionAssembler.fromModel(d));
+
+    // Group executions by order type
+    const executionsByType = executionDtos.reduce((acc, execution) => {
+      const type = execution.orderType || 'UNKNOWN';
+      if (!acc[type]) {
+        acc[type] = [];
+      }
+      acc[type].push(execution);
+      return acc;
+    }, {});
+
     // If it is a known blueprint, retrieve the associated execution data (batch by order type)
-    // Assemble to dtos
+    for (const type in executionsByType) {
+      const service = TractorConstants.knownBlueprints()[type];
+      if (service) {
+        // Generic retrieval of all blueprint data matching these ids
+        const executionIds = executionsByType[type].map((d) => d.id);
+        const whereClause = {
+          id: { [Sequelize.Op.in]: executionIds },
+          ...service.executionRequestParams(request.blueprintParams)
+        };
+        const blueprintData = await service.getExecutions(whereClause);
+
+        const dataById = blueprintData.reduce((acc, d) => {
+          acc[d.id] = d;
+          return acc;
+        }, {});
+
+        // Attach the blueprint specific dto to the execution dto
+        for (const execution of executionsByType[type]) {
+          execution.blueprintData = dataById[execution.id];
+        }
+        // For executions which didnt match the blueprint params, remove from the outer response
+        executionDtos = executionDtos.filter((execution) => !!dataById[execution.id]);
+      }
+    }
+
+    return {
+      lastUpdated,
+      executions: executionDtos,
+      totalRecords: total
+    };
   }
 
   // Via upsert
