@@ -31,6 +31,35 @@ class TractorExecutionRepository {
     const { rows: executions, count } = await sequelize.models.TractorExecution.findAndCountAll(options);
     return { executions, total: count };
   }
+
+  static async getOrdersStats(blueprintHashes) {
+    const stats = await sequelize.models.TractorExecution.findAll({
+      attributes: [
+        'blueprintHash',
+        [Sequelize.fn('COUNT', Sequelize.col('id')), 'executionCount'],
+        [Sequelize.fn('MAX', Sequelize.col('executedTimestamp')), 'latestExecution']
+      ],
+      where: {
+        blueprintHash: {
+          [Sequelize.Op.in]: blueprintHashes
+        }
+      },
+      group: ['blueprintHash'],
+      raw: true
+    });
+    const retval = Object.fromEntries(
+      stats.map((s) => [
+        s.blueprintHash,
+        { executionCount: parseInt(s.executionCount), latestExecution: s.latestExecution }
+      ])
+    );
+    for (const hash of blueprintHashes) {
+      if (!retval[hash]) {
+        retval[hash] = { executionCount: 0, latestExecution: null };
+      }
+    }
+    return retval;
+  }
 }
 
 module.exports = TractorExecutionRepository;

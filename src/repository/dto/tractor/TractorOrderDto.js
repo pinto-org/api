@@ -31,8 +31,9 @@ class TractorOrderDto {
       this.beanTip = d.beanTip;
       this.cancelled = d.cancelled;
 
-      // Associated blueprint data will go here upon retrieval
+      // Extra associated data will go here upon retrieval
       this.blueprintData = null;
+      this.executionStats = null;
     }
   }
 

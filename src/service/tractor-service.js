@@ -103,7 +103,11 @@ class TractorService {
       }
     }
 
-    // TODO: include some basic info about executions; count, last time etc
+    // Include some info about executions
+    const executionStats = await TractorExecutionRepository.getOrdersStats(orderDtos.map((o) => o.blueprintHash));
+    for (const order of orderDtos) {
+      order.executionStats = executionStats[order.blueprintHash];
+    }
 
     return {
       lastUpdated,
