@@ -1,9 +1,15 @@
 const TractorConstants = require('../../src/constants/tractor');
+const AlchemyUtil = require('../../src/datasources/alchemy');
+const Contracts = require('../../src/datasources/contracts/contracts');
 const FilterLogs = require('../../src/datasources/events/filter-logs');
+const TractorExecutionDto = require('../../src/repository/dto/tractor/TractorExecutionDto');
 const TractorOrderDto = require('../../src/repository/dto/tractor/TractorOrderDto');
+const { update } = require('../../src/repository/postgres/queries/meta-repository');
 const TractorTask = require('../../src/scheduled/tasks/tractor');
 const TaskRangeUtil = require('../../src/scheduled/util/task-range');
 const AppMetaService = require('../../src/service/meta-service');
+const PriceService = require('../../src/service/price-service');
+const TractorSowV0Service = require('../../src/service/tractor-blueprints/sow-v0');
 const TractorService = require('../../src/service/tractor-service');
 
 describe('TractorTask', () => {
@@ -108,6 +114,69 @@ describe('TractorTask', () => {
       expect(upsertSpy).toHaveBeenCalledTimes(2);
       expect(upsertSpy).toHaveBeenCalledWith(['dto']);
       expect(upsertSpy).toHaveBeenCalledWith([{ model: true, orderType: 'testOrder', beanTip: 5n }]);
+    });
+  });
+
+  describe('Tractor', () => {
+    const events = [
+      { name: 'TractorExecutionBegan', args: { gasleft: 5000, blueprintHash: 123 }, rawLog: { index: 0 } },
+      { name: 'Sow', rawLog: { index: 5 } },
+      { name: 'Tractor', args: { gasleft: 4750, blueprintHash: 123 }, rawLog: { index: 100 } }
+    ];
+    let executionDtoSpy;
+    let executionDbSpy;
+    let constSpy;
+
+    beforeEach(() => {
+      jest.spyOn(AlchemyUtil, 'providerForChain').mockReturnValue({
+        getTransactionReceipt: jest.fn().mockResolvedValue('receipt')
+      });
+      jest.spyOn(Contracts, 'get').mockImplementation(() => {});
+      jest.spyOn(FilterLogs, 'getTransactionEvents').mockResolvedValue(events);
+      jest.spyOn(PriceService, 'getTokenPrice').mockResolvedValue({ usdPrice: 1500 });
+
+      executionDtoSpy = jest.spyOn(TractorExecutionDto, 'fromTractorEvtContext').mockResolvedValue('dto');
+      constSpy = jest.spyOn(TractorConstants, 'knownBlueprints');
+    });
+
+    test('Unknown blueprint', async () => {
+      jest.spyOn(TractorService, 'getOrders').mockResolvedValue({ orders: [{ orderType: null }] });
+      executionDbSpy = jest.spyOn(TractorService, 'updateExecutions').mockResolvedValueOnce(['inserted']);
+
+      await TractorTask.handleTractor(events[2]);
+
+      expect(executionDtoSpy).toHaveBeenCalledWith({
+        tractorEvent: events[2],
+        receipt: 'receipt',
+        gasUsed: 250,
+        ethPriceUsd: 1500
+      });
+      expect(executionDbSpy).toHaveBeenCalledWith(['dto']);
+      expect(constSpy).not.toHaveBeenCalled();
+    });
+
+    test('Known blueprint', async () => {
+      jest.spyOn(TractorService, 'getOrders').mockResolvedValue({ orders: [{ orderType: 'SOW_V0' }] });
+      const sowExeSpy = jest.spyOn(TractorSowV0Service, 'orderExecuted').mockResolvedValue(1.25);
+      const insertedDto = {};
+      executionDbSpy = jest
+        .spyOn(TractorService, 'updateExecutions')
+        .mockResolvedValueOnce([insertedDto])
+        .mockResolvedValueOnce(['updated']);
+
+      await TractorTask.handleTractor(events[2]);
+
+      expect(executionDtoSpy).toHaveBeenCalledWith({
+        tractorEvent: events[2],
+        receipt: 'receipt',
+        gasUsed: 250,
+        ethPriceUsd: 1500
+      });
+      expect(executionDbSpy).toHaveBeenCalledWith(['dto']);
+      expect(constSpy).toHaveBeenCalled();
+      expect(sowExeSpy).toHaveBeenCalledWith(expect.anything(), insertedDto, [events[1]]);
+      expect(executionDbSpy).toHaveBeenNthCalledWith(2, [insertedDto]);
+      expect(insertedDto.tipUsd).toBe(1.25);
     });
   });
 });

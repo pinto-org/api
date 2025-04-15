@@ -96,14 +96,13 @@ class TractorTask {
     });
     const [inserted] = await TractorService.updateExecutions([dto]);
 
-    const innerEvents = txnEvents.filter(
-      (e) => e.rawLog.index > began.rawLog.index && e.rawLog.index < event.rawLog.index
-    );
-
     // Additional processing if this execution corresponds to a known blueprint
     const order = (await TractorService.getOrders({ blueprintHash: inserted.blueprintHash })).orders[0];
     if (order.orderType) {
       const blueprintTask = TractorConstants.knownBlueprints()[order.orderType];
+      const innerEvents = txnEvents.filter(
+        (e) => e.rawLog.index > began.rawLog.index && e.rawLog.index < event.rawLog.index
+      );
       const tipUsd = await blueprintTask.orderExecuted(order, inserted, innerEvents);
       if (tipUsd) {
         inserted.tipUsd = tipUsd;

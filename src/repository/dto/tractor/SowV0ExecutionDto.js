@@ -1,4 +1,3 @@
-const TractorConstants = require('../../../constants/tractor');
 const Contracts = require('../../../datasources/contracts/contracts');
 const { fromBigInt } = require('../../../utils/number');
 

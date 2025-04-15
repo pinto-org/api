@@ -1,4 +1,7 @@
+const { C } = require('../../src/constants/runtime-constants');
+const SowV0ExecutionDto = require('../../src/repository/dto/tractor/SowV0ExecutionDto');
 const SowV0OrderDto = require('../../src/repository/dto/tractor/SowV0OrderDto');
+const PriceService = require('../../src/service/price-service');
 const TractorSowV0Service = require('../../src/service/tractor-blueprints/sow-v0');
 
 describe('TractorSowV0Service', () => {
@@ -17,6 +20,37 @@ describe('TractorSowV0Service', () => {
 
     expect(result).toBe(456n);
     expect(upsertSpy).toHaveBeenCalledWith(['dto']);
+  });
+
+  it('Creates matching execution data for order executed', async () => {
+    const mockOrderDto = { blueprintHash: '0x123' };
+    const mockInnerEvents = [
+      {
+        name: 'OperatorReward',
+        args: {
+          token: C().BEAN,
+          amount: '1100000'
+        },
+        rawLog: { blockNumber: 123456 }
+      }
+    ];
+    const mockSowOrder = {
+      updateFieldsUponExecution: jest.fn()
+    };
+    const getOrderSpy = jest.spyOn(TractorSowV0Service, 'getOrder').mockResolvedValue(mockSowOrder);
+    const updateOrderSpy = jest.spyOn(TractorSowV0Service, 'updateOrders').mockImplementation(() => {});
+    jest.spyOn(SowV0ExecutionDto, 'fromExecutionContext').mockImplementation(() => {});
+    const updateExecutionSpy = jest.spyOn(TractorSowV0Service, 'updateExecutions').mockImplementation(() => {});
+    const priceSpy = jest.spyOn(PriceService, 'getBeanPrice').mockResolvedValue({ usdPrice: 1.5 });
+
+    const result = await TractorSowV0Service.orderExecuted(mockOrderDto, null, mockInnerEvents);
+
+    expect(getOrderSpy).toHaveBeenCalledWith(mockOrderDto.blueprintHash);
+    expect(mockSowOrder.updateFieldsUponExecution).toHaveBeenCalledWith(mockInnerEvents);
+    expect(updateOrderSpy).toHaveBeenCalledWith([mockSowOrder]);
+    expect(updateExecutionSpy).toHaveBeenCalled();
+    expect(priceSpy).toHaveBeenCalledWith({ blockNumber: 123456 });
+    expect(result).toBeCloseTo(1.65, 5);
   });
 
   test('Ignores other requisitions', async () => {
