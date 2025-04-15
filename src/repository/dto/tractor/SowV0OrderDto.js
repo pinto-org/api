@@ -1,3 +1,5 @@
+const Contracts = require('../../../datasources/contracts/contracts');
+
 class SowV0OrderDto {
   constructor(type, d) {
     if (type === 'data') {
@@ -41,6 +43,13 @@ class SowV0OrderDto {
 
   static fromModel(dbModel) {
     return new SowV0OrderDto('db', dbModel);
+  }
+
+  async updateFieldsUponExecution(executionEvents) {
+    const sowEvt = executionEvents.find((e) => e.name === 'Sow');
+    this.pintoSownCounter += BigInt(sowEvt.args.beans);
+    this.lastExecutedSeason = Number(await Contracts.getBeanstalk().season({ blockTag: sowEvt.rawLog.blockNumber }));
+    this.orderComplete = !!executionEvents.find((e) => e.name === 'SowOrderComplete');
   }
 }
 

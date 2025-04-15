@@ -2,6 +2,7 @@ const { C } = require('../../constants/runtime-constants');
 const Contracts = require('../../datasources/contracts/contracts');
 const Interfaces = require('../../datasources/contracts/interfaces');
 const InputError = require('../../error/input-error');
+const SowV0ExecutionDto = require('../../repository/dto/tractor/SowV0ExecutionDto');
 const SowV0OrderDto = require('../../repository/dto/tractor/SowV0OrderDto');
 const { sequelize, Sequelize } = require('../../repository/postgres/models');
 const SowV0ExecutionAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-execution-sow-v0-assembler');
@@ -48,17 +49,12 @@ class TractorSowV0Service extends Blueprint {
   static async orderExecuted(orderDto, executionDto, innerEvents) {
     // Update current order entity state
     const sowOrder = await this.getOrder(orderDto.blueprintHash);
-
-    const sowEvt = innerEvents.find((e) => e.name === 'Sow');
-    sowOrder.pintoSownCounter += BigInt(sowEvt.args.beans);
-    sowOrder.lastExecutedSeason = Number(
-      await Contracts.getBeanstalk().season({ blockTag: sowEvt.rawLog.blockNumber })
-    );
-    sowOrder.orderComplete = !!innerEvents.find((e) => e.name === 'SowOrderComplete');
+    await sowOrder.updateFieldsUponExecution(innerEvents);
     await this.updateOrders([sowOrder]);
 
-    // Insert execution entity?
-    // await this.updateExecutions([executionDto]);
+    // Insert execution entity
+    const sowExecutionDto = await SowV0ExecutionDto.fromExecutionContext({ executionDto, innerEvents });
+    await this.updateExecutions([sowExecutionDto]);
 
     // Return amount of tip paid in usd
     const operatorReward = innerEvents.find((e) => e.name === 'OperatorReward');
