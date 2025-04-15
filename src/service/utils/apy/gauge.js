@@ -236,7 +236,15 @@ class GaugeApyUtil {
 
   // Updates the crop ratio, returning the raw beanToMaxLpGpPerBdvRatio and the scaled crop ratio
   static #updateCropRatio(apySeason, R, earnedBeans) {
-    const range = apySeason <= 2710 ? [0.5, 1] : [0.5, 1.5];
+    let range;
+    if (apySeason <= 2710) {
+      range = [0.5, 1];
+    } else if (apySeason <= 3000) {
+      // TODO: Replace 3000 with season number at time of PI-8 Deployment
+      range = [0.5, 1.5];
+    } else {
+      range = [0.5, 2];
+    }
     // For now we return an increasing R value only when there are no beans minted over the period.
     // In the future this needs to take into account beanstalk state and the frequency of how many seasons have mints
     const change = earnedBeans == 0 ? 0.01 : -0.01;
