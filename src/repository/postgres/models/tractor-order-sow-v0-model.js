@@ -4,7 +4,6 @@ module.exports = (sequelize, DataTypes) => {
   const TractorOrderSowV0 = sequelize.define(
     'TractorOrderSowV0',
     {
-      // TODO: need id referencing regular execution. Should it be same id as execution?
       blueprintHash: {
         type: DataTypes.STRING(66),
         primaryKey: true

@@ -35,7 +35,10 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false
       },
-      ...bigintNumericColumn('usedGrownStalkPerBdv', Sequelize, { allowNull: false }),
+      usedGrownStalkPerBdv: {
+        type: Sequelize.FLOAT,
+        allowNull: false
+      },
       ...timestamps(Sequelize)
     });
 

@@ -1,5 +1,4 @@
 const { C } = require('../../constants/runtime-constants');
-const Contracts = require('../../datasources/contracts/contracts');
 const Interfaces = require('../../datasources/contracts/interfaces');
 const InputError = require('../../error/input-error');
 const SowV0ExecutionDto = require('../../repository/dto/tractor/SowV0ExecutionDto');
@@ -18,6 +17,17 @@ class TractorSowV0Service extends Blueprint {
   static orderAssembler = SowV0OrderAssembler;
   static executionModel = sequelize.models.TractorExecutionSowV0;
   static executionAssembler = SowV0ExecutionAssembler;
+
+  static tokenIndexMap() {
+    return {
+      [C().BEAN]: 0,
+      [C().PINTOWETH]: 1,
+      [C().PINTOCBETH]: 2,
+      [C().PINTOCBBTC]: 3,
+      [C().PINTOUSDC]: 4,
+      [C().PINTOWSOL]: 5
+    };
+  }
 
   // TractorTask will request periodic update to entities for this blueprint
   static async periodicUpdate(fromBlock, toBlock) {
@@ -53,7 +63,11 @@ class TractorSowV0Service extends Blueprint {
     await this.updateOrders([sowOrder]);
 
     // Insert execution entity
-    const sowExecutionDto = await SowV0ExecutionDto.fromExecutionContext({ executionDto, innerEvents });
+    const sowExecutionDto = await SowV0ExecutionDto.fromExecutionContext({
+      executionDto,
+      innerEvents,
+      tokenIndexMap: this.tokenIndexMap()
+    });
     await this.updateExecutions([sowExecutionDto]);
 
     // Return amount of tip paid in usd

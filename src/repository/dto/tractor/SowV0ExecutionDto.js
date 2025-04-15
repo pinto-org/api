@@ -8,7 +8,7 @@ class SowV0ExecutionDto {
       const { executionDto, innerEvents } = d;
       const sowEvt = innerEvents.find((e) => e.name === 'Sow');
 
-      // this.id = d.id; // TBD
+      this.id = executionDto.id;
       this.blueprintHash = executionDto.blueprintHash;
       this.index = BigInt(sowEvt.args.index);
       this.beans = BigInt(sowEvt.args.beans);
@@ -39,7 +39,7 @@ class SowV0ExecutionDto {
     sowExecutionDto.placeInLine = BigInt(sowEvt.args.index) - BigInt(harvestableIndex);
 
     // Assign usedTokenIndices, usedGrownStalkPerBdv according to withdraw events
-    await sowExecutionDto.determineWithdrawnTokens(sowExecutionContext.innerEvents);
+    await sowExecutionDto.determineWithdrawnTokens(sowExecutionContext.innerEvents, sowExecutionContext.tokenIndexMap);
 
     return sowExecutionDto;
   }
@@ -48,17 +48,16 @@ class SowV0ExecutionDto {
     return new SowV0ExecutionDto('db', dbModel);
   }
 
-  async determineWithdrawnTokens(innerEvents) {
+  async determineWithdrawnTokens(innerEvents, tokenIndexMap) {
     const removeDeposits = innerEvents.filter((e) => ['RemoveDeposits', 'RemoveDeposit'].includes(e.name));
-    const TOKEN_INDEX_MAP = TractorConstants.getSowingTokenIndexMap();
 
     let totalBdvWithdrawn = 0;
     let totalGrownStalkWithdrawn = 0;
     this.usedTokenIndices = [];
     for (const evt of removeDeposits) {
       const token = evt.args.token.toLowerCase();
-      if (token in TOKEN_INDEX_MAP && !this.usedTokenIndices.includes(TOKEN_INDEX_MAP[token])) {
-        this.usedTokenIndices.push(TOKEN_INDEX_MAP[token]);
+      if (token in tokenIndexMap && !this.usedTokenIndices.includes(tokenIndexMap[token])) {
+        this.usedTokenIndices.push(tokenIndexMap[token]);
       }
       // Support both RemoveDeposits and RemoveDeposit
       const bdvs = (evt.args.bdvs ?? [evt.args.bdv]).map(BigInt);

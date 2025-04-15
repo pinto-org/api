@@ -19,7 +19,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: false
       },
-      ...bigintNumericColumn('usedGrownStalkPerBdv', DataTypes, { allowNull: false })
+      usedGrownStalkPerBdv: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      }
     },
     {
       tableName: 'tractor_execution_sow_v0',

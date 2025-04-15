@@ -60,11 +60,11 @@ class BlueprintService {
    * Gets an order by its blueprint hash
    */
   static async getOrder(blueprintHash) {
-    const order = await this.orderModel.findOne({ where: { blueprintHash } });
-    if (!order) {
+    const orders = await this.getOrders({ blueprintHash });
+    if (orders.length === 0) {
       throw new Error('Order not found');
     }
-    return this.orderAssembler.fromModel(order);
+    return orders[0];
   }
 
   /**
