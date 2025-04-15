@@ -129,7 +129,7 @@ class TractorService {
       }
     }
     request.blueprintHash && criteriaList.push({ blueprintHash: request.blueprintHash });
-    request.publisher && criteriaList.push({ publisher: request.publisher });
+    request.publisher && criteriaList.push({ '$TractorOrder.publisher$': request.publisher });
     request.operator && criteriaList.push({ operator: request.operator });
     if (request.executedBetween) {
       criteriaList.push({
@@ -151,7 +151,7 @@ class TractorService {
 
     // Group executions by order type
     const executionsByType = executionDtos.reduce((acc, execution) => {
-      const type = execution.orderType || 'UNKNOWN';
+      const type = execution.orderInfo.orderType || 'UNKNOWN';
       if (!acc[type]) {
         acc[type] = [];
       }

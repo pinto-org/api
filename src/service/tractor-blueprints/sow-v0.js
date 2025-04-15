@@ -121,7 +121,10 @@ class TractorSowV0Service extends Blueprint {
   }
 
   static validateExecutionParams(blueprintParams) {
-    if (blueprintParams.usedToken !== undefined && !this.tokenIndexMap()[blueprintParams.usedToken.toLowerCase()]) {
+    if (
+      blueprintParams.usedToken !== undefined &&
+      this.tokenIndexMap()[blueprintParams.usedToken.toLowerCase()] === undefined
+    ) {
       throw new InputError('usedToken must correspond to a valid silo token address');
     }
   }
@@ -130,7 +133,9 @@ class TractorSowV0Service extends Blueprint {
     const where = {};
     if (blueprintParams) {
       if (blueprintParams.usedToken !== undefined) {
-        // TODO
+        where.usedTokenIndices = {
+          [Sequelize.Op.like]: `%${this.tokenIndexMap()[blueprintParams.usedToken.toLowerCase()]}%`
+        };
       }
     }
     return where;
