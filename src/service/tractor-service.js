@@ -86,12 +86,7 @@ class TractorService {
           blueprintHash: { [Sequelize.Op.in]: blueprintHashes },
           ...service.orderRequestParams(request.blueprintParams)
         };
-
-        const blueprintData = await SharedService.genericEntityRetrieval(
-          service.orderModel,
-          service.orderAssembler,
-          whereClause
-        );
+        const blueprintData = await service.getOrders(whereClause);
 
         const dataByHash = blueprintData.reduce((acc, d) => {
           acc[d.blueprintHash] = d;

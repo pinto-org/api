@@ -1,4 +1,5 @@
 const { C } = require('../../constants/runtime-constants');
+const Contracts = require('../../datasources/contracts/contracts');
 const Interfaces = require('../../datasources/contracts/interfaces');
 const InputError = require('../../error/input-error');
 const SowV0OrderDto = require('../../repository/dto/tractor/SowV0OrderDto');
@@ -8,8 +9,9 @@ const SowV0OrderAssembler = require('../../repository/postgres/models/assemblers
 const { TractorOrderType } = require('../../repository/postgres/models/types/types');
 const { fromBigInt } = require('../../utils/number');
 const PriceService = require('../price-service');
+const Blueprint = require('./blueprint');
 
-class TractorSowV0Service {
+class TractorSowV0Service extends Blueprint {
   static orderType = TractorOrderType.SOW_V0;
   static orderModel = sequelize.models.TractorOrderSowV0;
   static orderAssembler = SowV0OrderAssembler;
@@ -36,7 +38,7 @@ class TractorSowV0Service {
     });
 
     // Insert entity
-    await this.updateSowV0Orders([dto]);
+    await this.updateOrders([dto]);
 
     // Return amount of tip offered
     return sowV0Call.args.params.opParams.operatorTipAmount;
@@ -44,31 +46,27 @@ class TractorSowV0Service {
 
   // Invoked upon tractor execution of this blueprint
   static async orderExecuted(orderDto, executionDto, innerEvents) {
-    // TODO: these events may not have been parsed yet since innerEvents was from beanstalk events only
-    // SowOrder-Blueprint
-    // OperatorReward-TractorHelpers
+    // Update current order entity state
+    const sowOrder = await this.getOrder(orderDto.blueprintHash);
 
-    // Update entity state values. Check for SowOrderComplete emit also
-    const orderComplete = !!innerEvents.find((e) => e.name === 'SowOrderComplete');
-    // Insert entity?
+    const sowEvt = innerEvents.find((e) => e.name === 'Sow');
+    sowOrder.pintoSownCounter += BigInt(sowEvt.args.beans);
+    sowOrder.lastExecutedSeason = Number(
+      await Contracts.getBeanstalk().season({ blockTag: sowEvt.rawLog.blockNumber })
+    );
+    sowOrder.orderComplete = !!innerEvents.find((e) => e.name === 'SowOrderComplete');
+    await this.updateOrders([sowOrder]);
+
+    // Insert execution entity?
+    // await this.updateExecutions([executionDto]);
 
     // Return amount of tip paid in usd
     const operatorReward = innerEvents.find((e) => e.name === 'OperatorReward');
-    if (operatorReward.args.token === C().BEAN) {
+    if (operatorReward.args.token.toLowerCase() === C().BEAN) {
       const beanPrice = await PriceService.getBeanPrice({ blockNumber: operatorReward.rawLog.blockNumber });
-      const tipUsd = fromBigInt(operatorReward.args.amount, 6) * beanPrice.usdPrice;
+      const tipUsd = fromBigInt(BigInt(operatorReward.args.amount), 6) * beanPrice.usdPrice;
       return tipUsd;
     }
-  }
-
-  // Via upsert
-  static async updateSowV0Orders(orderDtos) {
-    return await SharedService.genericEntityUpdate(orderDtos, this.orderModel, this.orderAssembler, true);
-  }
-
-  // Via upsert
-  static async updateSowV0Executions(executionDtos) {
-    return await SharedService.genericEntityUpdate(executionDtos, this.executionModel, this.executionAssembler, true);
   }
 
   // If possible, decodes blueprint data into the sowBlueprintv0 call

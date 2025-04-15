@@ -11,7 +11,7 @@ class FilterLogs {
 
   // Retrieves beanstalk events from a specific transaction
   static async getBeanstalkTransactionEvents(receipt, c = C()) {
-    return this.getTransactionEvents(Contracts.getBeanstalk(c), receipt, c);
+    return this.getTransactionEvents([Contracts.getBeanstalk(c)], receipt);
   }
 
   static async getEvents(contract, eventNames, fromBlock, toBlock, c = C()) {
@@ -75,12 +75,18 @@ class FilterLogs {
     return all;
   }
 
-  // Gets all events from a specific transaction for a contract
-  static async getTransactionEvents(contract, receipt, c = C()) {
-    // Filter logs to only include those from this contract and parse them
+  // Gets all events from specific transactions to the given contract(s)
+  static async getTransactionEvents(contracts, receipt) {
+    const contractsByAddress = contracts.reduce((acc, next) => {
+      acc[next.address.toLowerCase()] = next;
+      return acc;
+    }, {});
+
+    // Filter logs and parse them using the address mapping
     const events = receipt.logs
-      .filter((log) => log.address.toLowerCase() === contract.address.toLowerCase())
+      .filter((log) => !!contractsByAddress[log.address.toLowerCase()])
       .map((log) => {
+        const contract = contractsByAddress[log.address.toLowerCase()];
         try {
           const parsed = contract.interface.parseLog(log);
           parsed.rawLog = log;

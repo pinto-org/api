@@ -28,8 +28,8 @@ const contracts = {
   CP2: ['0xBA510C289fD067EBbA41335afa11F0591940d6fe', null, wellFunctionAbi],
   STABLE2: ['0xBA51055a97b40d7f41f3F64b57469b5D45B67c87', null, wellFunctionAbi],
   // TODO: update these
-  TRACTOR_HELPERS: ['?', null, tractorHelpersAbi],
-  SOW_V0: ['0xe58cbe144dd5556c84874dec1b3f2d0d6ac45f1b', null, sowBlueprintv0Abi]
+  TRACTOR_HELPERS: ['0x8C08821f5f94b519c853486eB131667AA528A460', null, tractorHelpersAbi],
+  SOW_V0: ['0xdcaa80371BDF9ff638851713f145Df074428Db19', null, sowBlueprintv0Abi]
 };
 
 // Extract values from the above contracts

@@ -1,5 +1,6 @@
 const { C } = require('../../constants/runtime-constants');
 const TractorConstants = require('../../constants/tractor');
+const Contracts = require('../../datasources/contracts/contracts');
 const FilterLogs = require('../../datasources/events/filter-logs');
 const TractorExecutionDto = require('../../repository/dto/tractor/TractorExecutionDto');
 const TractorOrderDto = require('../../repository/dto/tractor/TractorOrderDto');
@@ -30,8 +31,8 @@ class TractorTask {
     // Find all PublishRequisition and Tractor events
     const events = await FilterLogs.getBeanstalkEvents(
       ['PublishRequisition', 'CancelBlueprint', 'Tractor'],
-      28810007,
-      28811807
+      28952283,
+      28956283
     );
     // const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'CancelBlueprint', 'Tractor'], lastUpdate+1, updateBlock); // TODO: put back
 
@@ -73,7 +74,10 @@ class TractorTask {
 
   static async handleTractor(event) {
     const receipt = await C().RPC.getTransactionReceipt(event.rawLog.transactionHash);
-    const txnEvents = await FilterLogs.getBeanstalkTransactionEvents(receipt);
+    const txnEvents = await FilterLogs.getTransactionEvents(
+      [Contracts.getBeanstalk(), Contracts.get(C().TRACTOR_HELPERS), Contracts.get(C().SOW_V0)],
+      receipt
+    );
 
     // Find events between TractorExecutionBegan and Tractor event indexes
     const began = txnEvents.find(
@@ -82,13 +86,18 @@ class TractorTask {
     if (!began) {
       throw new Error('Could not find TractorExecutionBegan for this Tractor event');
     }
-    const gasUsed = event.args.gasleft - began.args.gasleft;
+    const gasUsed = began.args.gasleft - event.args.gasleft;
     const ethPriceUsd = await PriceService.getTokenPrice(C().WETH, { blockNumber: event.rawLog.blockNumber });
-    const dto = await TractorExecutionDto.fromTractorEvtContext({ tractorEvent: event, receipt, gasUsed, ethPriceUsd });
+    const dto = await TractorExecutionDto.fromTractorEvtContext({
+      tractorEvent: event,
+      receipt,
+      gasUsed,
+      ethPriceUsd: ethPriceUsd.usdPrice
+    });
     const [inserted] = await TractorService.updateExecutions([dto]);
 
     const innerEvents = txnEvents.filter(
-      (e) => e.rawLog.logIndex > began.rawLog.logIndex && e.rawLog.logIndex < event.rawLog.logIndex
+      (e) => e.rawLog.index > began.rawLog.index && e.rawLog.index < event.rawLog.index
     );
 
     // Additional processing if this execution corresponds to a known blueprint
