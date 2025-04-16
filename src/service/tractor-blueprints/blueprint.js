@@ -12,7 +12,7 @@ class BlueprintService {
    * Performs periodic updates for the blueprint's entities
    * @abstract
    */
-  static async periodicUpdate(fromBlock, toBlock) {
+  static async periodicUpdate(TractorService_getOrders, blockNumber) {
     throw new Error('periodicUpdate must be implemented by subclass');
   }
 

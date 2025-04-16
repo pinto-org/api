@@ -1,4 +1,5 @@
 const { C } = require('../../constants/runtime-constants');
+const Contracts = require('../../datasources/contracts/contracts');
 const Interfaces = require('../../datasources/contracts/interfaces');
 const InputError = require('../../error/input-error');
 const SowV0ExecutionDto = require('../../repository/dto/tractor/SowV0ExecutionDto');
@@ -7,6 +8,8 @@ const { sequelize, Sequelize } = require('../../repository/postgres/models');
 const SowV0ExecutionAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-execution-sow-v0-assembler');
 const SowV0OrderAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-order-sow-v0-assembler');
 const { TractorOrderType } = require('../../repository/postgres/models/types/types');
+const Concurrent = require('../../utils/async/concurrent');
+const { BigInt_min } = require('../../utils/bigint');
 const { fromBigInt } = require('../../utils/number');
 const PriceService = require('../price-service');
 const Blueprint = require('./blueprint');
@@ -19,10 +22,87 @@ class TractorSowV0Service extends Blueprint {
   static executionModel = sequelize.models.TractorExecutionSowV0;
   static executionAssembler = SowV0ExecutionAssembler;
 
-  // TractorTask will request periodic update to entities for this blueprint
-  static async periodicUpdate(fromBlock, toBlock) {
+  /**
+   * Determine how many pinto can be sown into each order, accounting for cascading order execution.
+   * One publisher may have multiple orders that could be executed during the same season
+   */
+  static async periodicUpdate(TractorService_getOrders, blockNumber) {
     // This will check all entities and try to update amountFunded/cascade amounts
-    // Verify not cancelled (order level) or completed (blueprint level)
+    const orders = (
+      await TractorService_getOrders({
+        orderType: TractorOrderType.SOW_V0,
+        cancelled: false,
+        orderComplete: false,
+        // Skip/publisher sort isnt necessary unless there are many open orders.
+        limit: 25000
+      })
+    ).orders.sort((a, b) => {
+      // Sort by temperature, and hash to keep deterministic
+      const tempDiff = a.blueprintData.temperature - b.blueprintData.temperature;
+      return tempDiff !== 0 ? tempDiff : a.blueprintHash.localeCompare(b.blueprintHash);
+    });
+
+    // Can process in parallel by publisher
+    const sowOrdersByPublisher = orders.reduce((acc, next) => {
+      (acc[next.publisher] ??= []).push(next.blueprintData);
+      return acc;
+    }, {});
+
+    const tractorHelpers = Contracts.get(C().TRACTOR_HELPERS);
+    const emptyPlan = {
+      sourceTokens: [],
+      stems: [],
+      amounts: [],
+      availableBeans: [],
+      totalAvailableBeans: 0n
+    };
+
+    const TAG = Concurrent.tag(`periodicUpdate-${this.orderType}`);
+    for (const publisher in sowOrdersByPublisher) {
+      const existingPlans = [];
+      await Concurrent.run(TAG, 50, async () => {
+        for (const order of sowOrdersByPublisher[publisher]) {
+          // Combine any existing plans from previously processed orders
+          let combinedExistingPlan = null;
+          if (existingPlans.length > 0) {
+            try {
+              combinedExistingPlan = await tractorHelpers.combineWithdrawalPlans(
+                { target: 'SuperContract', skipTransform: true },
+                existingPlans,
+                {
+                  blockTag: blockNumber
+                }
+              );
+            } catch (e) {}
+          }
+          // Gets withdraw plan for this order
+          try {
+            const withdrawalPlan = await tractorHelpers.getWithdrawalPlanExcludingPlan(
+              { target: 'SuperContract', skipTransform: true },
+              publisher,
+              order.sourceTokenIndices,
+              order.totalAmountToSow,
+              order.maxGrownStalkPerBdv,
+              combinedExistingPlan ?? emptyPlan,
+              { blockTag: blockNumber }
+            );
+            if (withdrawalPlan.sourceTokens.length > 0) {
+              existingPlans.push(withdrawalPlan);
+            }
+
+            const beansLeft = order.totalAmountToSow - order.pintoSownCounter;
+            order.cascadeAmountFunded = BigInt_min([
+              beansLeft,
+              withdrawalPlan.totalAvailableBeans,
+              order.minAmountToSow
+            ]);
+          } catch (e) {}
+        }
+      });
+    }
+    await Concurrent.allSettled(TAG);
+
+    await this.updateOrders(orders.map((o) => o.blueprintData));
   }
 
   // Invoked upon PublishRequisition. Does nothing if the requision is not of this blueprint type
