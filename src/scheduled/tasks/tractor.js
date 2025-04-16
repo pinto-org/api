@@ -9,6 +9,7 @@ const PriceService = require('../../service/price-service');
 const TractorService = require('../../service/tractor-service');
 const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
+const EnvUtil = require('../../utils/env');
 const Log = require('../../utils/logging');
 const TaskRangeUtil = require('../util/task-range');
 
@@ -22,6 +23,13 @@ class TractorTask {
       AppMetaService.getTractorMeta.bind(AppMetaService),
       MAX_BLOCKS
     );
+
+    if (EnvUtil.getDeploymentEnv() === 'local' && !!EnvUtil.getCustomRpcUrl(C().CHAIN)) {
+      const latestBlock = (await C().RPC.getBlock()).number;
+      lastUpdate = Math.max(lastUpdate, latestBlock - 10000);
+      updateBlock = latestBlock;
+    }
+
     if (!isInitialized || lastUpdate === updateBlock) {
       Log.info(`Skipping task, has not been initialized yet or last update is the same as the suggested update block.`);
       return false;
@@ -31,10 +39,9 @@ class TractorTask {
     // Find all PublishRequisition and Tractor events
     const events = await FilterLogs.getBeanstalkEvents(
       ['PublishRequisition', 'CancelBlueprint', 'Tractor'],
-      28952283,
-      28956283
+      lastUpdate + 1,
+      updateBlock
     );
-    // const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'CancelBlueprint', 'Tractor'], lastUpdate+1, updateBlock); // TODO: put back
 
     // Event processing can occur in parallel, but ensure all requisitions are created first
     await AsyncContext.sequelizeTransaction(async () => {
