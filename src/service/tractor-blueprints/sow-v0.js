@@ -60,7 +60,7 @@ class TractorSowV0Service extends Blueprint {
     const TAG = Concurrent.tag(`periodicUpdate-${this.orderType}`);
     for (const publisher in sowOrdersByPublisher) {
       const existingPlans = [];
-      await Concurrent.run(TAG, 50, async () => {
+      await Concurrent.run(TAG, 20, async () => {
         for (const order of sowOrdersByPublisher[publisher]) {
           // Combine any existing plans from previously processed orders
           let combinedExistingPlan = null;
@@ -77,25 +77,31 @@ class TractorSowV0Service extends Blueprint {
           }
           // Gets withdraw plan for this order
           try {
-            const withdrawalPlan = await tractorHelpers.getWithdrawalPlanExcludingPlan(
-              { target: 'SuperContract', skipTransform: true },
-              publisher,
-              order.sourceTokenIndices,
-              order.totalAmountToSow,
-              order.maxGrownStalkPerBdv,
-              combinedExistingPlan ?? emptyPlan,
-              { blockTag: blockNumber }
-            );
-            if (withdrawalPlan.sourceTokens.length > 0) {
-              existingPlans.push(withdrawalPlan);
-            }
-
-            const beansLeft = order.totalAmountToSow - order.pintoSownCounter;
-            order.cascadeAmountFunded = BigInt_min([
-              beansLeft,
-              withdrawalPlan.totalAvailableBeans,
-              order.minAmountToSow
+            const [soloPlan, cascadePlan] = await Promise.all([
+              tractorHelpers.getWithdrawalPlanExcludingPlan(
+                { target: 'SuperContract', skipTransform: true },
+                publisher,
+                order.sourceTokenIndices,
+                order.totalAmountToSow - order.pintoSownCounter,
+                order.maxGrownStalkPerBdv,
+                emptyPlan,
+                { blockTag: blockNumber }
+              ),
+              tractorHelpers.getWithdrawalPlanExcludingPlan(
+                { target: 'SuperContract', skipTransform: true },
+                publisher,
+                order.sourceTokenIndices,
+                order.totalAmountToSow - order.pintoSownCounter,
+                order.maxGrownStalkPerBdv,
+                combinedExistingPlan ?? emptyPlan,
+                { blockTag: blockNumber }
+              )
             ]);
+            existingPlans.push(cascadePlan);
+
+            order.amountFunded = BigInt(soloPlan.totalAvailableBeans);
+            const beansLeft = order.totalAmountToSow - order.pintoSownCounter;
+            order.cascadeAmountFunded = BigInt_min([beansLeft, BigInt(cascadePlan.totalAvailableBeans)]);
           } catch (e) {}
         }
       });
