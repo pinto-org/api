@@ -1,4 +1,5 @@
 const Contracts = require('../../../datasources/contracts/contracts');
+const BlueprintConstants = require('../../../service/tractor-blueprints/blueprint-constants');
 const { fromBigInt } = require('../../../utils/number');
 
 class SowV0ExecutionDto {
@@ -13,7 +14,7 @@ class SowV0ExecutionDto {
       this.beans = BigInt(sowEvt.args.beans);
       this.pods = BigInt(sowEvt.args.pods);
       this.placeInLine = null; // Needs async, will be set outside
-      this.usedTokenIndices = null; // Needs async, will be set outside
+      this.usedTokens = null; // Needs async, will be set outside
       this.usedGrownStalkPerBdv = null; // Needs async, will be set outside
     } else if (type === 'db') {
       this.id = d.id;
@@ -22,7 +23,10 @@ class SowV0ExecutionDto {
       this.beans = d.beans;
       this.pods = d.pods;
       this.placeInLine = d.placeInLine;
-      this.usedTokenIndices = d.usedTokenIndices.split(',').map(BigInt);
+      this.usedTokens = d.usedTokenIndices
+        .split(',')
+        .map(Number)
+        .map((index) => BlueprintConstants.tokenIndexReverseMap()[index]);
       this.usedGrownStalkPerBdv = d.usedGrownStalkPerBdv;
     }
   }
@@ -37,8 +41,8 @@ class SowV0ExecutionDto {
     });
     sowExecutionDto.placeInLine = BigInt(sowEvt.args.index) - BigInt(harvestableIndex);
 
-    // Assign usedTokenIndices, usedGrownStalkPerBdv according to withdraw events
-    await sowExecutionDto.determineWithdrawnTokens(sowExecutionContext.innerEvents, sowExecutionContext.tokenIndexMap);
+    // Assign usedTokens, usedGrownStalkPerBdv according to withdraw events
+    await sowExecutionDto.determineWithdrawnTokens(sowExecutionContext.innerEvents);
 
     return sowExecutionDto;
   }
@@ -47,16 +51,16 @@ class SowV0ExecutionDto {
     return new SowV0ExecutionDto('db', dbModel);
   }
 
-  async determineWithdrawnTokens(innerEvents, tokenIndexMap) {
+  async determineWithdrawnTokens(innerEvents) {
     const removeDeposits = innerEvents.filter((e) => ['RemoveDeposits', 'RemoveDeposit'].includes(e.name));
 
     let totalBdvWithdrawn = 0;
     let totalGrownStalkWithdrawn = 0;
-    this.usedTokenIndices = [];
+    this.usedTokens = [];
     for (const evt of removeDeposits) {
       const token = evt.args.token.toLowerCase();
-      if (token in tokenIndexMap && !this.usedTokenIndices.includes(tokenIndexMap[token])) {
-        this.usedTokenIndices.push(tokenIndexMap[token]);
+      if (!this.usedTokens.includes(token) && token in BlueprintConstants.tokenIndexMap()) {
+        this.usedTokens.push(token);
       }
       // Support both RemoveDeposits and RemoveDeposit
       const bdvs = (evt.args.bdvs ?? [evt.args.bdv]).map(BigInt);

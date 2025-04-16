@@ -10,6 +10,7 @@ const { TractorOrderType } = require('../../repository/postgres/models/types/typ
 const { fromBigInt } = require('../../utils/number');
 const PriceService = require('../price-service');
 const Blueprint = require('./blueprint');
+const BlueprintConstants = require('./blueprint-constants');
 
 class TractorSowV0Service extends Blueprint {
   static orderType = TractorOrderType.SOW_V0;
@@ -17,17 +18,6 @@ class TractorSowV0Service extends Blueprint {
   static orderAssembler = SowV0OrderAssembler;
   static executionModel = sequelize.models.TractorExecutionSowV0;
   static executionAssembler = SowV0ExecutionAssembler;
-
-  static tokenIndexMap() {
-    return {
-      [C().BEAN]: 0,
-      [C().PINTOWETH]: 1,
-      [C().PINTOCBETH]: 2,
-      [C().PINTOCBBTC]: 3,
-      [C().PINTOUSDC]: 4,
-      [C().PINTOWSOL]: 5
-    };
-  }
 
   // TractorTask will request periodic update to entities for this blueprint
   static async periodicUpdate(fromBlock, toBlock) {
@@ -63,11 +53,7 @@ class TractorSowV0Service extends Blueprint {
     await this.updateOrders([sowOrder]);
 
     // Insert execution entity
-    const sowExecutionDto = await SowV0ExecutionDto.fromExecutionContext({
-      executionDto,
-      innerEvents,
-      tokenIndexMap: this.tokenIndexMap()
-    });
+    const sowExecutionDto = await SowV0ExecutionDto.fromExecutionContext({ executionDto, innerEvents });
     await this.updateExecutions([sowExecutionDto]);
 
     // Return amount of tip paid in usd
@@ -123,7 +109,7 @@ class TractorSowV0Service extends Blueprint {
   static validateExecutionParams(blueprintParams) {
     if (
       blueprintParams.usedToken !== undefined &&
-      this.tokenIndexMap()[blueprintParams.usedToken.toLowerCase()] === undefined
+      BlueprintConstants.tokenIndexMap()[blueprintParams.usedToken.toLowerCase()] === undefined
     ) {
       throw new InputError('usedToken must correspond to a valid silo token address');
     }
@@ -134,7 +120,7 @@ class TractorSowV0Service extends Blueprint {
     if (blueprintParams) {
       if (blueprintParams.usedToken !== undefined) {
         where.usedTokenIndices = {
-          [Sequelize.Op.like]: `%${this.tokenIndexMap()[blueprintParams.usedToken.toLowerCase()]}%`
+          [Sequelize.Op.like]: `%${BlueprintConstants.tokenIndexMap()[blueprintParams.usedToken.toLowerCase()]}%`
         };
       }
     }

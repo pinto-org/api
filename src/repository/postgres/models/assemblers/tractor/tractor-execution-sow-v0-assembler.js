@@ -1,3 +1,4 @@
+const BlueprintConstants = require('../../../../../service/tractor-blueprints/blueprint-constants');
 const SowV0ExecutionDto = require('../../../../dto/tractor/SowV0ExecutionDto');
 
 class SowV0ExecutionAssembler {
@@ -9,7 +10,9 @@ class SowV0ExecutionAssembler {
       beans: executionDto.beans,
       pods: executionDto.pods,
       placeInLine: executionDto.placeInLine,
-      usedTokenIndices: executionDto.usedTokenIndices.join(','),
+      usedTokenIndices: executionDto.usedTokens
+        .map((token) => BlueprintConstants.tokenIndexMap()[token.toLowerCase()])
+        .join(','),
       usedGrownStalkPerBdv: executionDto.usedGrownStalkPerBdv
     };
   }
