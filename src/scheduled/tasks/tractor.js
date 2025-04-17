@@ -9,6 +9,7 @@ const PriceService = require('../../service/price-service');
 const TractorService = require('../../service/tractor-service');
 const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
+const { sendWebhookMessage } = require('../../utils/discord');
 const EnvUtil = require('../../utils/env');
 const Log = require('../../utils/logging');
 const TaskRangeUtil = require('../util/task-range');
@@ -83,6 +84,13 @@ class TractorTask {
   }
 
   static async handleTractor(event) {
+    const order = (await TractorService.getOrders({ blueprintHash: event.args.blueprintHash })).orders[0];
+    if (!order) {
+      // For now I want an alert when this happens.
+      sendWebhookMessage(`Tractor event received for unpublished blueprint hash: ${event.args.blueprintHash}`);
+      return;
+    }
+
     const receipt = await C().RPC.getTransactionReceipt(event.rawLog.transactionHash);
     const txnEvents = await FilterLogs.getTransactionEvents(
       [Contracts.getBeanstalk(), Contracts.get(C().TRACTOR_HELPERS), Contracts.get(C().SOW_V0)],
@@ -107,7 +115,6 @@ class TractorTask {
     const [inserted] = await TractorService.updateExecutions([dto]);
 
     // Additional processing if this execution corresponds to a known blueprint
-    const order = (await TractorService.getOrders({ blueprintHash: inserted.blueprintHash })).orders[0];
     if (order.orderType) {
       const blueprintTask = TractorConstants.knownBlueprints()[order.orderType];
       const innerEvents = txnEvents.filter(
