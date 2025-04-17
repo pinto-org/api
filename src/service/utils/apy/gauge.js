@@ -239,8 +239,7 @@ class GaugeApyUtil {
     let range;
     if (apySeason <= 2710) {
       range = [0.5, 1];
-    } else if (apySeason <= 3000) {
-      // TODO: Replace 3000 with season number at time of PI-8 Deployment
+    } else if (apySeason <= 3571) {
       range = [0.5, 1.5];
     } else {
       range = [0.5, 2];
