@@ -9,7 +9,6 @@ const SowV0ExecutionAssembler = require('../../repository/postgres/models/assemb
 const SowV0OrderAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-order-sow-v0-assembler');
 const { TractorOrderType } = require('../../repository/postgres/models/types/types');
 const Concurrent = require('../../utils/async/concurrent');
-const { BigInt_min } = require('../../utils/bigint');
 const { fromBigInt } = require('../../utils/number');
 const PriceService = require('../price-service');
 const Blueprint = require('./blueprint');
@@ -100,14 +99,14 @@ class TractorSowV0Service extends Blueprint {
             existingPlans.push(cascadePlan);
 
             order.amountFunded = BigInt(soloPlan.totalAvailableBeans);
-            const beansLeft = order.totalAmountToSow - order.pintoSownCounter;
-            order.cascadeAmountFunded = BigInt_min([beansLeft, BigInt(cascadePlan.totalAvailableBeans)]);
+            order.cascadeAmountFunded = BigInt(cascadePlan.totalAvailableBeans);
           } catch (e) {}
         }
       });
     }
     await Concurrent.allSettled(TAG);
 
+    // Update sowing order data
     await this.updateOrders(orders.map((o) => o.blueprintData));
   }
 
