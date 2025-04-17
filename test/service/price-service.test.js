@@ -18,7 +18,7 @@ describe('PriceService', () => {
 
   it('should fetch and format Bean price data correctly', async () => {
     const mockPrice = {
-      price: jest.fn().mockResolvedValue({
+      'price()': jest.fn().mockResolvedValue({
         price: 997747n,
         liquidity: 27676822893057n,
         deltaB: -16781104856n
