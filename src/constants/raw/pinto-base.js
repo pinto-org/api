@@ -27,9 +27,8 @@ const contracts = {
   USDC: ['0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', 8, erc20Abi],
   CP2: ['0xBA510C289fD067EBbA41335afa11F0591940d6fe', null, wellFunctionAbi],
   STABLE2: ['0xBA51055a97b40d7f41f3F64b57469b5D45B67c87', null, wellFunctionAbi],
-  // TODO: update on PI-8 deploy
-  TRACTOR_HELPERS: ['0x8C08821f5f94b519c853486eB131667AA528A460', null, tractorHelpersAbi],
-  SOW_V0: ['0xdcaa80371BDF9ff638851713f145Df074428Db19', null, sowBlueprintv0Abi]
+  TRACTOR_HELPERS: ['0x2808b14d287F8CA77eb25B16575aF187d5A05119', null, tractorHelpersAbi],
+  SOW_V0: ['0xbb0a41927895F8ca2b4ECCc659ba158735fCF28B', null, sowBlueprintv0Abi]
 };
 
 // Extract values from the above contracts
