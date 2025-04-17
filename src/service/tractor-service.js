@@ -145,11 +145,11 @@ class TractorService {
     request.limit ??= 100;
 
     const { executions, total, lastUpdated } = await AsyncContext.sequelizeTransaction(async () => {
-      const [{ executions, count }, tractorMeta] = await Promise.all([
+      const [{ executions, total }, tractorMeta] = await Promise.all([
         TractorExecutionRepository.findAllWithOptions({ joinOrder: true, criteriaList, ...request }),
         AppMetaService.getTractorMeta()
       ]);
-      return { executions, total: count, lastUpdated: tractorMeta.lastUpdate };
+      return { executions, total, lastUpdated: tractorMeta.lastUpdate };
     });
     let executionDtos = executions.map((d) => TractorExecutionAssembler.fromModel(d));
 

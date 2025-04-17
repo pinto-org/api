@@ -11,6 +11,7 @@ tags:
   - name: Silo
   - name: Price
   - name: Snapshot (DEPRECATED)
+  - name: Tractor
 
 paths:
   /exchange/cg/tickers:
@@ -925,6 +926,303 @@ paths:
                           example:
                             "0xabcd": 266.32
                             "0xcdef": 1234.28
+  /tractor/orders:
+    post:
+      tags:
+        - Tractor
+      summary: Get tractor orders
+      description: Returns all published tractor orders matching the requested criteria, including further information about known blueprints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderType:
+                  type: string
+                  description: Type of the tractor order
+                  enum:
+                    - SOW_V0
+                    - KNOWN
+                    - UNKNOWN
+                blueprintHash:
+                  type: string
+                  description: Hash of the blueprint
+                publisher:
+                  type: string
+                  description: Publisher of the order
+                cancelled:
+                  type: boolean
+                  description: Filter by cancelled status
+                publishedBetween:
+                  type: array
+                  description: Date range for when orders were published
+                  items:
+                    type: string
+                    format: date-time
+                  minItems: 2
+                  maxItems: 2
+                validBetween:
+                  type: array
+                  description: Date range for order validity
+                  items:
+                    type: string
+                    format: date-time
+                  minItems: 2
+                  maxItems: 2
+                blueprintParams:
+                  type: object
+                  description: Specialized parameters for blueprint-specific retrieval (requires orderType to be specified)
+                limit:
+                  type: number
+                  description: Maximum number of orders to return
+                skip:
+                  type: number
+                  description: Number of orders to skip (for pagination)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lastUpdated:
+                    type: integer
+                    description: Timestamp of the last update
+                  totalRecords:
+                    type: integer
+                    description: Total number of records matching the query
+                  orders:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        blueprintHash:
+                          type: string
+                          description: Hash of the blueprint
+                          example: "0xe9d5800f80c1f1fda3ad5f88d5cd49031fdd01b8b0fb8d71ea869ca6ab212953"
+                        orderType:
+                          type: string
+                          description: Type of the order
+                          example: "SOW_V0"
+                        publisher:
+                          type: string
+                          description: Address of the publisher
+                          example: "0x9726ec4759D6B61010Fd842C494995cFd5952795"
+                        data:
+                          type: string
+                          description: Encoded order data
+                        operatorPasteInstrs:
+                          type: array
+                          items:
+                            type: string
+                        maxNonce:
+                          type: string
+                          description: Maximum nonce value
+                        startTime:
+                          type: string
+                          format: date-time
+                          description: Order start time
+                        endTime:
+                          type: string
+                          format: date-time
+                          description: Order end time
+                        signature:
+                          type: string
+                          description: Order signature
+                        publishedTimestamp:
+                          type: string
+                          format: date-time
+                          description: When the order was published
+                        publishedBlock:
+                          type: integer
+                          description: Block number when published
+                        beanTip:
+                          type: string
+                          description: Bean tip amount
+                        cancelled:
+                          type: boolean
+                          description: Whether the order is cancelled
+                        blueprintData:
+                          type: object
+                          properties:
+                            blueprintHash:
+                              type: string
+                            pintoSownCounter:
+                              type: string
+                            lastExecutedSeason:
+                              type: integer
+                            orderComplete:
+                              type: boolean
+                            amountFunded:
+                              type: string
+                            cascadeAmountFunded:
+                              type: string
+                            sourceTokenIndices:
+                              type: array
+                              items:
+                                type: string
+                            totalAmountToSow:
+                              type: string
+                            minAmountToSowPerSeason:
+                              type: string
+                            maxAmountToSowPerSeason:
+                              type: string
+                            minTemp:
+                              type: string
+                            maxPodlineLength:
+                              type: string
+                            maxGrownStalkPerBdv:
+                              type: string
+                            runBlocksAfterSunrise:
+                              type: string
+                            slippageRatio:
+                              type: string
+                        executionStats:
+                          type: object
+                          properties:
+                            executionCount:
+                              type: integer
+                              description: Number of times the order has been executed
+                            latestExecution:
+                              type: string
+                              format: date-time
+                              nullable: true
+                              description: Timestamp of the latest execution
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message
+  /tractor/executions:
+    post:
+      tags:
+        - Tractor
+      summary: Get tractor executions
+      description: Returns all tractor executions matching the requested criteria, including further information about known blueprints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderType:
+                  type: string
+                  enum: ['KNOWN', 'UNKNOWN']
+                  description: Type of the tractor order
+                blueprintHash:
+                  type: string
+                  description: Hash of the blueprint
+                publisher:
+                  type: string
+                  description: Publisher of the tractor execution
+                operator:
+                  type: string
+                  description: Operator of the tractor execution
+                limit:
+                  type: number
+                  description: Maximum number of results to return
+                skip:
+                  type: number
+                  description: Number of results to skip (for pagination)
+                executedBetween:
+                  type: array
+                  description: Date range for execution time filtering
+                  items:
+                    type: string
+                    format: date-time
+                  minItems: 2
+                  maxItems: 2
+                blueprintParams:
+                  type: object
+                  description: Additional parameters specific to the blueprint type. Requires orderType to be specified.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lastUpdated:
+                    type: integer
+                    description: Block number of the last update
+                  totalRecords:
+                    type: integer
+                    description: Total number of records matching the query
+                  executions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        blueprintHash:
+                          type: string
+                        nonce:
+                          type: string
+                        operator:
+                          type: string
+                        gasCostUsd:
+                          type: number
+                          format: float
+                        tipUsd:
+                          type: number
+                          format: float
+                        executedTimestamp:
+                          type: string
+                          format: date-time
+                        executedBlock:
+                          type: integer
+                        executedTxn:
+                          type: string
+                        orderInfo:
+                          type: object
+                          properties:
+                            orderType:
+                              type: string
+                            publisher:
+                              type: string
+                        blueprintData:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                            blueprintHash:
+                              type: string
+                            index:
+                              type: string
+                            beans:
+                              type: string
+                            pods:
+                              type: string
+                            placeInLine:
+                              type: string
+                            usedTokens:
+                              type: array
+                              items:
+                                type: string
+                            usedGrownStalkPerBdv:
+                              type: number
+                              format: float
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid orderType provided."
 components:
   parameters:
     blockNumber:
