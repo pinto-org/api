@@ -74,33 +74,36 @@ class TractorSowV0Service extends Blueprint {
               );
             } catch (e) {}
           }
-          // Gets withdraw plan for this order
+          // Gets withdraw plans for this order. Onchain call throws if the amount is zero
           try {
-            const [soloPlan, cascadePlan] = await Promise.all([
-              tractorHelpers.getWithdrawalPlanExcludingPlan(
-                { target: 'SuperContract', skipTransform: true },
-                publisher,
-                order.sourceTokenIndices,
-                order.totalAmountToSow - order.pintoSownCounter,
-                order.maxGrownStalkPerBdv,
-                emptyPlan,
-                { blockTag: blockNumber }
-              ),
-              tractorHelpers.getWithdrawalPlanExcludingPlan(
-                { target: 'SuperContract', skipTransform: true },
-                publisher,
-                order.sourceTokenIndices,
-                order.totalAmountToSow - order.pintoSownCounter,
-                order.maxGrownStalkPerBdv,
-                combinedExistingPlan ?? emptyPlan,
-                { blockTag: blockNumber }
-              )
-            ]);
-            existingPlans.push(cascadePlan);
-
+            const soloPlan = await tractorHelpers.getWithdrawalPlanExcludingPlan(
+              { target: 'SuperContract', skipTransform: true },
+              publisher,
+              order.sourceTokenIndices,
+              order.totalAmountToSow - order.pintoSownCounter,
+              order.maxGrownStalkPerBdv,
+              emptyPlan,
+              { blockTag: blockNumber }
+            );
             order.amountFunded = BigInt(soloPlan.totalAvailableBeans);
+          } catch (e) {
+            order.amountFunded = 0n;
+          }
+          try {
+            const cascadePlan = await tractorHelpers.getWithdrawalPlanExcludingPlan(
+              { target: 'SuperContract', skipTransform: true },
+              publisher,
+              order.sourceTokenIndices,
+              order.totalAmountToSow - order.pintoSownCounter,
+              order.maxGrownStalkPerBdv,
+              combinedExistingPlan ?? emptyPlan,
+              { blockTag: blockNumber }
+            );
+            existingPlans.push(cascadePlan);
             order.cascadeAmountFunded = BigInt(cascadePlan.totalAvailableBeans);
-          } catch (e) {}
+          } catch (e) {
+            order.cascadeAmountFunded = 0n;
+          }
         }
       });
     }
