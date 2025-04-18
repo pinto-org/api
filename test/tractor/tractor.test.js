@@ -73,7 +73,7 @@ describe('TractorTask', () => {
 
       await TractorTask.updateTractor();
 
-      expect(blueprintSpy.periodicUpdate).toHaveBeenCalledWith(2001, 4000);
+      expect(blueprintSpy.periodicUpdate).toHaveBeenCalledWith(expect.any(Function), 4000);
     });
   });
 
