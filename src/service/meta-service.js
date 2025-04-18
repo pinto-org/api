@@ -26,5 +26,16 @@ class AppMetaService {
   static async setLastLambdaBdvs(lastBdvs) {
     await MetaRepository.update(C().CHAIN, { lastLambdaBdvs: JSON.stringify(lastBdvs, formatBigintHex) });
   }
+
+  static async getTractorMeta() {
+    const meta = await MetaRepository.get(C().CHAIN);
+    return {
+      lastUpdate: meta?.lastTractorUpdate ? meta.lastTractorUpdate : null
+    };
+  }
+
+  static async setLastTractorUpdate(lastUpdate) {
+    await MetaRepository.update(C().CHAIN, { lastTractorUpdate: lastUpdate });
+  }
 }
 module.exports = AppMetaService;

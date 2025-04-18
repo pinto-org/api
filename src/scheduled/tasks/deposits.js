@@ -3,11 +3,11 @@ const DepositEvents = require('../../datasources/events/deposit-events');
 const DepositDto = require('../../repository/dto/DepositDto');
 const DepositService = require('../../service/deposit-service');
 const AsyncContext = require('../../utils/async/context');
-const ChainUtil = require('../../utils/chain');
 const AppMetaService = require('../../service/meta-service');
 const { percentDiff } = require('../../utils/number');
 const Log = require('../../utils/logging');
 const SiloService = require('../../service/silo-service');
+const TaskRangeUtil = require('../util/task-range');
 
 // If the BDV has changed by at least these amounts, update lambda stats
 const DEFAULT_UPDATE_THRESHOLD = 0.01;
@@ -19,25 +19,16 @@ class DepositsTask {
   // Set by SunriseTask when a new season is encountered. Indicates that all deposits should be updated.
   static __seasonUpdate = false;
 
+  // Returns true if the task can be called again immediately
   static async updateDeposits() {
-    const lambdaMeta = await AppMetaService.getLambdaMeta();
-    if (lambdaMeta.lastUpdate === null) {
-      Log.info(`Skipping deposit task, has not been initializd yet.`);
-      return;
+    const { isInitialized, lastUpdate, updateBlock, isCaughtUp, meta } = await TaskRangeUtil.getUpdateInfo(
+      AppMetaService.getLambdaMeta.bind(AppMetaService),
+      MAX_BLOCKS
+    );
+    if (!isInitialized || lastUpdate === updateBlock) {
+      Log.info(`Skipping task, has not been initialized yet or last update is the same as the suggested update block.`);
+      return false;
     }
-
-    let isCaughtUp = true;
-    const { lastUpdate, lastBdvs } = await AppMetaService.getLambdaMeta();
-
-    // Determine range of blocks to update on
-    const currentBlock = (await C().RPC.getBlock()).number;
-    // Buffer to avoid issues with a chain reorg
-    let updateBlock = currentBlock - ChainUtil.blocksPerInterval(C().CHAIN, 10000);
-    if (updateBlock - lastUpdate > MAX_BLOCKS) {
-      updateBlock = lastUpdate + MAX_BLOCKS;
-      isCaughtUp = false;
-    }
-
     Log.info(`Updating deposits for block range [${lastUpdate}, ${updateBlock}]`);
 
     const tokenInfos = await SiloService.getWhitelistedTokenInfo({ block: updateBlock, chain: C().CHAIN });
@@ -58,6 +49,7 @@ class DepositsTask {
     });
 
     await AsyncContext.sequelizeTransaction(async () => {
+      const { lastBdvs } = meta;
       await DepositsTask.updateLambdaOnBdvChanged(
         lastBdvs,
         updateBlock,
@@ -69,7 +61,7 @@ class DepositsTask {
     });
     DepositsTask.__seasonUpdate = false;
 
-    return isCaughtUp;
+    return !isCaughtUp;
   }
 
   // Updates the list of deposits in the database, adding/removing entries as needed

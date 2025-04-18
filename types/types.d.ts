@@ -1,4 +1,9 @@
 import DepositDto from '../src/repository/dto/DepositDto';
+import TractorOrderDto from '../src/repository/dto/tractor/TractorOrderDto';
+import TractorExecutionDto from '../src/repository/dto/tractor/TractorExecutionDto';
+import SowV0OrderDto from '../src/repository/dto/tractor/SowV0OrderDto';
+import SowV0ExecutionDto from '../src/repository/dto/tractor/SowV0ExecutionDto';
+import { TractorOrderType } from '../src/repository/postgres/models/types/types';
 
 export type DepositYield = {
   // Percentage growth in deposit's bdv
@@ -104,4 +109,67 @@ export type GetDepositsResult = {
   // Block number
   lastUpdated: number;
   deposits: DepositDto[];
+};
+
+type SowV0OrderRequestParams = {
+  orderComplete?: boolean;
+};
+
+type SowV0ExecutionRequestParams = {
+  usedToken?: string;
+};
+
+// Union types for all possible blueprint-specific values
+type BlueprintOrderRequestParams = SowV0OrderRequestParams;
+type BlueprintOrderResponse = SowV0OrderDto;
+type BlueprintExecutionRequestParams = SowV0ExecutionRequestParams;
+type BlueprintExecutionResponse = SowV0ExecutionDto;
+
+export type TractorOrderRequest = {
+  orderType?: keyof TractorOrderType | 'KNOWN' | 'UKNOWN';
+  blueprintHash?: string;
+  publisher?: string;
+  publishedBetween?: [Date, Date];
+  validBetween?: [Date, Date];
+  cancelled?: boolean;
+  blueprintParams?: BlueprintOrderRequestParams;
+  // Pagination
+  limit?: number;
+  skip?: number;
+};
+
+export type TractorExecutionRequest = {
+  orderType?: keyof TractorOrderType | 'KNOWN' | 'UKNOWN';
+  blueprintHash?: string;
+  publisher?: string;
+  operator?: string;
+  executedBetween?: [Date, Date];
+  blueprintParams?: BlueprintExecutionRequestParams;
+  // Pagination
+  limit?: number;
+  skip?: number;
+};
+
+// Combines base order with blueprint-specific data
+type TractorOrderResponse = TractorOrderDto & {
+  blueprintData?: BlueprintOrderResponse;
+};
+
+// Combines base execution with blueprint-specific data
+type TractorExecutionResponse = TractorExecutionDto & {
+  blueprintData?: BlueprintExecutionResponse;
+};
+
+export type TractorOrdersResult = {
+  // Block number
+  lastUpdated: number;
+  orders: TractorOrderResponse[];
+  totalRecords: number;
+};
+
+export type TractorExecutionsResult = {
+  // Block number
+  lastUpdated: number;
+  executions: TractorExecutionResponse[];
+  totalRecords: number;
 };

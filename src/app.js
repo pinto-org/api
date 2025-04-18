@@ -2,6 +2,7 @@ const priceRoutes = require('./routes/price-routes.js');
 const exchangeRoutes = require('./routes/exchange-routes.js');
 const siloRoutes = require('./routes/silo-routes.js');
 const snapshotRoutes = require('./routes/snapshot-routes.js');
+const tractorRoutes = require('./routes/tractor-routes.js');
 
 const Koa = require('koa');
 const bodyParser = require('koa-bodyparser');
@@ -98,6 +99,8 @@ async function appStartup() {
   app.use(siloRoutes.allowedMethods());
   app.use(snapshotRoutes.routes());
   app.use(snapshotRoutes.allowedMethods());
+  app.use(tractorRoutes.routes());
+  app.use(tractorRoutes.allowedMethods());
 
   const router = new Router();
   router.get('/healthcheck', async (ctx) => {

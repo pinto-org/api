@@ -4,8 +4,10 @@
  */
 
 const { C } = require('../constants/runtime-constants');
+const { sequelize } = require('../repository/postgres/models');
 const DepositModelAssembler = require('../repository/postgres/models/assemblers/deposit-assembler');
 const DepositRepository = require('../repository/postgres/queries/deposit-repository');
+const SharedRepository = require('../repository/postgres/queries/shared-repository');
 const TokenRepository = require('../repository/postgres/queries/token-repository');
 const AsyncContext = require('../utils/async/context');
 const AppMetaService = require('./meta-service');
@@ -71,7 +73,7 @@ class DepositService {
   static async updateDeposits(depositDtos) {
     const tokenModels = await TokenRepository.findWhitelistedTokens(C().CHAIN);
     const models = depositDtos.map((d) => DepositModelAssembler.toModel(d, tokenModels));
-    await DepositRepository.upsertDeposits(models);
+    await SharedRepository.genericUpsert(sequelize.models.Deposit, models, false);
   }
 
   static async removeDeposits(depositDtos) {

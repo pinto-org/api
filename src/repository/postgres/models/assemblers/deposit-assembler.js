@@ -20,6 +20,7 @@ class DepositModelAssembler {
       seedsOnLambda: depositDto.seedsOnLambda
     };
   }
+
   static fromModel(depositModel) {
     return DepositDto.fromModel(depositModel);
   }

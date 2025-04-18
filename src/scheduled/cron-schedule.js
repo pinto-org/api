@@ -3,6 +3,7 @@ const { sendWebhookMessage } = require('../utils/discord');
 const SunriseTask = require('./tasks/sunrise');
 const Log = require('../utils/logging');
 const DepositsTask = require('./tasks/deposits');
+const TractorTask = require('./tasks/tractor');
 
 // All cron jobs which could be activated are configured here
 const ALL_JOBS = {
@@ -21,12 +22,31 @@ const ALL_JOBS = {
 
       try {
         DepositsTask.__cronLock = true;
-        let caughtUp = false;
-        while (!caughtUp) {
-          caughtUp = await DepositsTask.updateDeposits();
+        let canExecuteAgain = true;
+        while (canExecuteAgain) {
+          canExecuteAgain = await DepositsTask.updateDeposits();
         }
       } finally {
         DepositsTask.__cronLock = false;
+      }
+    }
+  },
+  tractor: {
+    cron: '* * * * *',
+    function: async () => {
+      if (TractorTask.__cronLock) {
+        Log.info('Tractor task is still running, skipping this minute...');
+        return;
+      }
+
+      try {
+        TractorTask.__cronLock = true;
+        let canExecuteAgain = true;
+        while (canExecuteAgain) {
+          canExecuteAgain = await TractorTask.updateTractor();
+        }
+      } finally {
+        TractorTask.__cronLock = false;
       }
     }
   },

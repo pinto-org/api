@@ -1,4 +1,4 @@
-const Contracts = require('../../datasources/contracts/contracts');
+const BeanstalkSubgraphRepository = require('../../repository/subgraph/beanstalk-subgraph');
 const SiloService = require('../../service/silo-service');
 const YieldService = require('../../service/yield-service');
 const Log = require('../../utils/logging');
@@ -7,7 +7,7 @@ const DepositsTask = require('./deposits');
 
 class SunriseTask {
   static async handleSunrise() {
-    const nextSeason = Number(await Contracts.getBeanstalk().season()) + 1;
+    const nextSeason = (await BeanstalkSubgraphRepository.getLatestSeason()).season + 1;
     Log.info(`Waiting for season ${nextSeason} to be processed by subgraphs...`);
     try {
       // Wait 5.5 mins, fails + notifies if unsuccessful
