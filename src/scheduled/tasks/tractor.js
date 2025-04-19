@@ -2,6 +2,7 @@ const { C } = require('../../constants/runtime-constants');
 const TractorConstants = require('../../constants/tractor');
 const Contracts = require('../../datasources/contracts/contracts');
 const FilterLogs = require('../../datasources/events/filter-logs');
+const { logIndex } = require('../../datasources/rpc-discrepancies');
 const TractorExecutionDto = require('../../repository/dto/tractor/TractorExecutionDto');
 const TractorOrderDto = require('../../repository/dto/tractor/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
@@ -118,7 +119,7 @@ class TractorTask {
     if (order.orderType) {
       const blueprintTask = TractorConstants.knownBlueprints()[order.orderType];
       const innerEvents = txnEvents.filter(
-        (e) => e.rawLog.index > began.rawLog.index && e.rawLog.index < event.rawLog.index
+        (e) => logIndex(e.rawLog) > logIndex(began.rawLog) && logIndex(e.rawLog) < logIndex(event.rawLog)
       );
       const tipUsd = await blueprintTask.orderExecuted(order, inserted, innerEvents);
       if (tipUsd) {
