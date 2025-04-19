@@ -1,4 +1,5 @@
 const { C } = require('../../../constants/runtime-constants');
+const { effectiveGasPriceBI } = require('../../../datasources/rpc-discrepancies');
 const { fromBigInt } = require('../../../utils/number');
 
 class TractorExecutionDto {
@@ -8,7 +9,7 @@ class TractorExecutionDto {
       this.blueprintHash = e.args.blueprintHash;
       this.nonce = BigInt(e.args.nonce);
       this.operator = e.args.operator;
-      this.gasCostUsd = ethPriceUsd * gasUsed * fromBigInt(BigInt(receipt.effectiveGasPrice) ?? receipt.gasPrice, 18);
+      this.gasCostUsd = ethPriceUsd * gasUsed * fromBigInt(effectiveGasPriceBI(receipt), 18);
       this.tipUsd = null; // Will be updated later if this is a known blueprint and supports tips
       this.executedTimestamp = null; // Needs async, will be set outside
       this.executedBlock = e.rawLog.blockNumber;
