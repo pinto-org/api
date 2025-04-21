@@ -75,7 +75,13 @@ router.post('/yield-history', async (ctx) => {
   /** @type {GetApyHistoryRequest} */
   const body = ctx.request.body;
 
-  if (!body.token || !body.emaWindow || !body.initType || !body.fromSeason || !body.toSeason) {
+  if (
+    !body.token ||
+    !body.emaWindow ||
+    !body.initType ||
+    body.fromSeason === undefined ||
+    body.toSeason === undefined
+  ) {
     throw new InputError('A required parameter was not provided.');
   }
 
