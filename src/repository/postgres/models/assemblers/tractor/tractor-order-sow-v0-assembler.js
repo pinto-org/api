@@ -25,5 +25,4 @@ class SowV0OrderAssembler {
     return SowV0OrderDto.fromModel(orderModel);
   }
 }
-
 module.exports = SowV0OrderAssembler;

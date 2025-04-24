@@ -1,4 +1,4 @@
-const TractorSowV0Service = require('../service/tractor-blueprints/sow-v0');
+const TractorSowV0Service = require('../service/tractor/blueprints/sow-v0');
 
 class TractorConstants {
   static knownBlueprints() {

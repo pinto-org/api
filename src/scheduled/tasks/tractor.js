@@ -7,7 +7,8 @@ const TractorExecutionDto = require('../../repository/dto/tractor/TractorExecuti
 const TractorOrderDto = require('../../repository/dto/tractor/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
 const PriceService = require('../../service/price-service');
-const TractorService = require('../../service/tractor-service');
+const SnapshotSowV0Service = require('../../service/tractor/snapshot-sow-v0-service');
+const TractorService = require('../../service/tractor/tractor-service');
 const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
 const { sendWebhookMessage } = require('../../utils/discord');
@@ -21,10 +22,13 @@ const MAX_BLOCKS = 2000;
 class TractorTask {
   // Returns true if the task can be called again immediately
   static async updateTractor() {
-    let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(
-      AppMetaService.getTractorMeta.bind(AppMetaService),
-      MAX_BLOCKS
-    );
+    const [meta, snapshotBlock] = await Promise.all([
+      AppMetaService.getTractorMeta(),
+      SnapshotSowV0Service.nextSnapshotBlock()
+    ]);
+    let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS, {
+      maxReturnBlock: snapshotBlock
+    });
 
     if (EnvUtil.getDeploymentEnv() === 'local' && !!EnvUtil.getCustomRpcUrl(C().CHAIN)) {
       const latestBlock = (await C().RPC.getBlock()).number;
@@ -58,6 +62,10 @@ class TractorTask {
           return b.periodicUpdate(TractorService.getOrders.bind(TractorService), updateBlock);
         })
       );
+
+      if (updateBlock === snapshotBlock) {
+        await SnapshotSowV0Service.takeSnapshot();
+      }
 
       await AppMetaService.setLastTractorUpdate(updateBlock);
     });

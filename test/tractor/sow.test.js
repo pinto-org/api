@@ -2,7 +2,7 @@ const { C } = require('../../src/constants/runtime-constants');
 const SowV0ExecutionDto = require('../../src/repository/dto/tractor/SowV0ExecutionDto');
 const SowV0OrderDto = require('../../src/repository/dto/tractor/SowV0OrderDto');
 const PriceService = require('../../src/service/price-service');
-const TractorSowV0Service = require('../../src/service/tractor-blueprints/sow-v0');
+const TractorSowV0Service = require('../../src/service/tractor/blueprints/sow-v0');
 
 describe('TractorSowV0Service', () => {
   beforeEach(() => {

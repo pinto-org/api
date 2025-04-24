@@ -1,11 +1,11 @@
 const { C } = require('../../constants/runtime-constants');
 const ChainUtil = require('../../utils/chain');
-const Log = require('../../utils/logging');
 
 class TaskRangeUtil {
-  // metaFunction: async function that has a `lastUpdate` property
-  static async getUpdateInfo(metaFunction, maxUpdateBlocks) {
-    const meta = await metaFunction();
+  // meta: has a `lastUpdate` property
+  // maxReturnBlock: the maximum block number to return
+  // maxBlocksAtOnce: the maximum number of blocks to update at once
+  static async getUpdateInfo(meta, maxBlocksAtOnce, { maxReturnBlock } = {}) {
     if (meta.lastUpdate === null) {
       return { isInitialized: false };
     }
@@ -16,8 +16,13 @@ class TaskRangeUtil {
     const currentBlock = (await C().RPC.getBlock()).number;
     // Buffer to avoid issues with a chain reorg
     let updateBlock = currentBlock - ChainUtil.blocksPerInterval(C().CHAIN, 10000);
-    if (updateBlock - meta.lastUpdate > maxUpdateBlocks) {
-      updateBlock = meta.lastUpdate + maxUpdateBlocks;
+    if (updateBlock - meta.lastUpdate > maxBlocksAtOnce) {
+      updateBlock = meta.lastUpdate + maxBlocksAtOnce;
+      isCaughtUp = false;
+    }
+
+    if (maxReturnBlock !== undefined && updateBlock > maxReturnBlock) {
+      updateBlock = maxReturnBlock;
       isCaughtUp = false;
     }
 

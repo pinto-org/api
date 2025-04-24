@@ -1,4 +1,4 @@
-const { C } = require('../../constants/runtime-constants');
+const { C } = require('../../../constants/runtime-constants');
 
 class BlueprintConstants {
   static tokenIndexMap() {

@@ -1,5 +1,5 @@
 const Contracts = require('../../../datasources/contracts/contracts');
-const BlueprintConstants = require('../../../service/tractor-blueprints/blueprint-constants');
+const BlueprintConstants = require('../../../service/tractor/blueprints/blueprint-constants');
 const { fromBigInt } = require('../../../utils/number');
 
 class SowV0ExecutionDto {

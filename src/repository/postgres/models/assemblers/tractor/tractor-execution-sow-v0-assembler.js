@@ -1,4 +1,4 @@
-const BlueprintConstants = require('../../../../../service/tractor-blueprints/blueprint-constants');
+const BlueprintConstants = require('../../../../../service/tractor/blueprints/blueprint-constants');
 const SowV0ExecutionDto = require('../../../../dto/tractor/SowV0ExecutionDto');
 
 class SowV0ExecutionAssembler {
@@ -21,5 +21,4 @@ class SowV0ExecutionAssembler {
     return SowV0ExecutionDto.fromModel(executionModel);
   }
 }
-
 module.exports = SowV0ExecutionAssembler;
