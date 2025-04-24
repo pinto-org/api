@@ -108,12 +108,18 @@ class TractorTask {
 
     // Find events between TractorExecutionBegan and Tractor event indexes
     const began = txnEvents.find(
-      (e) => e.name === 'TractorExecutionBegan' && e.args.blueprintHash === event.args.blueprintHash
+      (e) =>
+        e.name === 'TractorExecutionBegan' &&
+        e.args.blueprintHash === event.args.blueprintHash &&
+        Number(e.args.nonce) === Number(event.args.nonce)
     );
     if (!began) {
       throw new Error('Could not find TractorExecutionBegan for this Tractor event');
     }
-    const gasUsed = began.args.gasleft - event.args.gasleft;
+    // There is ~120k of gas overhead in calling the tractor function.
+    // Split this cost among however many Tractor executions are in this transaction.
+    const overheadGas = 120000 / txnEvents.filter((e) => e.name === 'Tractor').length;
+    const gasUsed = overheadGas + began.args.gasleft - event.args.gasleft;
     const ethPriceUsd = await PriceService.getTokenPrice(C().WETH, { blockNumber: event.rawLog.blockNumber });
     const dto = await TractorExecutionDto.fromTractorEvtContext({
       tractorEvent: event,
