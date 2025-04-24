@@ -1,12 +1,13 @@
 const { C } = require('../../constants/runtime-constants');
 const Contracts = require('../../datasources/contracts/contracts');
 const SnapshotSowV0Dto = require('../../repository/dto/tractor/SnapshotSowV0Dto');
-const { sequelize } = require('../../repository/postgres/models');
+const { sequelize, Sequelize } = require('../../repository/postgres/models');
 const SnapshotSowV0Assembler = require('../../repository/postgres/models/assemblers/tractor/snapshot-sow-v0-assembler');
 const SharedRepository = require('../../repository/postgres/queries/shared-repository');
 const SnapshotSowV0Repository = require('../../repository/postgres/queries/snapshot-sow-v0-repository');
 const AsyncContext = require('../../utils/async/context');
 const ChainUtil = require('../../utils/chain');
+const AppMetaService = require('../meta-service');
 
 class SnapshotSowV0Service {
   // Returns the block number of when the next snapshot should be taken
@@ -46,6 +47,40 @@ class SnapshotSowV0Service {
     const model = SnapshotSowV0Assembler.toModel(dto);
 
     await SharedRepository.genericUpsert(sequelize.models.TractorSnapshotSowV0, [model], false);
+  }
+
+  /**
+   * @param {import('../../../types/types').TractorSnapshotsRequest} request
+   * @returns {Promise<import('../../../types/types').TractorSnapshotsResult>}
+   */
+  static async getSnapshots(request) {
+    const criteriaList = [];
+    if (request.between) {
+      criteriaList.push({
+        snapshotTimestamp: {
+          [Sequelize.Op.between]: request.between
+        }
+      });
+    }
+    request.limit ??= 100;
+
+    const { snapshots, total, lastUpdated } = await AsyncContext.sequelizeTransaction(async () => {
+      const [{ snapshots, total }, tractorMeta] = await Promise.all([
+        SnapshotSowV0Repository.findAllWithOptions({
+          criteriaList,
+          ...request
+        }),
+        AppMetaService.getTractorMeta()
+      ]);
+      return { snapshots, total, lastUpdated: tractorMeta.lastUpdate };
+    });
+    let dtos = snapshots.map((d) => SnapshotSowV0Assembler.fromModel(d));
+
+    return {
+      lastUpdated,
+      snapshots: dtos,
+      totalRecords: total
+    };
   }
 }
 

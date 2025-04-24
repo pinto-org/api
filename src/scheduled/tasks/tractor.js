@@ -93,14 +93,16 @@ class TractorTask {
   }
 
   static async handleTractor(event) {
-    const order = (await TractorService.getOrders({ blueprintHash: event.args.blueprintHash })).orders[0];
+    const [receipt, order, ethPriceUsd] = await Promise.all([
+      C().RPC.getTransactionReceipt(event.rawLog.transactionHash),
+      (async () => (await TractorService.getOrders({ blueprintHash: event.args.blueprintHash })).orders[0])(),
+      PriceService.getTokenPrice(C().WETH, { blockNumber: event.rawLog.blockNumber })
+    ]);
     if (!order) {
       // For now I want an alert when this happens.
       sendWebhookMessage(`Tractor event received for unpublished blueprint hash: ${event.args.blueprintHash}`);
       return;
     }
-
-    const receipt = await C().RPC.getTransactionReceipt(event.rawLog.transactionHash);
     const txnEvents = await FilterLogs.getTransactionEvents(
       [Contracts.getBeanstalk(), Contracts.get(C().TRACTOR_HELPERS), Contracts.get(C().SOW_V0)],
       receipt
@@ -120,7 +122,6 @@ class TractorTask {
     // Split this cost among however many Tractor executions are in this transaction.
     const overheadGas = 120000 / txnEvents.filter((e) => e.name === 'Tractor').length;
     const gasUsed = overheadGas + began.args.gasleft - event.args.gasleft;
-    const ethPriceUsd = await PriceService.getTokenPrice(C().WETH, { blockNumber: event.rawLog.blockNumber });
     const dto = await TractorExecutionDto.fromTractorEvtContext({
       tractorEvent: event,
       receipt,
