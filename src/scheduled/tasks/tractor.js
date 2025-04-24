@@ -64,7 +64,7 @@ class TractorTask {
       );
 
       if (updateBlock === snapshotBlock) {
-        await SnapshotSowV0Service.takeSnapshot();
+        await SnapshotSowV0Service.takeSnapshot(updateBlock);
       }
 
       await AppMetaService.setLastTractorUpdate(updateBlock);

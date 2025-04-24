@@ -1,5 +1,10 @@
+const { C } = require('../../constants/runtime-constants');
+const SnapshotSowV0Dto = require('../../repository/dto/tractor/SnapshotSowV0Dto');
+const { sequelize } = require('../../repository/postgres/models');
 const SnapshotSowV0Assembler = require('../../repository/postgres/models/assemblers/tractor/snapshot-sow-v0-assembler');
+const SharedRepository = require('../../repository/postgres/queries/shared-repository');
 const SnapshotSowV0Repository = require('../../repository/postgres/queries/snapshot-sow-v0-repository');
+const AsyncContext = require('../../utils/async/context');
 const ChainUtil = require('../../utils/chain');
 
 class SnapshotSowV0Service {
@@ -15,9 +20,30 @@ class SnapshotSowV0Service {
     return 29115727;
   }
 
-  // Inserts a snapshot of the current state
-  static async takeSnapshot() {
-    //
+  // Inserts a snapshot of the current state.
+  // Data must have already been updated through snapshotBlock (having written to meta is optional).
+  static async takeSnapshot(snapshotBlock) {
+    const blockTimestamp = new Date((await C().RPC.getBlock(snapshotBlock)).timestamp * 1000);
+    const [[result]] = await sequelize.query(
+      `SELECT
+        (SELECT SUM(beans) FROM tractor_execution_sow_v0) AS sum_beans,
+        (SELECT SUM(pods) FROM tractor_execution_sow_v0) AS sum_pods,
+        (SELECT SUM("cascadeAmountFunded") FROM tractor_order_sow_v0 WHERE "minTemp" < 1200000000) AS sum_cascade_below_temp,
+        (SELECT SUM("cascadeAmountFunded") FROM tractor_order_sow_v0) AS sum_cascade_total,
+        (SELECT SUM(o."beanTip") FROM tractor_order o JOIN tractor_execution e ON o."blueprintHash" = e."blueprintHash") AS sum_paid_tips,
+        (SELECT MAX("beanTip") FROM tractor_order WHERE "orderType" = 'SOW_V0') AS max_bean_tip,
+        (SELECT COUNT(*) FROM tractor_execution_sow_v0) AS count_executions;`,
+      { transaction: AsyncContext.getOrUndef('transaction') }
+    );
+
+    const dto = SnapshotSowV0Dto.fromLiveSnapshot({
+      block: snapshotBlock,
+      timestamp: blockTimestamp,
+      snapshotData: result
+    });
+    const model = SnapshotSowV0Assembler.toModel(dto);
+
+    await SharedRepository.genericUpsert(sequelize.models.TractorSnapshotSowV0, [model], false);
   }
 }
 

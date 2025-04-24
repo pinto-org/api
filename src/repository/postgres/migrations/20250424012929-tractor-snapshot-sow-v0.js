@@ -20,6 +20,7 @@ module.exports = {
         allowNull: false
       },
       ...bigintNumericColumn('totalPintoSown', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('totalPodsMinted', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('totalCascadeFundedBelowTemp', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('totalCascadeFundedAnyTemp', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('totalTipsPaid', Sequelize, { allowNull: false }),
