@@ -5,6 +5,10 @@ class TractorOrderRepository {
   static async findAllWithOptions({ criteriaList, limit, skip } = {}) {
     const options = {
       where: {},
+      order: [
+        ['publishedTimestamp', 'DESC'],
+        ['blueprintHash', 'ASC']
+      ],
       transaction: AsyncContext.getOrUndef('transaction')
     };
 

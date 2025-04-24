@@ -77,6 +77,7 @@ router.post('/executions', async (ctx) => {
 
   if (
     (body.blueprintHash && typeof body.blueprintHash !== 'string') ||
+    (body.nonce && typeof body.nonce !== 'number') ||
     (body.publisher && typeof body.publisher !== 'string') ||
     (body.operator && typeof body.operator !== 'string') ||
     (body.limit && typeof body.limit !== 'number') ||

@@ -133,6 +133,7 @@ class TractorService {
       }
     }
     request.blueprintHash && criteriaList.push({ blueprintHash: request.blueprintHash });
+    request.nonce !== undefined && criteriaList.push({ nonce: request.nonce });
     request.publisher && criteriaList.push({ '$TractorOrder.publisher$': request.publisher });
     request.operator && criteriaList.push({ operator: request.operator });
     if (request.executedBetween) {

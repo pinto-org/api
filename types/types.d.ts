@@ -141,6 +141,7 @@ export type TractorOrderRequest = {
 export type TractorExecutionRequest = {
   orderType?: keyof TractorOrderType | 'KNOWN' | 'UKNOWN';
   blueprintHash?: string;
+  nonce?: number;
   publisher?: string;
   operator?: string;
   executedBetween?: [Date, Date];

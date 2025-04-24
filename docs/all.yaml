@@ -1121,6 +1121,9 @@ paths:
                 blueprintHash:
                   type: string
                   description: Hash of the blueprint
+                nonce:
+                  type: number
+                  description: Execution nonce
                 publisher:
                   type: string
                   description: Publisher of the tractor execution

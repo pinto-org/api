@@ -5,6 +5,7 @@ class TractorExecutionRepository {
   static async findAllWithOptions({ joinOrder, criteriaList, limit, skip } = {}) {
     const options = {
       where: {},
+      order: [['id', 'DESC']],
       transaction: AsyncContext.getOrUndef('transaction')
     };
 
