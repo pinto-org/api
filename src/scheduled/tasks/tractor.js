@@ -121,7 +121,7 @@ class TractorTask {
     // There is ~120k of gas overhead in calling the tractor function.
     // Split this cost among however many Tractor executions are in this transaction.
     const overheadGas = 120000 / txnEvents.filter((e) => e.name === 'Tractor').length;
-    const gasUsed = overheadGas + began.args.gasleft - event.args.gasleft;
+    const gasUsed = overheadGas + Number(began.args.gasleft - event.args.gasleft);
     const dto = await TractorExecutionDto.fromTractorEvtContext({
       tractorEvent: event,
       receipt,
