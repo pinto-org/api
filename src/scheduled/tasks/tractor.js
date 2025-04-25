@@ -7,7 +7,8 @@ const TractorExecutionDto = require('../../repository/dto/tractor/TractorExecuti
 const TractorOrderDto = require('../../repository/dto/tractor/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
 const PriceService = require('../../service/price-service');
-const TractorService = require('../../service/tractor-service');
+const SnapshotSowV0Service = require('../../service/tractor/snapshot-sow-v0-service');
+const TractorService = require('../../service/tractor/tractor-service');
 const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
 const { sendWebhookMessage } = require('../../utils/discord');
@@ -21,10 +22,13 @@ const MAX_BLOCKS = 2000;
 class TractorTask {
   // Returns true if the task can be called again immediately
   static async updateTractor() {
-    let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(
-      AppMetaService.getTractorMeta.bind(AppMetaService),
-      MAX_BLOCKS
-    );
+    const [meta, snapshotBlock] = await Promise.all([
+      AppMetaService.getTractorMeta(),
+      SnapshotSowV0Service.nextSnapshotBlock()
+    ]);
+    let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS, {
+      maxReturnBlock: snapshotBlock
+    });
 
     if (EnvUtil.getDeploymentEnv() === 'local' && !!EnvUtil.getCustomRpcUrl(C().CHAIN)) {
       const latestBlock = (await C().RPC.getBlock()).number;
@@ -59,6 +63,10 @@ class TractorTask {
         })
       );
 
+      if (updateBlock === snapshotBlock) {
+        await SnapshotSowV0Service.takeSnapshot(updateBlock);
+      }
+
       await AppMetaService.setLastTractorUpdate(updateBlock);
     });
 
@@ -85,14 +93,16 @@ class TractorTask {
   }
 
   static async handleTractor(event) {
-    const order = (await TractorService.getOrders({ blueprintHash: event.args.blueprintHash })).orders[0];
+    const [receipt, order, ethPriceUsd] = await Promise.all([
+      C().RPC.getTransactionReceipt(event.rawLog.transactionHash),
+      (async () => (await TractorService.getOrders({ blueprintHash: event.args.blueprintHash })).orders[0])(),
+      PriceService.getTokenPrice(C().WETH, { blockNumber: event.rawLog.blockNumber })
+    ]);
     if (!order) {
       // For now I want an alert when this happens.
       sendWebhookMessage(`Tractor event received for unpublished blueprint hash: ${event.args.blueprintHash}`);
       return;
     }
-
-    const receipt = await C().RPC.getTransactionReceipt(event.rawLog.transactionHash);
     const txnEvents = await FilterLogs.getTransactionEvents(
       [Contracts.getBeanstalk(), Contracts.get(C().TRACTOR_HELPERS), Contracts.get(C().SOW_V0)],
       receipt
@@ -100,13 +110,18 @@ class TractorTask {
 
     // Find events between TractorExecutionBegan and Tractor event indexes
     const began = txnEvents.find(
-      (e) => e.name === 'TractorExecutionBegan' && e.args.blueprintHash === event.args.blueprintHash
+      (e) =>
+        e.name === 'TractorExecutionBegan' &&
+        e.args.blueprintHash === event.args.blueprintHash &&
+        Number(e.args.nonce) === Number(event.args.nonce)
     );
     if (!began) {
       throw new Error('Could not find TractorExecutionBegan for this Tractor event');
     }
-    const gasUsed = began.args.gasleft - event.args.gasleft;
-    const ethPriceUsd = await PriceService.getTokenPrice(C().WETH, { blockNumber: event.rawLog.blockNumber });
+    // There is ~120k of gas overhead in calling the tractor function.
+    // Split this cost among however many Tractor executions are in this transaction.
+    const overheadGas = 120000 / txnEvents.filter((e) => e.name === 'Tractor').length;
+    const gasUsed = overheadGas + began.args.gasleft - event.args.gasleft;
     const dto = await TractorExecutionDto.fromTractorEvtContext({
       tractorEvent: event,
       receipt,

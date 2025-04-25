@@ -13,7 +13,8 @@ const ALL_JOBS = {
     function: SunriseTask.handleSunrise
   },
   deposits: {
-    cron: '* * * * *',
+    // 11 seconds into the minute; the task has a 5 block buffer, this will ensure it processes the block on the minute
+    cron: '11 * * * * *',
     function: async () => {
       if (DepositsTask.__cronLock) {
         Log.info('Deposits task is still running, skipping this minute...');
@@ -32,7 +33,8 @@ const ALL_JOBS = {
     }
   },
   tractor: {
-    cron: '* * * * *',
+    // 11 seconds into the minute; the task has a 5 block buffer, this will ensure it processes the block on the minute
+    cron: '11 * * * * *',
     function: async () => {
       if (TractorTask.__cronLock) {
         Log.info('Tractor task is still running, skipping this minute...');

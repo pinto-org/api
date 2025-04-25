@@ -21,10 +21,8 @@ class DepositsTask {
 
   // Returns true if the task can be called again immediately
   static async updateDeposits() {
-    const { isInitialized, lastUpdate, updateBlock, isCaughtUp, meta } = await TaskRangeUtil.getUpdateInfo(
-      AppMetaService.getLambdaMeta.bind(AppMetaService),
-      MAX_BLOCKS
-    );
+    const meta = await AppMetaService.getLambdaMeta();
+    const { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS);
     if (!isInitialized || lastUpdate === updateBlock) {
       Log.info(`Skipping task, has not been initialized yet or last update is the same as the suggested update block.`);
       return false;

@@ -1,17 +1,17 @@
-const TractorConstants = require('../constants/tractor');
-const { sequelize, Sequelize } = require('../repository/postgres/models');
-const TractorExecutionAssembler = require('../repository/postgres/models/assemblers/tractor/tractor-execution-assembler');
-const TractorOrderAssembler = require('../repository/postgres/models/assemblers/tractor/tractor-order-assembler');
-const TractorExecutionRepository = require('../repository/postgres/queries/tractor-execution-repository');
-const TractorOrderRepository = require('../repository/postgres/queries/tractor-order-repository');
-const AsyncContext = require('../utils/async/context');
-const AppMetaService = require('./meta-service');
-const SharedService = require('./shared-service');
+const TractorConstants = require('../../constants/tractor');
+const { sequelize, Sequelize } = require('../../repository/postgres/models');
+const TractorExecutionAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-execution-assembler');
+const TractorOrderAssembler = require('../../repository/postgres/models/assemblers/tractor/tractor-order-assembler');
+const TractorExecutionRepository = require('../../repository/postgres/queries/tractor-execution-repository');
+const TractorOrderRepository = require('../../repository/postgres/queries/tractor-order-repository');
+const AsyncContext = require('../../utils/async/context');
+const AppMetaService = require('../meta-service');
+const SharedService = require('../shared-service');
 
 class TractorService {
   /**
-   * @param {import('../../types/types').TractorOrderRequest} request
-   * @returns {Promise<import('../../types/types').TractorOrdersResult>}
+   * @param {import('../../../types/types').TractorOrderRequest} request
+   * @returns {Promise<import('../../../types/types').TractorOrdersResult>}
    */
   static async getOrders(request) {
     // Retrieve all matching orders
@@ -117,8 +117,8 @@ class TractorService {
   }
 
   /**
-   * @param {import('../../types/types').TractorExecutionRequest} request
-   * @returns {Promise<import('../../types/types').TractorExecutionsResult>}
+   * @param {import('../../../types/types').TractorExecutionRequest} request
+   * @returns {Promise<import('../../../types/types').TractorExecutionsResult>}
    */
   static async getExecutions(request) {
     // Retrieve all matching executions
@@ -133,6 +133,7 @@ class TractorService {
       }
     }
     request.blueprintHash && criteriaList.push({ blueprintHash: request.blueprintHash });
+    request.nonce !== undefined && criteriaList.push({ nonce: request.nonce });
     request.publisher && criteriaList.push({ '$TractorOrder.publisher$': request.publisher });
     request.operator && criteriaList.push({ operator: request.operator });
     if (request.executedBetween) {

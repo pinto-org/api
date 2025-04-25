@@ -1,4 +1,4 @@
-const SharedService = require('../shared-service');
+const SharedService = require('../../shared-service');
 
 // Base class for Tractor blueprint services
 class BlueprintService {

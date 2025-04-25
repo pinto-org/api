@@ -9,11 +9,17 @@ class DevSeeder {
       Log.info('Running Tractor dev seeder');
       await AsyncContext.sequelizeTransaction(async () => {
         await sequelize.query('truncate table tractor_order cascade');
-        await sequelize.query('update "ApiMeta" set "lastTractorUpdate" = 29064231;');
+        await sequelize.query('truncate table tractor_snapshot_sow_v0 cascade');
+        await sequelize.query('update "ApiMeta" set "lastTractorUpdate" = 29114231;');
       });
 
       await AsyncContext.run({ chain: 'base' }, async () => {
-        while (await TractorTask.updateTractor()) {}
+        try {
+          TractorTask.__cronLock = true;
+          while (await TractorTask.updateTractor()) {}
+        } finally {
+          TractorTask.__cronLock = false;
+        }
       });
     }
   }

@@ -1121,6 +1121,9 @@ paths:
                 blueprintHash:
                   type: string
                   description: Hash of the blueprint
+                nonce:
+                  type: number
+                  description: Execution nonce
                 publisher:
                   type: string
                   description: Publisher of the tractor execution
@@ -1223,6 +1226,109 @@ paths:
                   error:
                     type: string
                     example: "Invalid orderType provided."
+  /tractor/snapshots:
+    post:
+      tags:
+        - Tractor
+      summary: Get tractor state snapshots
+      description: Returns historical snapshots of tractor metrics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderType:
+                  type: string
+                  description: Type of the tractor order
+                  enum:
+                    - SOW_V0
+                between:
+                  type: array
+                  description: Date range for snapshot time filtering
+                  items:
+                    type: string
+                    format: date-time
+                  minItems: 2
+                  maxItems: 2
+                limit:
+                  type: number
+                  description: Maximum number of snapshots to return
+                skip:
+                  type: number
+                  description: Number of snapshots to skip (for pagination)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lastUpdated:
+                    type: integer
+                    description: Block number of the last update
+                  totalRecords:
+                    type: integer
+                    description: Total number of snapshots matching the query
+                  snapshots:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        snapshotTimestamp:
+                          type: string
+                          format: date-time
+                          description: When the snapshot was taken
+                        snapshotBlock:
+                          type: integer
+                          description: Block number when the snapshot was taken
+                        totalPintoSown:
+                          type: string
+                          description: (SOW_V0) Cumulative amount of Pinto sown at snapshot time
+                        totalPodsMinted:
+                          type: string
+                          description: (SOW_V0) Cumulative number of pods minted at snapshot time
+                        totalCascadeFundedBelowTemp:
+                          type: string
+                          description: (SOW_V0) Total funded amount that can be executed at the current temperature
+                        totalCascadeFundedAnyTemp:
+                          type: string
+                          description: (SOW_V0) Total funded amount that can be executed at any temperature
+                        totalTipsPaid:
+                          type: string
+                          description: (SOW_V0) Cumulative tips paid at snapshot time
+                        currentMaxTip:
+                          type: string
+                          description: (SOW_V0) Current maximum tip at snapshot time
+                        totalExecutions:
+                          type: integer
+                          description: (SOW_V0) Cumulative number of executions at snapshot time
+                example:
+                  lastUpdated: 29374836
+                  totalRecords: 25
+                  snapshots:
+                    - id: 172
+                      snapshotTimestamp: "2025-04-23T23:00:01.000Z"
+                      snapshotBlock: 29329927
+                      totalPintoSown: "25114326676"
+                      totalPodsMinted: "368220397685"
+                      totalCascadeFundedBelowTemp: "24198821026"
+                      totalCascadeFundedAnyTemp: "69015496855"
+                      totalTipsPaid: "26700000"
+                      currentMaxTip: "910000"
+                      totalExecutions: 71
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid date range provided."
 components:
   parameters:
     blockNumber:

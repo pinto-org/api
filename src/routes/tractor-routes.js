@@ -1,7 +1,8 @@
 const TractorConstants = require('../constants/tractor');
 const InputError = require('../error/input-error');
 const { TractorOrderType } = require('../repository/postgres/models/types/types');
-const TractorService = require('../service/tractor-service');
+const SnapshotSowV0Service = require('../service/tractor/snapshot-sow-v0-service');
+const TractorService = require('../service/tractor/tractor-service');
 
 const Router = require('koa-router');
 const router = new Router({
@@ -36,8 +37,8 @@ router.post('/orders', async (ctx) => {
   if (
     (body.blueprintHash && typeof body.blueprintHash !== 'string') ||
     (body.publisher && typeof body.publisher !== 'string') ||
-    (body.limit && typeof body.limit !== 'number') ||
-    (body.skip && typeof body.skip !== 'number') ||
+    (body.limit !== undefined && typeof body.limit !== 'number') ||
+    (body.skip !== undefined && typeof body.skip !== 'number') ||
     (body.cancelled !== undefined && typeof body.cancelled !== 'boolean')
   ) {
     throw new InputError('Invalid type provided for body parameter.');
@@ -77,10 +78,11 @@ router.post('/executions', async (ctx) => {
 
   if (
     (body.blueprintHash && typeof body.blueprintHash !== 'string') ||
+    (body.nonce !== undefined && typeof body.nonce !== 'number') ||
     (body.publisher && typeof body.publisher !== 'string') ||
     (body.operator && typeof body.operator !== 'string') ||
-    (body.limit && typeof body.limit !== 'number') ||
-    (body.skip && typeof body.skip !== 'number')
+    (body.limit !== undefined && typeof body.limit !== 'number') ||
+    (body.skip !== undefined && typeof body.skip !== 'number')
   ) {
     throw new InputError('Invalid type provided for body parameter.');
   }
@@ -101,6 +103,37 @@ router.post('/executions', async (ctx) => {
 
   /** @type {import('../../types/types').TractorExecutionsResult} */
   const results = await TractorService.getExecutions(body);
+  ctx.body = results;
+});
+
+/**
+ * Returns all tractor state snapshots matching the requested criteria.
+ */
+router.post('/snapshots', async (ctx) => {
+  /** @type {import('../../types/types').TractorSnapshotsRequest} */
+  const body = ctx.request.body;
+
+  if (!TractorOrderType[body.orderType]) {
+    throw new InputError('Invalid orderType provided.');
+  }
+
+  if (
+    (body.limit !== undefined && typeof body.limit !== 'number') ||
+    (body.skip !== undefined && typeof body.skip !== 'number')
+  ) {
+    throw new InputError('Invalid type provided for body parameter.');
+  }
+
+  body.between = body.between?.map((v) => new Date(v));
+  dateRangeValidation(body.between);
+
+  let method;
+  if (body.orderType === 'SOW_V0') {
+    method = SnapshotSowV0Service.getSnapshots.bind(SnapshotSowV0Service);
+  }
+
+  /** @type {import('../../types/types').TractorSnapshotsResult} */
+  const results = await method(body);
   ctx.body = results;
 });
 

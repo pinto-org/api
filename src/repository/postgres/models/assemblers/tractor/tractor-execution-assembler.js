@@ -19,5 +19,4 @@ class TractorExecutionAssembler {
     return TractorExecutionDto.fromModel(executionModel);
   }
 }
-
 module.exports = TractorExecutionAssembler;

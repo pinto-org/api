@@ -4,6 +4,7 @@ import TractorExecutionDto from '../src/repository/dto/tractor/TractorExecutionD
 import SowV0OrderDto from '../src/repository/dto/tractor/SowV0OrderDto';
 import SowV0ExecutionDto from '../src/repository/dto/tractor/SowV0ExecutionDto';
 import { TractorOrderType } from '../src/repository/postgres/models/types/types';
+import SnapshotSowV0Dto from '../src/repository/dto/tractor/SnapshotSowV0Dto';
 
 export type DepositYield = {
   // Percentage growth in deposit's bdv
@@ -141,6 +142,7 @@ export type TractorOrderRequest = {
 export type TractorExecutionRequest = {
   orderType?: keyof TractorOrderType | 'KNOWN' | 'UKNOWN';
   blueprintHash?: string;
+  nonce?: number;
   publisher?: string;
   operator?: string;
   executedBetween?: [Date, Date];
@@ -171,5 +173,21 @@ export type TractorExecutionsResult = {
   // Block number
   lastUpdated: number;
   executions: TractorExecutionResponse[];
+  totalRecords: number;
+};
+
+export type TractorSnapshotsRequest = {
+  orderType?: keyof TractorOrderType | 'KNOWN' | 'UKNOWN';
+  between?: [Date, Date];
+  limit?: number;
+  skip?: number;
+};
+
+// Potential union type as more are added
+type SnapshotResponse = SnapshotSowV0Dto;
+export type TractorSnapshotsResult = {
+  // Block number
+  lastUpdated: number;
+  snapshots: SnapshotResponse[];
   totalRecords: number;
 };
