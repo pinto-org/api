@@ -113,7 +113,7 @@ router.post('/snapshots', async (ctx) => {
   /** @type {import('../../types/types').TractorSnapshotsRequest} */
   const body = ctx.request.body;
 
-  if (body.orderType && ![...Object.keys(TractorOrderType), 'KNOWN', 'UNKNOWN'].includes(body.orderType)) {
+  if (!TractorOrderType[body.orderType]) {
     throw new InputError('Invalid orderType provided.');
   }
 
@@ -130,8 +130,6 @@ router.post('/snapshots', async (ctx) => {
   let method;
   if (body.orderType === 'SOW_V0') {
     method = SnapshotSowV0Service.getSnapshots.bind(SnapshotSowV0Service);
-  } else {
-    throw new InputError('Invalid orderType provided.');
   }
 
   /** @type {import('../../types/types').TractorSnapshotsResult} */
