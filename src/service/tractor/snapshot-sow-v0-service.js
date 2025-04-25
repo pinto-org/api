@@ -74,7 +74,11 @@ class SnapshotSowV0Service {
       ]);
       return { snapshots, total, lastUpdated: tractorMeta.lastUpdate };
     });
-    let dtos = snapshots.map((d) => SnapshotSowV0Assembler.fromModel(d));
+    let dtos = snapshots.map((d) => {
+      const dto = SnapshotSowV0Assembler.fromModel(d);
+      delete dto.id;
+      return dto;
+    });
 
     return {
       lastUpdated,
