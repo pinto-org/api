@@ -4,10 +4,22 @@ const { BigInt_min, BigInt_max } = require('../utils/bigint');
 const { toBigInt, fromBigInt } = require('../utils/number');
 
 const BUCKET_SIZE = 10000;
+const CACHE_DURATION = 1000 * 60 * 30; // 30 mins
+const CACHEABLE_VALUES = [10000, 25000, 50000, 100000];
 
 class FieldService {
+  static _resultCache = {};
+  static get cache() {
+    return FieldService._resultCache;
+  }
+
   // TODO: consider parameter for it only starting with the current front of line, or for harvested plots only.
   static async getAggregatePlotSummary(bucketSize = BUCKET_SIZE) {
+    const cachedResult = this.cache[bucketSize];
+    if (cachedResult && cachedResult.timestamp > Date.now() - CACHE_DURATION) {
+      return cachedResult.result;
+    }
+
     const [plots, harvestableIndex] = await Promise.all([
       BeanstalkSubgraphRepository.getAllPlots(),
       (async () => BigInt(await Contracts.getBeanstalk().harvestableIndex(0)))()
@@ -66,6 +78,13 @@ class FieldService {
           bucketSize / fromBigInt(currentResult.endIndex - currentResult.startIndex, 6);
         results.push(currentResult);
       }
+    }
+
+    if (CACHEABLE_VALUES.includes(bucketSize)) {
+      this.cache[bucketSize] = {
+        timestamp: Date.now(),
+        result: results
+      };
     }
     return results;
   }

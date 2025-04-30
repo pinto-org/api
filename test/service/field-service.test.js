@@ -6,6 +6,7 @@ const { mockBeanstalkSG } = require('../util/mock-sg');
 describe('FieldService', () => {
   describe('Plot summary', () => {
     beforeEach(async () => {
+      jest.restoreAllMocks();
       const allPlots = require('../mock-responses/service/field/allPlots.json');
       jest.spyOn(mockBeanstalkSG, 'request').mockResolvedValueOnce(allPlots);
       jest.spyOn(Contracts, 'getBeanstalk').mockReturnValue({
@@ -61,8 +62,52 @@ describe('FieldService', () => {
       expect(result[2].avgSownBeansPerPod).toBeCloseTo(0.55, 3);
     });
 
-    it('Uses cached values when available', async () => {
-      // const result = await FieldService.getAggregatePlotSummary();
+    describe('Cache/time manipulation', () => {
+      beforeAll(() => {
+        jest.useFakeTimers();
+      });
+
+      afterAll(() => {
+        jest.useRealTimers();
+      });
+
+      it('Uses cached values when available', async () => {
+        const timestamp = new Date();
+        jest.spyOn(FieldService, 'cache', 'get').mockReturnValue({
+          10000: {
+            timestamp,
+            result: 'result'
+          }
+        });
+        const sgSpy = jest.spyOn(mockBeanstalkSG, 'request');
+
+        const result = await FieldService.getAggregatePlotSummary(10000);
+
+        expect(result).toBe('result');
+        expect(sgSpy).not.toHaveBeenCalled();
+      });
+
+      it('Cache miss due to stale timestamp', async () => {
+        jest.spyOn(FieldService, 'cache', 'get').mockReturnValue({
+          10000: {
+            timestamp: new Date(Date.now() - 1000 * 60 * 300 - 1),
+            result: 'result'
+          }
+        });
+        const sgSpy = jest.spyOn(mockBeanstalkSG, 'request');
+
+        jest.setSystemTime(Date.now() + 1000 * 60 * 300 + 1);
+        const result = await FieldService.getAggregatePlotSummary(10000);
+
+        expect(result).not.toBe('result');
+        expect(sgSpy).toHaveBeenCalled();
+      });
+
+      it('Does not cache values for random bucket sizes', async () => {
+        const result = await FieldService.getAggregatePlotSummary(12345);
+
+        expect(FieldService.cache[12345]).toBeUndefined();
+      });
     });
   });
 });
