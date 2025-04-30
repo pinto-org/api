@@ -80,7 +80,7 @@ describe('FieldService', () => {
       it('Uses cached values when available', async () => {
         const timestamp = new Date();
         jest.spyOn(FieldService, 'cache', 'get').mockReturnValue({
-          10000: {
+          '10000-false-false': {
             timestamp,
             result: 'result'
           }

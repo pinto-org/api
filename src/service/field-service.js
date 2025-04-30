@@ -17,13 +17,11 @@ class FieldService {
   // The current logic with harvested plots is not correct, as it doesn't account for them becoming harvestable.
   // Some plots are harvestable but haven't been harvested yet. The datapoints needed for fully correct analysis
   // are not currently available.
-  static async getAggregatePlotSummary(
-    { bucketSize, onlyHarvested, onlyUnharvested } = {
-      bucketSize: BUCKET_SIZE,
-      onlyHarvested: false,
-      onlyUnharvested: false
-    }
-  ) {
+  static async getAggregatePlotSummary({
+    bucketSize = BUCKET_SIZE,
+    onlyHarvested = false,
+    onlyUnharvested = false
+  } = {}) {
     const cacheKey = `${bucketSize}-${onlyHarvested}-${onlyUnharvested}`;
     const cachedResult = this.cache[cacheKey];
     if (cachedResult && cachedResult.timestamp > Date.now() - CACHE_DURATION) {
