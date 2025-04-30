@@ -3,6 +3,7 @@ const { allToBigInt } = require('../../utils/number');
 const { C } = require('../../constants/runtime-constants');
 const { gql } = require('graphql-request');
 const DepositDto = require('../dto/DepositDto');
+const PlotDto = require('../dto/PlotDto');
 
 class BeanstalkSubgraphRepository {
   static async getDepositedBdvs(accounts, blockNumber, c = C()) {
@@ -242,6 +243,27 @@ class BeanstalkSubgraphRepository {
       }
     );
     return allDeposits.map((d) => DepositDto.fromSubgraph(d));
+  }
+
+  static async getAllPlots(blockNumber, c = C()) {
+    const allPlots = await SubgraphQueryUtil.allPaginatedSG(
+      c.SG.BEANSTALK,
+      gql`
+        {
+          plots {
+            ${PlotDto.subgraphFields}
+          }
+        }
+      `,
+      blockNumber ? `block: {number: ${blockNumber}}` : '',
+      '',
+      {
+        field: 'index',
+        lastValue: 0,
+        direction: 'asc'
+      }
+    );
+    return allPlots.map((p) => PlotDto.fromSubgraph(p));
   }
 }
 

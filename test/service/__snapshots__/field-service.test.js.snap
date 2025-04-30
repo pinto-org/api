@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FieldService Plot summary Large plots filling entire buckets 1`] = `
+[
+  10.512,
+  10.512,
+  5.256,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+]
+`;
+
+exports[`FieldService Plot summary Small plots overlapping 2 buckets 1`] = `
+[
+  7.884,
+  undefined,
+  undefined,
+]
+`;
+
+exports[`FieldService Plot summary Small plots starting/ending at bucket boundaries 1`] = `
+[
+  10.512,
+  undefined,
+  undefined,
+  undefined,
+]
+`;
