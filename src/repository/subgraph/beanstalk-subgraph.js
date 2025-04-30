@@ -245,7 +245,6 @@ class BeanstalkSubgraphRepository {
     return allDeposits.map((d) => DepositDto.fromSubgraph(d));
   }
 
-  // TODO: consider mix of harvested, harvestable, and unharvestable
   static async getAllPlots(blockNumber, c = C()) {
     const allPlots = await SubgraphQueryUtil.allPaginatedSG(
       c.SG.BEANSTALK,
