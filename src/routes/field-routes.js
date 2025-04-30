@@ -6,7 +6,13 @@ const router = new Router({
 });
 
 router.get('/plots-summary', async (ctx) => {
-  const result = await FieldService.getAggregatePlotSummary(ctx.query);
+  const params = {
+    bucketSize: ctx.query.bucketSize ? parseInt(ctx.query.bucketSize) : undefined,
+    onlyHarvested: ctx.query.onlyHarvested === 'true',
+    onlyUnharvested: ctx.query.onlyUnharvested === 'true'
+  };
+
+  const result = await FieldService.getAggregatePlotSummary(params);
   ctx.body = result;
 });
 
