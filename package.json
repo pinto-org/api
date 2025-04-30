@@ -35,6 +35,7 @@
     "@koa/cors": "^5.0.0",
     "alchemy-sdk": "^3.4.2",
     "axios": "^1.7.2",
+    "bottleneck": "^2.19.5",
     "dotenv": "^16.4.5",
     "ethers": "^6.12.1",
     "graphql-request": "^6.1.0",
