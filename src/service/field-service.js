@@ -13,18 +13,32 @@ class FieldService {
     return FieldService._resultCache;
   }
 
-  // TODO: consider parameter for it only starting with the current front of line, or for harvested plots only.
-  static async getAggregatePlotSummary(bucketSize = BUCKET_SIZE) {
-    const cachedResult = this.cache[bucketSize];
+  // Returns summary information on ranges of plots.
+  // The current logic with harvested plots is not correct, as it doesn't account for them becoming harvestable.
+  // Some plots are harvestable but haven't been harvested yet. The datapoints needed for fully correct analysis
+  // are not currently available.
+  static async getAggregatePlotSummary(
+    { bucketSize, onlyHarvested, onlyUnharvested } = {
+      bucketSize: BUCKET_SIZE,
+      onlyHarvested: false,
+      onlyUnharvested: false
+    }
+  ) {
+    const cacheKey = `${bucketSize}-${onlyHarvested}-${onlyUnharvested}`;
+    const cachedResult = this.cache[cacheKey];
     if (cachedResult && cachedResult.timestamp > Date.now() - CACHE_DURATION) {
       return cachedResult.result;
     }
 
-    const [plots, harvestableIndex] = await Promise.all([
+    let [plots, harvestableIndex] = await Promise.all([
       BeanstalkSubgraphRepository.getAllPlots(),
       (async () => BigInt(await Contracts.getBeanstalk().harvestableIndex(0)))()
     ]);
-    console.log(plots.length, plots[0], harvestableIndex); //
+    plots = plots.filter((plot) => {
+      if (onlyHarvested && !plot.harvestAt) return false;
+      if (onlyUnharvested && plot.index < harvestableIndex) return false;
+      return true;
+    });
 
     const results = [];
 
@@ -89,12 +103,15 @@ class FieldService {
         currentResult.endTimestamp = plot.sowTimestamp;
         currentResult.avgSownBeansPerPod *=
           bucketSize / fromBigInt(currentResult.endIndex - currentResult.startIndex, 6);
+        if (currentResult.avgAPR) {
+          currentResult.avgAPR *= bucketSize / fromBigInt(currentResult.endIndex - currentResult.startIndex, 6);
+        }
         results.push(currentResult);
       }
     }
 
     if (CACHEABLE_VALUES.includes(bucketSize)) {
-      this.cache[bucketSize] = {
+      this.cache[cacheKey] = {
         timestamp: Date.now(),
         result: results
       };

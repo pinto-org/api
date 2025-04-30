@@ -6,7 +6,7 @@ const router = new Router({
 });
 
 router.get('/plots-summary', async (ctx) => {
-  const result = await FieldService.getAggregatePlotSummary(ctx.query.bucketSize);
+  const result = await FieldService.getAggregatePlotSummary(ctx.query);
   ctx.body = result;
 });
 

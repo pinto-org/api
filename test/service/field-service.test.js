@@ -15,7 +15,7 @@ describe('FieldService', () => {
     });
 
     it('Small plots overlapping 2 buckets', async () => {
-      const result = await FieldService.getAggregatePlotSummary(10000);
+      const result = await FieldService.getAggregatePlotSummary({ bucketSize: 10000 });
 
       expect(result.length).toBe(3);
       expect(result[0].startIndex).toBe(0n);
@@ -33,7 +33,7 @@ describe('FieldService', () => {
     });
 
     it('Small plots starting/ending at bucket boundaries', async () => {
-      const result = await FieldService.getAggregatePlotSummary(7500);
+      const result = await FieldService.getAggregatePlotSummary({ bucketSize: 7500 });
 
       expect(result.length).toBe(4);
       expect(result[0].startIndex).toBe(0n);
@@ -54,7 +54,7 @@ describe('FieldService', () => {
     });
 
     it('Large plots filling entire buckets', async () => {
-      const result = await FieldService.getAggregatePlotSummary(3000);
+      const result = await FieldService.getAggregatePlotSummary({ bucketSize: 3000 });
 
       expect(result.length).toBe(8);
       expect(result[0].numPlots).toBe(1);
@@ -87,7 +87,7 @@ describe('FieldService', () => {
         });
         const sgSpy = jest.spyOn(mockBeanstalkSG, 'request');
 
-        const result = await FieldService.getAggregatePlotSummary(10000);
+        const result = await FieldService.getAggregatePlotSummary({ bucketSize: 10000 });
 
         expect(result).toBe('result');
         expect(sgSpy).not.toHaveBeenCalled();
@@ -103,14 +103,14 @@ describe('FieldService', () => {
         const sgSpy = jest.spyOn(mockBeanstalkSG, 'request');
 
         jest.setSystemTime(Date.now() + 1000 * 60 * 300 + 1);
-        const result = await FieldService.getAggregatePlotSummary(10000);
+        const result = await FieldService.getAggregatePlotSummary({ bucketSize: 10000 });
 
         expect(result).not.toBe('result');
         expect(sgSpy).toHaveBeenCalled();
       });
 
       it('Does not cache values for random bucket sizes', async () => {
-        await FieldService.getAggregatePlotSummary(12345);
+        await FieldService.getAggregatePlotSummary({ bucketSize: 12345 });
 
         expect(FieldService.cache[12345]).toBeUndefined();
       });
