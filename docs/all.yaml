@@ -9,6 +9,7 @@ servers:
 tags:
   - name: Exchange
   - name: Silo
+  - name: Field
   - name: Price
   - name: Snapshot (DEPRECATED)
   - name: Tractor
@@ -829,6 +830,84 @@ paths:
                     bdvOnLambda: "5489953983"
                     stalkOnLambda: "204266232677503621224"
                     seedsOnLambda: "34449285564797544"
+  /field/plots-summary:
+    get:
+      tags:
+        - Field
+      summary: Retrieve summary information about plots organized into buckets
+      operationId: getAggregatePlotSummary
+      parameters:
+        - name: bucketSize
+          in: query
+          required: false
+          description: Size of each bucket in pods. Must be one of [10000, 25000, 50000, 100000] for caching to be effective, but any value is allowed.
+          schema:
+            type: integer
+            default: 50000
+        - name: onlyHarvested
+          in: query
+          required: false
+          description: If true, only include plots that have been harvested
+          schema:
+            type: boolean
+            default: false
+        - name: onlyUnharvested
+          in: query
+          required: false
+          description: If true, only include plots that haven't been harvested yet
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    startSeason:
+                      type: integer
+                      description: Season number when the bucket starts
+                      example: 20000
+                    startTimestamp:
+                      type: string
+                      format: date-time
+                      description: Timestamp when the bucket starts
+                      example: "2024-03-01T00:00:00.000Z"
+                    startIndex:
+                      type: string
+                      description: Pod index where the bucket starts
+                      example: "1000000000000"
+                    endIndex:
+                      type: string
+                      description: Pod index where the bucket ends
+                      example: "1050000000000"
+                    endSeason:
+                      type: integer
+                      description: Season number when the bucket ends
+                      example: 500
+                    endTimestamp:
+                      type: string
+                      format: date-time
+                      description: Timestamp when the bucket ends
+                      example: "2024-03-02T00:00:00.000Z"
+                    avgSownBeansPerPod:
+                      type: number
+                      format: float
+                      description: Average beans sown per pod in this bucket
+                      example: 0.8
+                    numPlots:
+                      type: integer
+                      description: Number of plots in this bucket
+                      example: 3
+                    avgAPR:
+                      type: number
+                      format: float
+                      description: Average APR for plots in this bucket (if harvestable)
+                      example: 0.15
   /price:
     get:
       tags:
