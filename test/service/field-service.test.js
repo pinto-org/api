@@ -28,6 +28,8 @@ describe('FieldService', () => {
       expect(result[0].avgSownBeansPerPod).toBeCloseTo(0.525, 3);
       expect(result[1].avgSownBeansPerPod).toBeCloseTo(0.3, 3);
       expect(result[2].avgSownBeansPerPod).toBeCloseTo(0.2, 3);
+
+      expect(result.map((x) => x.avgAPR)).toMatchSnapshot();
     });
 
     it('Small plots starting/ending at bucket boundaries', async () => {
@@ -47,6 +49,8 @@ describe('FieldService', () => {
       expect(result[1].avgSownBeansPerPod).toBeCloseTo(0.467, 3);
       expect(result[2].avgSownBeansPerPod).toBeCloseTo(0.2, 3);
       expect(result[3].avgSownBeansPerPod).toBeCloseTo(0.2, 3);
+
+      expect(result.map((x) => x.avgAPR)).toMatchSnapshot();
     });
 
     it('Large plots filling entire buckets', async () => {
@@ -60,6 +64,8 @@ describe('FieldService', () => {
       expect(result[0].avgSownBeansPerPod).toBeCloseTo(0.5, 3);
       expect(result[1].avgSownBeansPerPod).toBeCloseTo(0.5, 3);
       expect(result[2].avgSownBeansPerPod).toBeCloseTo(0.55, 3);
+
+      expect(result.map((x) => x.avgAPR)).toMatchSnapshot();
     });
 
     describe('Cache/time manipulation', () => {
@@ -104,7 +110,7 @@ describe('FieldService', () => {
       });
 
       it('Does not cache values for random bucket sizes', async () => {
-        const result = await FieldService.getAggregatePlotSummary(12345);
+        await FieldService.getAggregatePlotSummary(12345);
 
         expect(FieldService.cache[12345]).toBeUndefined();
       });

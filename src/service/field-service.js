@@ -3,7 +3,7 @@ const BeanstalkSubgraphRepository = require('../repository/subgraph/beanstalk-su
 const { BigInt_min, BigInt_max } = require('../utils/bigint');
 const { toBigInt, fromBigInt } = require('../utils/number');
 
-const BUCKET_SIZE = 10000;
+const BUCKET_SIZE = 50000;
 const CACHE_DURATION = 1000 * 60 * 30; // 30 mins
 const CACHEABLE_VALUES = [10000, 25000, 50000, 100000];
 
@@ -27,7 +27,14 @@ class FieldService {
     console.log(plots.length, plots[0], harvestableIndex); //
 
     const results = [];
-    // avgAPR: 0 // TODO: apr for harvested
+
+    const applyAPR = (plot, addedPods) => {
+      if (plot.harvestAt) {
+        const timeToHarvest = plot.harvestAt.getTime() - plot.sowTimestamp.getTime();
+        const plotAPR = ((1 / fromBigInt(plot.sownBeansPerPod, 6) - 1) / timeToHarvest) * 365 * 24 * 60 * 60 * 1000;
+        currentResult.avgAPR = (currentResult.avgAPR || 0) + plotAPR * (fromBigInt(addedPods, 6) / bucketSize);
+      }
+    };
 
     let currentResult = null;
     for (let i = 0; i < plots.length; i++) {
@@ -47,11 +54,14 @@ class FieldService {
       currentResult.avgSownBeansPerPod += fromBigInt(plot.sownBeansPerPod, 6) * (fromBigInt(addedPods, 6) / bucketSize);
       currentResult.numPlots++;
 
+      applyAPR(plot, addedPods);
+
       while (plotEnd >= currentResult.endIndex) {
         currentResult.endSeason = plot.sowSeason;
         currentResult.endTimestamp = plot.sowTimestamp;
         results.push(currentResult);
 
+        // The current plot spills over into a new bucket
         if (plotEnd > currentResult.endIndex) {
           const oldBucketEnd = currentResult.endIndex;
           const newBucketEnd = oldBucketEnd + toBigInt(bucketSize, 6);
@@ -64,12 +74,15 @@ class FieldService {
             avgSownBeansPerPod: fromBigInt(plot.sownBeansPerPod, 6) * (fromBigInt(spilloverPods, 6) / bucketSize),
             numPlots: 1
           };
+          applyAPR(plot, spilloverPods);
         } else {
+          // The current plot ends the bucket
           currentResult = null;
           break;
         }
       }
 
+      // Final plot, incomplete bucket
       if (i === plots.length - 1) {
         currentResult.endIndex = plotEnd;
         currentResult.endSeason = plot.sowSeason;

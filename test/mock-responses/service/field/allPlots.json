@@ -1,31 +1,31 @@
 {
   "plots": [
     {
-      "harvestAt": null,
       "id": "0",
       "index": "0",
       "pods": "7500000000",
       "sowSeason": 2,
       "sowTimestamp": "1745018607",
-      "sownBeansPerPod": "500000"
+      "sownBeansPerPod": "500000",
+      "harvestAt": "1748018607"
     },
     {
-      "harvestAt": null,
       "id": "7500000000",
       "index": "7500000000",
       "pods": "5000000000",
       "sowSeason": 5,
       "sowTimestamp": "1746018607",
-      "sownBeansPerPod": "600000"
+      "sownBeansPerPod": "600000",
+      "harvestAt": null
     },
     {
-      "harvestAt": null,
       "id": "12500000000",
       "index": "12500000000",
       "pods": "11000000000",
       "sowSeason": 5,
       "sowTimestamp": "1746018607",
-      "sownBeansPerPod": "200000"
+      "sownBeansPerPod": "200000",
+      "harvestAt": null
     }
   ]
 }
