@@ -1,0 +1,57 @@
+const Contracts = require('../datasources/contracts/contracts');
+const BeanstalkSubgraphRepository = require('../repository/subgraph/beanstalk-subgraph');
+const { BigInt_min, BigInt_max } = require('../utils/bigint');
+const { toBigInt, fromBigInt } = require('../utils/number');
+
+const BUCKET_SIZE = 10000;
+
+class FieldService {
+  static async getAggregatePlotSummary(bucketSize = BUCKET_SIZE) {
+    const [plots, harvestableIndex] = await Promise.all([
+      BeanstalkSubgraphRepository.getAllPlots(),
+      (async () => BigInt(await Contracts.getBeanstalk().harvestableIndex(0)))()
+    ]);
+    console.log(plots.length, plots[0], harvestableIndex); //
+
+    const results = [];
+    // avgAPR: 0 // TODO: apr for harvested
+
+    let currentResult = null;
+    for (const plot of plots) {
+      const plotEnd = plot.index + plot.pods;
+      if (!currentResult) {
+        currentResult = {
+          startSeason: plot.sowSeason,
+          startTimestamp: plot.sowTimestamp,
+          startIndex: plot.index,
+          endIndex: plot.index + toBigInt(bucketSize, 6),
+          avgSownBeansPerPod: 0,
+          numPlots: 0
+        };
+      }
+      const addedPods = BigInt_min(currentResult.endIndex, plotEnd) - BigInt_max(currentResult.startIndex, plot.index);
+      currentResult.avgSownBeansPerPod += fromBigInt(plot.sownBeansPerPod, 6) * (fromBigInt(addedPods, 6) / bucketSize);
+      currentResult.numPlots++;
+
+      while (plotEnd > currentResult.endIndex) {
+        currentResult.endSeason = plot.sowSeason;
+        currentResult.endTimestamp = plot.sowTimestamp;
+        results.push(currentResult);
+
+        const oldBucketEnd = currentResult.endIndex;
+        const newBucketEnd = oldBucketEnd + toBigInt(bucketSize, 6);
+        const spilloverPods = BigInt_min(newBucketEnd, plotEnd) - oldBucketEnd;
+        currentResult = {
+          startSeason: plot.sowSeason,
+          startTimestamp: plot.sowTimestamp,
+          startIndex: oldBucketEnd,
+          endIndex: newBucketEnd,
+          avgSownBeansPerPod: fromBigInt(plot.sownBeansPerPod, 6) * (fromBigInt(spilloverPods, 6) / bucketSize),
+          numPlots: 1
+        };
+      }
+    }
+    return results;
+  }
+}
+module.exports = FieldService;
