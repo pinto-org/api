@@ -6,6 +6,7 @@ const { toBigInt, fromBigInt } = require('../utils/number');
 const BUCKET_SIZE = 10000;
 
 class FieldService {
+  // TODO: consider parameter for it only starting with the current front of line, or for harvested plots only.
   static async getAggregatePlotSummary(bucketSize = BUCKET_SIZE) {
     const [plots, harvestableIndex] = await Promise.all([
       BeanstalkSubgraphRepository.getAllPlots(),
@@ -17,7 +18,8 @@ class FieldService {
     // avgAPR: 0 // TODO: apr for harvested
 
     let currentResult = null;
-    for (const plot of plots) {
+    for (let i = 0; i < plots.length; i++) {
+      const plot = plots[i];
       const plotEnd = plot.index + plot.pods;
       if (!currentResult) {
         currentResult = {
@@ -33,22 +35,36 @@ class FieldService {
       currentResult.avgSownBeansPerPod += fromBigInt(plot.sownBeansPerPod, 6) * (fromBigInt(addedPods, 6) / bucketSize);
       currentResult.numPlots++;
 
-      while (plotEnd > currentResult.endIndex) {
+      while (plotEnd >= currentResult.endIndex) {
         currentResult.endSeason = plot.sowSeason;
         currentResult.endTimestamp = plot.sowTimestamp;
         results.push(currentResult);
 
-        const oldBucketEnd = currentResult.endIndex;
-        const newBucketEnd = oldBucketEnd + toBigInt(bucketSize, 6);
-        const spilloverPods = BigInt_min(newBucketEnd, plotEnd) - oldBucketEnd;
-        currentResult = {
-          startSeason: plot.sowSeason,
-          startTimestamp: plot.sowTimestamp,
-          startIndex: oldBucketEnd,
-          endIndex: newBucketEnd,
-          avgSownBeansPerPod: fromBigInt(plot.sownBeansPerPod, 6) * (fromBigInt(spilloverPods, 6) / bucketSize),
-          numPlots: 1
-        };
+        if (plotEnd > currentResult.endIndex) {
+          const oldBucketEnd = currentResult.endIndex;
+          const newBucketEnd = oldBucketEnd + toBigInt(bucketSize, 6);
+          const spilloverPods = BigInt_min(newBucketEnd, plotEnd) - oldBucketEnd;
+          currentResult = {
+            startSeason: plot.sowSeason,
+            startTimestamp: plot.sowTimestamp,
+            startIndex: oldBucketEnd,
+            endIndex: newBucketEnd,
+            avgSownBeansPerPod: fromBigInt(plot.sownBeansPerPod, 6) * (fromBigInt(spilloverPods, 6) / bucketSize),
+            numPlots: 1
+          };
+        } else {
+          currentResult = null;
+          break;
+        }
+      }
+
+      if (i === plots.length - 1) {
+        currentResult.endIndex = plotEnd;
+        currentResult.endSeason = plot.sowSeason;
+        currentResult.endTimestamp = plot.sowTimestamp;
+        currentResult.avgSownBeansPerPod *=
+          bucketSize / fromBigInt(currentResult.endIndex - currentResult.startIndex, 6);
+        results.push(currentResult);
       }
     }
     return results;
