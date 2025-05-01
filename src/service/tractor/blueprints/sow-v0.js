@@ -21,6 +21,8 @@ class TractorSowV0Service extends Blueprint {
   static executionModel = sequelize.models.TractorExecutionSowV0;
   static executionAssembler = SowV0ExecutionAssembler;
 
+  // TODO: Upon order cancel or completion, need to reset funding amounts.
+
   /**
    * Determine how many pinto can be sown into each order, accounting for cascading order execution.
    * One publisher may have multiple orders that could be executed during the same season
