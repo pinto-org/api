@@ -26,15 +26,18 @@ class SnapshotSowV0Service {
   // Data must have already been updated through snapshotBlock (having written to meta is optional).
   static async takeSnapshot(snapshotBlock) {
     const blockTimestamp = new Date((await C().RPC.getBlock(snapshotBlock)).timestamp * 1000);
-    const temperature = BigInt(await Contracts.getBeanstalk().maxTemperature({ blockTag: snapshotBlock }));
+    const [season, temperature] = await Promise.all([
+      (async () => Number(await Contracts.getBeanstalk().season({ blockTag: snapshotBlock })))(),
+      (async () => BigInt(await Contracts.getBeanstalk().maxTemperature({ blockTag: snapshotBlock })))()
+    ]);
     const [[result]] = await sequelize.query(
       `SELECT
         (SELECT COALESCE(SUM(beans), 0) FROM tractor_execution_sow_v0) AS sum_beans,
         (SELECT COALESCE(SUM(pods), 0) FROM tractor_execution_sow_v0) AS sum_pods,
-        (SELECT COALESCE(SUM("cascadeAmountFunded"), 0) FROM tractor_order_sow_v0 WHERE "minTemp" < ${Number(temperature)}) AS sum_cascade_below_temp,
-        (SELECT COALESCE(SUM("cascadeAmountFunded"), 0) FROM tractor_order_sow_v0) AS sum_cascade_total,
+        (SELECT COALESCE(SUM(osow."cascadeAmountFunded"), 0) FROM tractor_order o, tractor_order_sow_v0 osow WHERE osow."minTemp" < ${Number(temperature)} AND o."blueprintHash" = osow."blueprintHash" AND NOT o.cancelled AND NOT osow."orderComplete") AS sum_cascade_below_temp,
+        (SELECT COALESCE(SUM(osow."cascadeAmountFunded"), 0) FROM tractor_order o, tractor_order_sow_v0 osow WHERE o."blueprintHash" = osow."blueprintHash" AND NOT o.cancelled AND NOT osow."orderComplete") AS sum_cascade_total,
         (SELECT COALESCE(SUM(o."beanTip"), 0) FROM tractor_order o JOIN tractor_execution e ON o."blueprintHash" = e."blueprintHash") AS sum_paid_tips,
-        (SELECT COALESCE(MAX(o."beanTip"), 0) FROM tractor_order o, tractor_order_sow_v0 as osow WHERE o."orderType" = 'SOW_V0' AND NOT o.cancelled AND NOT osow."orderComplete") AS max_bean_tip,
+        (SELECT COALESCE(MAX(o."beanTip"), 0) FROM tractor_order o, tractor_order_sow_v0 osow WHERE o."blueprintHash" = osow."blueprintHash" AND NOT o.cancelled AND NOT osow."orderComplete" AND osow."amountFunded" > 0 AND osow."minTemp" < ${Number(temperature)}) AS max_bean_tip,
         (SELECT COUNT(*) FROM tractor_execution_sow_v0) AS count_executions;`,
       { transaction: AsyncContext.getOrUndef('transaction') }
     );
@@ -42,6 +45,7 @@ class SnapshotSowV0Service {
     const dto = SnapshotSowV0Dto.fromLiveSnapshot({
       block: snapshotBlock,
       timestamp: blockTimestamp,
+      season,
       snapshotData: result
     });
     const model = SnapshotSowV0Assembler.toModel(dto);

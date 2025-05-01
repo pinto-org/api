@@ -50,6 +50,11 @@ class SowV0OrderDto {
     this.pintoSownCounter += BigInt(sowEvt.args.beans);
     this.lastExecutedSeason = Number(await Contracts.getBeanstalk().season({ blockTag: sowEvt.rawLog.blockNumber }));
     this.orderComplete = !!executionEvents.find((e) => e.name === 'SowOrderComplete');
+    if (this.orderComplete) {
+      // Funding amounts could remain nonzero if there is capacity under the minimum amount to sow.
+      this.amountFunded = 0n;
+      this.cascadeAmountFunded = 0n;
+    }
   }
 }
 

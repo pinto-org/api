@@ -33,6 +33,14 @@ class BlueprintService {
   }
 
   /**
+   * Manages order updates after a cancellation.
+   * @abstract
+   */
+  static async orderCancelled(orderDto) {
+    throw new Error('orderCancelled must be implemented by subclass');
+  }
+
+  /**
    * Attempts to decode blueprint-specific data
    * @abstract
    */

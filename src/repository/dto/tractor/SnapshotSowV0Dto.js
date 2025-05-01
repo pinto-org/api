@@ -1,9 +1,10 @@
 class SnapshotSowV0Dto {
   constructor(type, d) {
     if (type === 'init') {
-      const { block, timestamp, snapshotData } = d;
+      const { block, timestamp, season, snapshotData } = d;
       this.snapshotTimestamp = timestamp;
       this.snapshotBlock = block;
+      this.season = season;
       this.totalPintoSown = BigInt(snapshotData.sum_beans);
       this.totalPodsMinted = BigInt(snapshotData.sum_pods);
       this.totalCascadeFundedBelowTemp = BigInt(snapshotData.sum_cascade_below_temp);
@@ -15,6 +16,7 @@ class SnapshotSowV0Dto {
       this.id = d.id;
       this.snapshotTimestamp = d.snapshotTimestamp;
       this.snapshotBlock = d.snapshotBlock;
+      this.season = d.season;
       this.totalPintoSown = d.totalPintoSown;
       this.totalPodsMinted = d.totalPodsMinted;
       this.totalCascadeFundedBelowTemp = d.totalCascadeFundedBelowTemp;

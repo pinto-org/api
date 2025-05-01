@@ -6,6 +6,7 @@ class SnapshotSowV0Assembler {
       id: snapshotDto.id,
       snapshotTimestamp: snapshotDto.snapshotTimestamp,
       snapshotBlock: snapshotDto.snapshotBlock,
+      season: snapshotDto.season,
       totalPintoSown: snapshotDto.totalPintoSown,
       totalPodsMinted: snapshotDto.totalPodsMinted,
       totalCascadeFundedBelowTemp: snapshotDto.totalCascadeFundedBelowTemp,

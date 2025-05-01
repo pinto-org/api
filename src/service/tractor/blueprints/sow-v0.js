@@ -153,6 +153,14 @@ class TractorSowV0Service extends Blueprint {
     }
   }
 
+  static async orderCancelled(orderDto) {
+    // Reset funding amounts
+    const sowOrder = await this.getOrder(orderDto.blueprintHash);
+    sowOrder.amountFunded = 0n;
+    sowOrder.cascadeAmountFunded = 0n;
+    await this.updateOrders([sowOrder]);
+  }
+
   // If possible, decodes blueprint data into the sowBlueprintv0 call
   static decodeBlueprintData(blueprintData) {
     const iBeanstalk = Interfaces.getBeanstalk();
