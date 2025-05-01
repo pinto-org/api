@@ -26,7 +26,10 @@ class SnapshotSowV0Service {
   // Data must have already been updated through snapshotBlock (having written to meta is optional).
   static async takeSnapshot(snapshotBlock) {
     const blockTimestamp = new Date((await C().RPC.getBlock(snapshotBlock)).timestamp * 1000);
-    const temperature = BigInt(await Contracts.getBeanstalk().maxTemperature({ blockTag: snapshotBlock }));
+    const [season, temperature] = await Promise.all([
+      (async () => Number(await Contracts.getBeanstalk().season({ blockTag: snapshotBlock })))(),
+      (async () => BigInt(await Contracts.getBeanstalk().maxTemperature({ blockTag: snapshotBlock })))()
+    ]);
     const [[result]] = await sequelize.query(
       `SELECT
         (SELECT COALESCE(SUM(beans), 0) FROM tractor_execution_sow_v0) AS sum_beans,
@@ -42,6 +45,7 @@ class SnapshotSowV0Service {
     const dto = SnapshotSowV0Dto.fromLiveSnapshot({
       block: snapshotBlock,
       timestamp: blockTimestamp,
+      season,
       snapshotData: result
     });
     const model = SnapshotSowV0Assembler.toModel(dto);

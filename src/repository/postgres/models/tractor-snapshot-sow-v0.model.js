@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false
       },
+      season: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
       // Cumulative pinto sown across all executions
       ...bigintNumericColumn('totalPintoSown', DataTypes, { allowNull: false }),
       // Cumulative pods minted across all executions
