@@ -23,6 +23,20 @@ const dateRangeValidation = (dateRange) => {
   }
 };
 
+const numberRangeValidation = (numberRange) => {
+  if (numberRange) {
+    if (
+      !Array.isArray(numberRange) ||
+      numberRange.length !== 2 ||
+      typeof numberRange[0] !== 'number' ||
+      typeof numberRange[1] !== 'number' ||
+      numberRange[1] <= numberRange[0]
+    ) {
+      throw new InputError('Invalid seasons range provided.');
+    }
+  }
+};
+
 /**
  * Returns all tractor orders matching the requested criteria. Includes all info about specialized blueprints
  */
@@ -126,6 +140,8 @@ router.post('/snapshots', async (ctx) => {
 
   body.between = body.between?.map((v) => new Date(v));
   dateRangeValidation(body.between);
+
+  numberRangeValidation(body.betweenSeasons);
 
   let method;
   if (body.orderType === 'SOW_V0') {

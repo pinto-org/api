@@ -178,7 +178,8 @@ export type TractorExecutionsResult = {
 
 export type TractorSnapshotsRequest = {
   orderType?: keyof TractorOrderType | 'KNOWN' | 'UKNOWN';
-  between?: [Date, Date];
+  betweenTimes?: [Date, Date];
+  betweenSeasons?: [number, number];
   limit?: number;
   skip?: number;
 };

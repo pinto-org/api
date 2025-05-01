@@ -1323,12 +1323,19 @@ paths:
                   description: Type of the tractor order
                   enum:
                     - SOW_V0
-                between:
+                betweenTimes:
                   type: array
                   description: Date range for snapshot time filtering
                   items:
                     type: string
                     format: date-time
+                  minItems: 2
+                  maxItems: 2
+                betweenSeasons:
+                  type: array
+                  description: Season range for snapshot time filtering
+                  items:
+                    type: integer
                   minItems: 2
                   maxItems: 2
                 limit:
