@@ -224,6 +224,11 @@ class TractorService {
       const dto = TractorOrderAssembler.fromModel(order);
       dto.cancelled = true;
       await this.updateOrders([dto]);
+
+      const service = TractorConstants.knownBlueprints()[dto.orderType];
+      if (service) {
+        await service.orderCancelled(dto);
+      }
     }
   }
 }

@@ -21,8 +21,6 @@ class TractorSowV0Service extends Blueprint {
   static executionModel = sequelize.models.TractorExecutionSowV0;
   static executionAssembler = SowV0ExecutionAssembler;
 
-  // TODO: Upon order cancel or completion, need to reset funding amounts.
-
   /**
    * Determine how many pinto can be sown into each order, accounting for cascading order execution.
    * One publisher may have multiple orders that could be executed during the same season
@@ -153,6 +151,14 @@ class TractorSowV0Service extends Blueprint {
       const tipUsd = fromBigInt(BigInt(operatorReward.args.amount), 6) * beanPrice.usdPrice;
       return tipUsd;
     }
+  }
+
+  static async orderCancelled(orderDto) {
+    // Reset funding amounts
+    const sowOrder = await this.getOrder(orderDto.blueprintHash);
+    sowOrder.amountFunded = 0n;
+    sowOrder.cascadeAmountFunded = 0n;
+    await this.updateOrders([sowOrder]);
   }
 
   // If possible, decodes blueprint data into the sowBlueprintv0 call
