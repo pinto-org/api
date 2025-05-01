@@ -59,10 +59,17 @@ class SnapshotSowV0Service {
    */
   static async getSnapshots(request) {
     const criteriaList = [];
-    if (request.between) {
+    if (request.betweenTimes) {
       criteriaList.push({
         snapshotTimestamp: {
-          [Sequelize.Op.between]: request.between
+          [Sequelize.Op.between]: request.betweenTimes
+        }
+      });
+    }
+    if (request.betweenSeasons) {
+      criteriaList.push({
+        season: {
+          [Sequelize.Op.between]: request.betweenSeasons
         }
       });
     }
