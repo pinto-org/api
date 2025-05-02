@@ -29,12 +29,19 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('totalCascadeFundedBelowTemp', DataTypes, { allowNull: false }),
       // For orders that can be executed at any temp
       ...bigintNumericColumn('totalCascadeFundedAnyTemp', DataTypes, { allowNull: false }),
+      // Maximum amount that can be sown this season - considers funding, maxSow settings, and the temperature
+      ...bigintNumericColumn('maxSowThisSeason', DataTypes, { allowNull: false }),
       // Cumulative operator rewards
       ...bigintNumericColumn('totalTipsPaid', DataTypes, { allowNull: false }),
       // The current max tip across all orders
       ...bigintNumericColumn('currentMaxTip', DataTypes, { allowNull: false }),
       // Total number of times this order type has been executed
       totalExecutions: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      // Total number of unique publishers
+      uniquePublishers: {
         type: DataTypes.INTEGER,
         allowNull: false
       }

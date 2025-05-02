@@ -11,9 +11,11 @@ class SnapshotSowV0Assembler {
       totalPodsMinted: snapshotDto.totalPodsMinted,
       totalCascadeFundedBelowTemp: snapshotDto.totalCascadeFundedBelowTemp,
       totalCascadeFundedAnyTemp: snapshotDto.totalCascadeFundedAnyTemp,
+      maxSowThisSeason: snapshotDto.maxSowThisSeason,
       totalTipsPaid: snapshotDto.totalTipsPaid,
       currentMaxTip: snapshotDto.currentMaxTip,
-      totalExecutions: snapshotDto.totalExecutions
+      totalExecutions: snapshotDto.totalExecutions,
+      uniquePublishers: snapshotDto.uniquePublishers
     };
   }
 
