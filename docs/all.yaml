@@ -1415,6 +1415,45 @@ paths:
                   error:
                     type: string
                     example: "Invalid date range provided."
+  /seasons:
+    get:
+      tags:
+        - Season
+      summary: Get basic info associated with all Seasons
+      operationId: getSeasons
+      parameters:
+        - name: info
+          in: query
+          required: false
+          description: Comma-separated list of fields to return. Options are block, timestamp, sunriseTxn.
+          schema:
+            type: string
+            default: "timestamp"
+            example: "timestamp,block"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A mapping of season numbers to their respective data
+                additionalProperties:
+                  type: object
+                  properties:
+                    block:
+                      type: integer
+                      description: Block number of the season
+                      example: 12345678
+                    timestamp:
+                      type: string
+                      format: date-time
+                      description: Timestamp of the season
+                      example: "2024-03-20T12:00:00Z"
+                    sunriseTxn:
+                      type: string
+                      description: Transaction hash of the sunrise
+                      example: "0x123..."
 components:
   parameters:
     blockNumber:

@@ -43,11 +43,10 @@ class TractorTask {
     Log.info(`Updating tractor for block range [${lastUpdate}, ${updateBlock}]`);
 
     // Find all PublishRequisition and Tractor events
-    const events = await FilterLogs.getBeanstalkEvents(
-      ['PublishRequisition', 'CancelBlueprint', 'Tractor'],
-      lastUpdate + 1,
-      updateBlock
-    );
+    const events = await FilterLogs.getBeanstalkEvents(['PublishRequisition', 'CancelBlueprint', 'Tractor'], {
+      fromBlock: lastUpdate + 1,
+      toBlock: updateBlock
+    });
 
     // Event processing can occur in parallel, but ensure all requisitions are created first
     await AsyncContext.sequelizeTransaction(async () => {

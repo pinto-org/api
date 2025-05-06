@@ -1,4 +1,5 @@
 const BeanstalkSubgraphRepository = require('../../repository/subgraph/beanstalk-subgraph');
+const SeasonService = require('../../service/season-service');
 const SiloService = require('../../service/silo-service');
 const YieldService = require('../../service/yield-service');
 const Log = require('../../utils/logging');
@@ -18,6 +19,9 @@ class SunriseTask {
       await OnSunriseUtil.waitForSunrise(nextSeason, 50 * 60 * 1000);
     }
     Log.info(`Season ${nextSeason} was processed by the subgraphs, proceeding.`);
+
+    // Insert basic season info
+    await SeasonService.insertSeasonFromEvent(nextSeason);
 
     // Update whitelisted token info
     const tokenModels = await SiloService.updateWhitelistedTokenInfo();
