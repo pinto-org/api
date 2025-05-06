@@ -5,8 +5,14 @@ const { sequelize } = require('../repository/postgres/models');
 const SeasonRepository = require('../repository/postgres/queries/season-repository');
 const SharedRepository = require('../repository/postgres/queries/shared-repository');
 const BeanstalkSubgraphRepository = require('../repository/subgraph/beanstalk-subgraph');
+const SeasonAssembler = require('../repository/postgres/models/assemblers/season-assembler');
 
 class SeasonService {
+  static async getAll() {
+    const models = await SharedRepository.genericFind(sequelize.models.Season, {});
+    return models.map((m) => SeasonAssembler.fromModel(m));
+  }
+
   // Finds the corresponding onchain event and inserts the season info
   static async insertSeasonFromEvent(season) {
     const events = await FilterLogs.getBeanstalkEvents(['Sunrise'], {
