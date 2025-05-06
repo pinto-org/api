@@ -71,7 +71,7 @@ class YieldService {
   // Returns a list of seasons that are missing a yield entry
   static async findMissingSeasons() {
     const currentSeason = (await BeanstalkSubgraphRepository.getLatestSeason()).season;
-    let missingSeasons = await YieldRepository.findMissingSeasons(currentSeason);
+    const missingSeasons = await YieldRepository.findMissingSeasons(currentSeason);
     return missingSeasons.filter((s) => s >= C().MIN_EMA_SEASON);
   }
 }

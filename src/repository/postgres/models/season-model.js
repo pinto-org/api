@@ -1,3 +1,5 @@
+const { bigintNumericColumn } = require('../util/sequelize-util');
+
 module.exports = (sequelize, DataTypes) => {
   const Season = sequelize.define(
     'Season',
@@ -12,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
       },
       timestamp: {
         type: DataTypes.DATE,
+        allowNull: false
+      },
+      sunriseTxn: {
+        type: DataTypes.STRING(66),
         allowNull: false
       }
     },

@@ -5,8 +5,11 @@ const Contracts = require('../contracts/contracts');
 
 class FilterLogs {
   // Retrieves beanstalk events matching the requested names
-  static async getBeanstalkEvents(eventNames, fromBlock, toBlock, c = C()) {
-    return this.getEvents(Contracts.getBeanstalk(c), eventNames, fromBlock, toBlock, c);
+  static async getBeanstalkEvents(
+    eventNames,
+    { indexedTopics = [], fromBlock = 0, toBlock = 'latest', safeBatch = true, c = C() } = {}
+  ) {
+    return this.getEvents(Contracts.getBeanstalk(c), eventNames, { indexedTopics, fromBlock, toBlock, safeBatch, c });
   }
 
   // Retrieves beanstalk events from a specific transaction
@@ -14,17 +17,21 @@ class FilterLogs {
     return this.getTransactionEvents([Contracts.getBeanstalk(c)], receipt);
   }
 
-  static async getEvents(contract, eventNames, fromBlock, toBlock, c = C()) {
+  static async getEvents(
+    contract,
+    eventNames,
+    { indexedTopics = [], fromBlock = 0, toBlock = 'latest', safeBatch = true, c = C() } = {}
+  ) {
     const iface = contract.interface;
     const topics = eventNames.map((n) => iface.getEventTopic(n));
 
     const filter = {
       address: contract.address,
-      topics: [topics],
+      topics: [topics, ...indexedTopics],
       fromBlock,
       toBlock
     };
-    const logs = await FilterLogs.safeGetBatchLogs(filter, c);
+    const logs = safeBatch ? await FilterLogs.safeGetBatchLogs(filter, c) : await c.RPC.getLogs(filter);
 
     const events = logs.map((log) => {
       const parsed = iface.parseLog(log);
@@ -104,13 +111,11 @@ module.exports = FilterLogs;
 if (require.main === module) {
   (async () => {
     await AlchemyUtil.ready('base');
-    const events = await FilterLogs.getBeanstalkEvents(
-      ['AddDeposit', 'RemoveDeposit', 'RemoveDeposits'],
-      22668331,
-      23088331,
-      // 'latest',
-      C('base')
-    );
+    const events = await FilterLogs.getBeanstalkEvents(['AddDeposit', 'RemoveDeposit', 'RemoveDeposits'], {
+      fromBlock: 22668331,
+      toBlock: 23088331,
+      c: C('base')
+    });
     console.log(events.length);
   })();
 }

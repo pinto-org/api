@@ -5,7 +5,8 @@ class SeasonAssembler {
     return {
       season: seasonDto.season,
       block: seasonDto.block,
-      timestamp: seasonDto.timestamp
+      timestamp: seasonDto.timestamp,
+      sunriseTxn: seasonDto.sunriseTxn
     };
   }
 

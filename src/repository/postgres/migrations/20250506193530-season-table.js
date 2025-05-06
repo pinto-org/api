@@ -1,6 +1,6 @@
 'use strict';
 
-const { timestamps } = require('../util/sequelize-util');
+const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -16,6 +16,10 @@ module.exports = {
       },
       timestamp: {
         type: Sequelize.DATE,
+        allowNull: false
+      },
+      sunriseTxn: {
+        type: Sequelize.STRING(66),
         allowNull: false
       },
       ...timestamps(Sequelize)

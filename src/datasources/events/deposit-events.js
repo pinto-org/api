@@ -6,7 +6,7 @@ const DEPOSIT_EVENTS = ['AddDeposit', 'RemoveDeposit', 'RemoveDeposits'];
 class DepositEvents {
   // Returns a summary of add/remove deposit events. Collapses RemoveDeposits out of its array form
   static async getSiloDepositEvents(fromBlock, toBlock = 'latest') {
-    const rawEvents = await FilterLogs.getBeanstalkEvents(DEPOSIT_EVENTS, fromBlock, toBlock);
+    const rawEvents = await FilterLogs.getBeanstalkEvents(DEPOSIT_EVENTS, { fromBlock, toBlock });
     const collapsed = [];
     for (const event of rawEvents) {
       if (event.name === 'RemoveDeposits') {
@@ -36,7 +36,7 @@ class DepositEvents {
 
   // Returns condensed info from StalkBalanceChanged
   static async getStalkBalanceChangedEvents(fromBlock, toBlock = 'latest') {
-    const rawEvents = await FilterLogs.getBeanstalkEvents(['StalkBalanceChanged'], fromBlock, toBlock);
+    const rawEvents = await FilterLogs.getBeanstalkEvents(['StalkBalanceChanged'], { fromBlock, toBlock });
     const summary = [];
     for (const event of rawEvents) {
       summary.push({
