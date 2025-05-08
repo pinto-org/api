@@ -160,5 +160,21 @@ describe('Deposit Events', () => {
       expect(result[C().BEAN]['xyz'].amount).toBe(400n);
       expect(result[C().BEAN]['xyz'].transferPct).toBe(1);
     });
+
+    test('Transfer (laddered partial)', () => {
+      const result = DepositEvents.netDeposits([
+        mockAddRemoveEvt('RemoveDeposit', '1', C().BEAN, 500n),
+        mockAddRemoveEvt('RemoveDeposit', '2', C().BEAN, 100n),
+        mockAddRemoveEvt('RemoveDeposit', '3', C().BEAN, 300n),
+        mockAddRemoveEvt('AddDeposit', '4', C().BEAN, 500n),
+        mockAddRemoveEvt('AddDeposit', '5', C().BEAN, 300n)
+      ]);
+
+      expect(result[C().BEAN]['1'].transferPct).toBe(1);
+      expect(result[C().BEAN]['2'].transferPct).toBe(1);
+      expect(result[C().BEAN]['3'].transferPct).toBeCloseTo(2 / 3, 5);
+      expect(result[C().BEAN]['4'].transferPct).toBe(1);
+      expect(result[C().BEAN]['5'].transferPct).toBe(1);
+    });
   });
 });
