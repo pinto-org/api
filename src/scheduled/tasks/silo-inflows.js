@@ -1,4 +1,6 @@
+const DepositEvents = require('../../datasources/events/deposit-events');
 const FilterLogs = require('../../datasources/events/filter-logs');
+const EventsUtils = require('../../datasources/events/util');
 const AppMetaService = require('../../service/meta-service');
 const Log = require('../../utils/logging');
 const TaskRangeUtil = require('../util/task-range');
@@ -25,14 +27,22 @@ class SiloInflowsTask {
         toBlock: 29958578 /////
       }
     );
-    let i = 0;
 
     // Group events by transaction
+    const grouped = await EventsUtils.groupByTransaction(events);
+    for (const txnHash in grouped) {
+      const events = grouped[txnHash];
+      const converts = events.filter((e) => e.name === 'Convert');
+      const picks = events.filter((e) => e.name === 'Pick');
+      const addRemoves = events.filter((e) => e.name.includes('Deposit'));
 
-    // Determine net of add/remove
+      // Ignore add/removal matching convert or pick
+      DepositEvents.removeConvertRelatedEvents(addRemoves, converts);
+      DepositEvents.removePickRelatedEvents(addRemoves, picks);
 
-    // Output an error if Pick doesnt match with add deposit
-    // Output an error if Convert is not able to match with remove/add deposit(s)
+      // Determine net of add/remove
+      const netDeposits = DepositEvents.netDeposits(addRemoves);
+    }
 
     return !isCaughtUp;
   }
