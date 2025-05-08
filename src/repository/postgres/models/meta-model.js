@@ -19,6 +19,9 @@ module.exports = (sequelize, DataTypes) => {
       },
       lastTractorUpdate: {
         type: DataTypes.INTEGER
+      },
+      lastSiloInflowUpdate: {
+        type: DataTypes.INTEGER
       }
     },
     {

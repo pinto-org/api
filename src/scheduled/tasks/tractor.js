@@ -21,7 +21,7 @@ const MAX_BLOCKS = 2000;
 
 class TractorTask {
   // Returns true if the task can be called again immediately
-  static async updateTractor() {
+  static async update() {
     const [meta, snapshotBlock] = await Promise.all([
       AppMetaService.getTractorMeta(),
       SnapshotSowV0Service.nextSnapshotBlock()

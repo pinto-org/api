@@ -20,7 +20,7 @@ class DepositsTask {
   static __seasonUpdate = false;
 
   // Returns true if the task can be called again immediately
-  static async updateDeposits() {
+  static async update() {
     const meta = await AppMetaService.getLambdaMeta();
     const { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS);
     if (!isInitialized || lastUpdate === updateBlock) {
