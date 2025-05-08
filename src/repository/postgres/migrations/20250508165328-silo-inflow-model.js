@@ -29,6 +29,10 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         allowNull: false
       },
+      isTransfer: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+      },
       block: {
         type: Sequelize.INTEGER,
         allowNull: false

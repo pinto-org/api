@@ -23,22 +23,28 @@ class SiloInflowsTask {
     const events = await FilterLogs.getBeanstalkEvents(
       ['AddDeposit', 'RemoveDeposit', 'RemoveDeposits', 'Plant', 'Convert'],
       {
-        fromBlock: 29958513, /////
-        toBlock: 29958578 /////
+        // contains convert
+        // fromBlock: 29958513, /////
+        // toBlock: 29958578 /////
+        // contains plant
+        fromBlock: 22650525, /////
+        toBlock: 22651999 /////
       }
     );
+
+    await EventsUtils.attachTimestamps(events);
 
     // Group events by transaction
     const grouped = await EventsUtils.groupByTransaction(events);
     for (const txnHash in grouped) {
       const events = grouped[txnHash];
       const converts = events.filter((e) => e.name === 'Convert');
-      const picks = events.filter((e) => e.name === 'Pick');
+      const plants = events.filter((e) => e.name === 'Plant');
       const addRemoves = events.filter((e) => e.name.includes('Deposit'));
 
       // Ignore add/removal matching convert or pick
       DepositEvents.removeConvertRelatedEvents(addRemoves, converts);
-      DepositEvents.removePickRelatedEvents(addRemoves, picks);
+      DepositEvents.removePlantRelatedEvents(addRemoves, plants);
 
       // Determine net of add/remove
       const netDeposits = DepositEvents.netDeposits(addRemoves);

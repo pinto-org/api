@@ -1,3 +1,4 @@
+const { C } = require('../../constants/runtime-constants');
 const Log = require('../../utils/logging');
 const AlchemyUtil = require('../alchemy');
 const FilterLogs = require('./filter-logs');
@@ -69,22 +70,33 @@ class DepositEvents {
           BigInt(e.args.amount) === BigInt(convert.args.toAmount)
       );
       if (removeDepositIndex !== -1 && addDepositIndex !== -1) {
-        addRemoveEvents.splice(removeDepositIndex, 1);
-        // Adjust second index if it comes after the first removed item
-        const adjustedAddIndex = addDepositIndex > removeDepositIndex ? addDepositIndex - 1 : addDepositIndex;
-        addRemoveEvents.splice(adjustedAddIndex, 1);
+        addRemoveEvents.splice(Math.max(removeDepositIndex, addDepositIndex), 1);
+        addRemoveEvents.splice(Math.min(removeDepositIndex, addDepositIndex), 1);
       } else {
         Log.info(`Convert in ${convert.rawLog.transactionHash} failed to match add/remove deposit(s)`);
       }
     }
   }
 
-  static removePickRelatedEvents(addRemoveEvents, pickEvents) {
-    // Output an error if Pick doesnt match with add deposit
+  static removePlantRelatedEvents(addRemoveEvents, plantEvents) {
+    // Output an error if Plant doesnt match with add deposit
+    for (const plant of plantEvents) {
+      const addDepositIndex = addRemoveEvents.findIndex(
+        (e) =>
+          e.args.account === plant.args.account &&
+          BigInt(e.args.amount) === BigInt(plant.args.beans) &&
+          e.args.token.toLowerCase() === C().BEAN.toLowerCase()
+      );
+      if (addDepositIndex !== -1) {
+        addRemoveEvents.splice(addDepositIndex, 1);
+      } else {
+        Log.info(`Plant in ${plant.rawLog.transactionHash} failed to match add deposit`);
+      }
+    }
   }
 
   // Sums the net deposit/withdrawal for each token in these events
-  // TODO: consider account
+  // TODO: consider account/transfers
   static netDeposits(addRemoveEvents) {
     const collapsed = this.collapseDepositEvents(addRemoveEvents);
     const net = {};
