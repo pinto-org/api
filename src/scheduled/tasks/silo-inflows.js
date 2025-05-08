@@ -27,8 +27,11 @@ class SiloInflowsTask {
         // fromBlock: 29958513, /////
         // toBlock: 29958578 /////
         // contains plant
-        fromBlock: 22650525, /////
-        toBlock: 22651999 /////
+        // fromBlock: 22650525, /////
+        // toBlock: 22651999 /////
+        // contains transfer
+        fromBlock: 22651930,
+        toBlock: 22651932
       }
     );
 

@@ -59,12 +59,14 @@ class DepositEvents {
     for (const convert of convertEvents) {
       const removeDepositIndex = addRemoveEvents.findIndex(
         (e) =>
+          e.name.includes('Remove') &&
           e.args.account === convert.args.account &&
           e.args.token === convert.args.fromToken &&
           BigInt(e.args.amount) === BigInt(convert.args.fromAmount)
       );
       const addDepositIndex = addRemoveEvents.findIndex(
         (e) =>
+          e.name.includes('Add') &&
           e.args.account === convert.args.account &&
           e.args.token === convert.args.toToken &&
           BigInt(e.args.amount) === BigInt(convert.args.toAmount)
@@ -73,7 +75,7 @@ class DepositEvents {
         addRemoveEvents.splice(Math.max(removeDepositIndex, addDepositIndex), 1);
         addRemoveEvents.splice(Math.min(removeDepositIndex, addDepositIndex), 1);
       } else {
-        Log.info(`Convert in ${convert.rawLog.transactionHash} failed to match add/remove deposit(s)`);
+        Log.info(`Convert in ${convert.rawLog?.transactionHash} failed to match add/remove deposit(s)`);
       }
     }
   }
@@ -83,6 +85,7 @@ class DepositEvents {
     for (const plant of plantEvents) {
       const addDepositIndex = addRemoveEvents.findIndex(
         (e) =>
+          e.name.includes('Add') &&
           e.args.account === plant.args.account &&
           BigInt(e.args.amount) === BigInt(plant.args.beans) &&
           e.args.token.toLowerCase() === C().BEAN.toLowerCase()
@@ -90,13 +93,15 @@ class DepositEvents {
       if (addDepositIndex !== -1) {
         addRemoveEvents.splice(addDepositIndex, 1);
       } else {
-        Log.info(`Plant in ${plant.rawLog.transactionHash} failed to match add deposit`);
+        Log.info(`Plant in ${plant.rawLog?.transactionHash} failed to match add deposit`);
       }
     }
   }
 
   // Sums the net deposit/withdrawal for each token in these events
   // TODO: consider account/transfers
+  // A Transfer is identified as the same token being negative and positive for different accounts
+  // Support the case of -1000 pinto/+600 pinto, this is a 400 withdrawal and 600 transfer
   static netDeposits(addRemoveEvents) {
     const collapsed = this.collapseDepositEvents(addRemoveEvents);
     const net = {};
