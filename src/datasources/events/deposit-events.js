@@ -1,5 +1,7 @@
 const { C } = require('../../constants/runtime-constants');
+const { BigInt_min } = require('../../utils/bigint');
 const Log = require('../../utils/logging');
+const { fromBigInt } = require('../../utils/number');
 const AlchemyUtil = require('../alchemy');
 const FilterLogs = require('./filter-logs');
 
@@ -98,24 +100,60 @@ class DepositEvents {
     }
   }
 
-  // Sums the net deposit/withdrawal for each token in these events
-  // TODO: consider account/transfers
-  // A Transfer is identified as the same token being negative and positive for different accounts
-  // Support the case of -1000 pinto/+600 pinto, this is a 400 withdrawal and 600 transfer
+  // Sums the net deposit/withdrawal for each token in these events, and identifies transfers.
+  // A Transfer is identified as the same token being negative and positive for different accounts.
+  // Partial transfers are reflected via the transferPct field.
+  // i.e. -1000 pinto/+600 pinto, this is a 400 withdrawal and 600 transfer
   static netDeposits(addRemoveEvents) {
     const collapsed = this.collapseDepositEvents(addRemoveEvents);
     const net = {};
     for (const e of collapsed) {
-      net[e.token] ??= {
+      (net[e.token] ??= {})[e.account] ??= {
         amount: 0n,
-        bdv: 0n
+        bdv: 0n,
+        transferPct: 0
       };
-      net[e.token].amount += BigInt(e.type) * e.amount;
-      net[e.token].bdv += BigInt(e.type) * e.bdv;
+      net[e.token][e.account].amount += BigInt(e.type) * e.amount;
+      net[e.token][e.account].bdv += BigInt(e.type) * e.bdv;
     }
 
+    // Sum withdrawals of each token
+    const sumWithdrawals = Object.keys(net).reduce((acc1, token) => {
+      acc1[token] = Object.keys(net[token]).reduce((acc2, account) => {
+        if (net[token][account].amount < 0n) {
+          return acc2 - net[token][account].amount;
+        }
+        return acc2;
+      }, 0n);
+      return acc1;
+    }, {});
+
+    // Distribute the withdrawals as transfers across deposits for other accounts
+    for (const token in sumWithdrawals) {
+      if (sumWithdrawals[token] > 0n) {
+        const tokenAccounts = Object.keys(net[token]);
+        for (let i = 0; i < tokenAccounts.length && sumWithdrawals[token] > 0n; ++i) {
+          const accountTokenAmount = net[token][tokenAccounts[i]].amount;
+          if (accountTokenAmount > 0n) {
+            // Apply the withdrawal as a transfer to this account
+            const transferAmount = BigInt_min(sumWithdrawals[token], accountTokenAmount);
+            // Precision arbitrarily set to 18
+            net[token][tokenAccounts[i]].transferPct =
+              fromBigInt(transferAmount, 18) / fromBigInt(accountTokenAmount, 18);
+            sumWithdrawals[token] -= transferAmount;
+          }
+        }
+      }
+    }
+
+    // Remove entries that ended up as zero
     for (const token in net) {
-      if (net[token].amount === 0n) {
+      for (const account in net[token]) {
+        if (net[token][account].amount === 0n) {
+          delete net[token][account];
+        }
+      }
+      if (Object.keys(net[token]).length === 0) {
         delete net[token];
       }
     }

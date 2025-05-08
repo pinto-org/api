@@ -2,6 +2,19 @@ const { C } = require('../../src/constants/runtime-constants');
 const DepositEvents = require('../../src/datasources/events/deposit-events');
 const { mockPintoConstants } = require('../util/mock-constants');
 
+const mockAddRemoveEvt = (name, account, token, amount) => {
+  return {
+    name,
+    args: {
+      account,
+      token,
+      amount,
+      stem: 0,
+      bdv: amount
+    }
+  };
+};
+
 describe('Deposit Events', () => {
   describe('Event removal', () => {
     let addRemoveEvents;
@@ -10,38 +23,10 @@ describe('Deposit Events', () => {
       mockPintoConstants();
 
       addRemoveEvents = [
-        {
-          name: 'AddDeposit',
-          args: {
-            account: 'abc',
-            token: C().BEAN,
-            amount: 500n
-          }
-        },
-        {
-          name: 'AddDeposit',
-          args: {
-            account: 'abc',
-            token: C().PINTOWETH,
-            amount: 2500n
-          }
-        },
-        {
-          name: 'RemoveDeposit',
-          args: {
-            account: 'abc',
-            token: C().BEAN,
-            amount: 50n
-          }
-        },
-        {
-          name: 'RemoveDeposit',
-          args: {
-            account: 'abc',
-            token: C().BEAN,
-            amount: 1000n
-          }
-        }
+        mockAddRemoveEvt('AddDeposit', 'abc', C().BEAN, 500n),
+        mockAddRemoveEvt('AddDeposit', 'abc', C().PINTOWETH, 2500n),
+        mockAddRemoveEvt('RemoveDeposit', 'abc', C().BEAN, 50n),
+        mockAddRemoveEvt('RemoveDeposit', 'abc', C().BEAN, 1000n)
       ];
     });
 
@@ -124,19 +109,56 @@ describe('Deposit Events', () => {
 
   describe('Net Deposits', () => {
     test('Multiple Tokens', () => {
-      //
+      const result = DepositEvents.netDeposits([
+        mockAddRemoveEvt('AddDeposit', 'abc', C().BEAN, 100n),
+        mockAddRemoveEvt('RemoveDeposit', 'abc', C().PINTOWETH, 200n)
+      ]);
+
+      expect(result[C().BEAN]['abc'].amount).toBe(100n);
+      expect(result[C().PINTOWETH]['abc'].amount).toBe(-200n);
+    });
+
+    test('Multiple Accounts', () => {
+      const result = DepositEvents.netDeposits([
+        mockAddRemoveEvt('AddDeposit', 'abc', C().BEAN, 100n),
+        mockAddRemoveEvt('RemoveDeposit', 'abcd', C().PINTOWETH, 200n)
+      ]);
+
+      expect(result[C().BEAN]['abc'].amount).toBe(100n);
+      expect(result[C().PINTOWETH]['abcd'].amount).toBe(-200n);
     });
 
     test('Summing multiple events', () => {
-      //
+      const result = DepositEvents.netDeposits([
+        mockAddRemoveEvt('AddDeposit', 'abc', C().BEAN, 100n),
+        mockAddRemoveEvt('RemoveDeposit', 'abc', C().BEAN, 200n)
+      ]);
+
+      expect(result[C().BEAN]['abc'].amount).toBe(-100n);
     });
 
     test('Transfer (full)', () => {
-      //
+      const result = DepositEvents.netDeposits([
+        mockAddRemoveEvt('RemoveDeposit', 'abc', C().BEAN, 500n),
+        mockAddRemoveEvt('AddDeposit', 'xyz', C().BEAN, 500n)
+      ]);
+
+      expect(result[C().BEAN]['abc'].amount).toBe(-500n);
+      expect(result[C().BEAN]['abc'].transferPct).toBe(1);
+      expect(result[C().BEAN]['xyz'].amount).toBe(500n);
+      expect(result[C().BEAN]['xyz'].transferPct).toBe(1);
     });
 
     test('Transfer (partial)', () => {
-      //
+      const result = DepositEvents.netDeposits([
+        mockAddRemoveEvt('RemoveDeposit', 'abc', C().BEAN, 500n),
+        mockAddRemoveEvt('AddDeposit', 'xyz', C().BEAN, 400n)
+      ]);
+
+      expect(result[C().BEAN]['abc'].amount).toBe(-500n);
+      expect(result[C().BEAN]['abc'].transferPct).toBe(0.8);
+      expect(result[C().BEAN]['xyz'].amount).toBe(400n);
+      expect(result[C().BEAN]['xyz'].transferPct).toBe(1);
     });
   });
 });
