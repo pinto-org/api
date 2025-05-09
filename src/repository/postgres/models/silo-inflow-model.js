@@ -10,7 +10,6 @@ module.exports = (sequelize, DataTypes) => {
         autoIncrement: true
       },
       account: {
-        // TODO: consider how this affects transfers. Is an outflow for the account but not the silo
         type: DataTypes.STRING,
         allowNull: false
       },
