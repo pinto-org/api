@@ -19,7 +19,7 @@ class EventsUtils {
     const TAG = Concurrent.tag('eventTimestamps');
     for (const b of blockNumbers) {
       await Concurrent.run(TAG, 50, async () => {
-        const block = C().RPC.getBlock(b);
+        const block = await C().RPC.getBlock(b);
         timestamps[b] = new Date(Number(block.timestamp) * 1000);
       });
     }

@@ -30,7 +30,7 @@ module.exports = {
         allowNull: false
       },
       isTransfer: {
-        type: DataTypes.BOOLEAN,
+        type: Sequelize.BOOLEAN,
         allowNull: false
       },
       block: {

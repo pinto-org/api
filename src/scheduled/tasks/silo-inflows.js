@@ -5,9 +5,12 @@ const EventsUtils = require('../../datasources/events/util');
 const SiloInflowDto = require('../../repository/dto/SiloInflowDto');
 const AppMetaService = require('../../service/meta-service');
 const PriceService = require('../../service/price-service');
+const SiloInflowService = require('../../service/silo-inflow-service');
 const SiloService = require('../../service/silo-service');
+const Concurrent = require('../../utils/async/concurrent');
+const AsyncContext = require('../../utils/async/context');
 const Log = require('../../utils/logging');
-const { toBigInt, fromBigInt, bigintFloatMultiplier } = require('../../utils/number');
+const { bigintFloatMultiplier } = require('../../utils/number');
 const TaskRangeUtil = require('../util/task-range');
 
 // Maximum number of blocks to process in one invocation
@@ -28,6 +31,8 @@ class SiloInflowsTask {
     const events = await FilterLogs.getBeanstalkEvents(
       ['AddDeposit', 'RemoveDeposit', 'RemoveDeposits', 'Plant', 'Convert'],
       {
+        fromBlock: lastUpdate + 1,
+        toBlock: updateBlock
         // contains convert
         // fromBlock: 29958513, /////
         // toBlock: 29958578 /////
@@ -35,8 +40,8 @@ class SiloInflowsTask {
         // fromBlock: 22650525, /////
         // toBlock: 22651999 /////
         // contains transfer
-        fromBlock: 22651930,
-        toBlock: 22651932
+        // fromBlock: 22651930,
+        // toBlock: 22651932
       }
     );
 
@@ -45,27 +50,37 @@ class SiloInflowsTask {
     const inflowDtos = [];
 
     // Group events by transaction
+    const TAG = Concurrent.tag('siloInflowTxns');
     const grouped = await EventsUtils.groupByTransaction(events);
     for (const txnHash in grouped) {
-      const events = grouped[txnHash];
-      const converts = events.filter((e) => e.name === 'Convert');
-      const plants = events.filter((e) => e.name === 'Plant');
-      const addRemoves = events.filter((e) => e.name.includes('Deposit'));
+      await Concurrent.run(TAG, 25, async () => {
+        const txnEvents = grouped[txnHash];
+        const converts = txnEvents.filter((e) => e.name === 'Convert');
+        const plants = txnEvents.filter((e) => e.name === 'Plant');
+        const addRemoves = txnEvents.filter((e) => e.name.includes('Deposit'));
 
-      // Ignore add/removal matching convert or pick
-      DepositEvents.removeConvertRelatedEvents(addRemoves, converts);
-      DepositEvents.removePlantRelatedEvents(addRemoves, plants);
+        // Ignore add/removal matching convert or pick
+        DepositEvents.removeConvertRelatedEvents(addRemoves, converts);
+        DepositEvents.removePlantRelatedEvents(addRemoves, plants);
 
-      // Determine net of add/remove
-      const netDeposits = DepositEvents.netDeposits(addRemoves);
-      inflowDtos.push(
-        ...(await this.inflowsFromNetDeposits(netDeposits, {
-          block: events[0].rawLog.blockNumber,
-          timestamp: events[0].extra.timestamp,
-          txnHash
-        }))
-      );
+        // Determine net of add/remove
+        const netDeposits = DepositEvents.netDeposits(addRemoves);
+        inflowDtos.push(
+          ...(await this.inflowsFromNetDeposits(netDeposits, {
+            block: txnEvents[0].rawLog.blockNumber,
+            timestamp: txnEvents[0].extra.timestamp,
+            txnHash
+          }))
+        );
+      });
     }
+    await Concurrent.allResolved(TAG);
+
+    // Save new entities
+    await AsyncContext.sequelizeTransaction(async () => {
+      await SiloInflowService.insertInflows(inflowDtos);
+      await AppMetaService.setLastSiloInflowUpdate(updateBlock);
+    });
 
     return !isCaughtUp;
   }
@@ -127,9 +142,10 @@ class SiloInflowsTask {
       tokens: [],
       amounts: []
     };
+    const signs = [];
     for (const dto of dtos) {
       bdvsCalldata.tokens.push(dto.token);
-      bdvsCalldata.amounts.push(dto.amount);
+      bdvsCalldata.amounts.push(dto.amount * signs[signs.push(dto.amount > 0n ? 1n : -1n) - 1]);
     }
     const [instBdvs, beanPrice] = await Promise.all([
       SiloService.batchBdvs(bdvsCalldata, block),
@@ -137,7 +153,7 @@ class SiloInflowsTask {
     ]);
 
     for (let i = 0; i < dtos.length; ++i) {
-      dtos[i].assignInstValues(instBdvs[i], beanPrice.usdPrice);
+      dtos[i].assignInstValues(instBdvs[i] * signs[i], beanPrice.usdPrice);
     }
   }
 }

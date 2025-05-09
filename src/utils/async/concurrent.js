@@ -61,7 +61,7 @@ class Concurrent {
             resolve();
           } else {
             const errorMessages = errors.map((e) => e.stack || e.toString()).join('\n');
-            reject(`[Concurrent] Failed with errors:\n${errorMessages}`);
+            reject(`[Concurrent:${id.split('-')[0]}] Failed with errors:\n${errorMessages}`);
           }
         }
       }, 50);
