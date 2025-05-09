@@ -1,7 +1,7 @@
 const { C } = require('../../constants/runtime-constants');
-const { BigInt_min, BigInt_abs } = require('../../utils/bigint');
+const { BigInt_abs } = require('../../utils/bigint');
 const Log = require('../../utils/logging');
-const { fromBigInt, toBigInt } = require('../../utils/number');
+const { fromBigInt, bigintFloatMultiplier, bigintPercent } = require('../../utils/number');
 const AlchemyUtil = require('../alchemy');
 const FilterLogs = require('./filter-logs');
 
@@ -126,8 +126,8 @@ class DepositEvents {
         const withdrawer = netWithdrawal[w];
         const depositor = netDeposit[d];
 
-        const transferredW = toBigInt(withdrawer.transferPct * fromBigInt(BigInt_abs(withdrawer.amount), p), p);
-        const transferredD = toBigInt(depositor.transferPct * fromBigInt(depositor.amount, p), p);
+        const transferredW = bigintFloatMultiplier(BigInt_abs(withdrawer.amount), p, withdrawer.transferPct);
+        const transferredD = bigintFloatMultiplier(depositor.amount, p, depositor.transferPct);
         const remainingW = BigInt_abs(withdrawer.amount) - transferredW;
         const remainingD = depositor.amount - transferredD;
 
@@ -137,13 +137,12 @@ class DepositEvents {
           ++w;
           ++d;
         } else if (remainingW > remainingD) {
-          withdrawer.transferPct =
-            fromBigInt(transferredW + remainingD, p) / fromBigInt(BigInt_abs(withdrawer.amount), p);
+          withdrawer.transferPct = bigintPercent(transferredW + remainingD, BigInt_abs(withdrawer.amount), p);
           depositor.transferPct = 1;
           ++d;
         } else {
           withdrawer.transferPct = 1;
-          depositor.transferPct = fromBigInt(transferredD + remainingW, p) / fromBigInt(depositor.amount, p);
+          depositor.transferPct = bigintPercent(transferredD + remainingW, depositor.amount, p);
           ++w;
         }
       }

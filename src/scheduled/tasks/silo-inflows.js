@@ -5,7 +5,7 @@ const EventsUtils = require('../../datasources/events/util');
 const SiloInflowDto = require('../../repository/dto/SiloInflowDto');
 const AppMetaService = require('../../service/meta-service');
 const Log = require('../../utils/logging');
-const { toBigInt, fromBigInt } = require('../../utils/number');
+const { toBigInt, fromBigInt, bigintFloatMultiplier } = require('../../utils/number');
 const TaskRangeUtil = require('../util/task-range');
 
 // Maximum number of blocks to process in one invocation
@@ -96,7 +96,7 @@ class SiloInflowsTask {
           );
         } else {
           // If this was partially transferred, needs to split into two entries
-          const transferAmount = toBigInt(fromBigInt(deposit.amount, p) * deposit.transferPct, p);
+          const transferAmount = bigintFloatMultiplier(deposit.amount, p, deposit.transferPct);
           dtos.push(
             SiloInflowDto.fromData({
               ...data,

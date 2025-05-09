@@ -29,7 +29,7 @@ class SiloInflowDto {
     }
   }
 
-  static async fromData({ account, token, amount, isTransfer, block, timestamp, txnHash }) {
+  static fromData({ account, token, amount, isTransfer, block, timestamp, txnHash }) {
     return new SiloInflowDto('data', { account, token, amount, isTransfer, block, timestamp, txnHash });
   }
 

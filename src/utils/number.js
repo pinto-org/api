@@ -87,7 +87,15 @@ class NumberUtil {
   }
 
   static toBigInt(v, precision) {
-    return BigInt(v * 10 ** precision);
+    return BigInt(Math.round(v * 10 ** precision));
+  }
+
+  static bigintFloatMultiplier(bi, precision, multiplier) {
+    return NumberUtil.toBigInt(NumberUtil.fromBigInt(bi, precision) * multiplier, precision);
+  }
+
+  static bigintPercent(a, b, precision) {
+    return NumberUtil.fromBigInt(a, precision) / NumberUtil.fromBigInt(b, precision);
   }
 
   static sum(a) {
