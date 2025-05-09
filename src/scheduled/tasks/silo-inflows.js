@@ -4,6 +4,8 @@ const FilterLogs = require('../../datasources/events/filter-logs');
 const EventsUtils = require('../../datasources/events/util');
 const SiloInflowDto = require('../../repository/dto/SiloInflowDto');
 const AppMetaService = require('../../service/meta-service');
+const PriceService = require('../../service/price-service');
+const SiloService = require('../../service/silo-service');
 const Log = require('../../utils/logging');
 const { toBigInt, fromBigInt, bigintFloatMultiplier } = require('../../utils/number');
 const TaskRangeUtil = require('../util/task-range');
@@ -57,21 +59,19 @@ class SiloInflowsTask {
       // Determine net of add/remove
       const netDeposits = DepositEvents.netDeposits(addRemoves);
       inflowDtos.push(
-        ...this.inflowsFromNetDeposits(netDeposits, {
+        ...(await this.inflowsFromNetDeposits(netDeposits, {
           block: events[0].rawLog.blockNumber,
           timestamp: events[0].extra.timestamp,
           txnHash
-        })
+        }))
       );
     }
-
-    // Assign all bdvs and prices afterwards (dto construction will neglect these)
 
     return !isCaughtUp;
   }
 
   // Construct new silo inflow dtos from net deposits in this transaction
-  static inflowsFromNetDeposits(netDeposits, { block, timestamp, txnHash }) {
+  static async inflowsFromNetDeposits(netDeposits, { block, timestamp, txnHash }) {
     const dtos = [];
     for (const token in netDeposits) {
       const p = C().DECIMALS[token];
@@ -114,7 +114,31 @@ class SiloInflowsTask {
         }
       }
     }
+
+    // Assign all bdvs and usd values
+    await this.assignInflowBdvAndUsd(dtos, block);
+
     return dtos;
+  }
+
+  // Uses bdv batching view function to get many/all bdvs at once for this transaction
+  static async assignInflowBdvAndUsd(dtos, block) {
+    const bdvsCalldata = {
+      tokens: [],
+      amounts: []
+    };
+    for (const dto of dtos) {
+      bdvsCalldata.tokens.push(dto.token);
+      bdvsCalldata.amounts.push(dto.amount);
+    }
+    const [instBdvs, beanPrice] = await Promise.all([
+      SiloService.batchBdvs(bdvsCalldata, block),
+      PriceService.getBeanPrice({ blockNumber: block })
+    ]);
+
+    for (let i = 0; i < dtos.length; ++i) {
+      dtos[i].assignInstValues(instBdvs[i], beanPrice.usdPrice);
+    }
   }
 }
 module.exports = SiloInflowsTask;

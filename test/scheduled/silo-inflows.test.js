@@ -8,8 +8,12 @@ describe('Silo inflows task', () => {
   });
 
   describe('Dto construction', () => {
-    test('No transfers', () => {
-      const result = SiloInflowsTask.inflowsFromNetDeposits(
+    beforeEach(() => {
+      jest.spyOn(SiloInflowsTask, 'assignInflowBdvAndUsd').mockImplementation(() => {});
+    });
+
+    test('No transfers', async () => {
+      const result = await SiloInflowsTask.inflowsFromNetDeposits(
         {
           [C().BEAN]: {
             abc: {
@@ -33,8 +37,8 @@ describe('Silo inflows task', () => {
       expect(result[0].isLp).toBe(false);
     });
 
-    test('Full transfer', () => {
-      const result = SiloInflowsTask.inflowsFromNetDeposits(
+    test('Full transfer', async () => {
+      const result = await SiloInflowsTask.inflowsFromNetDeposits(
         {
           [C().PINTOWETH]: {
             abc: {
@@ -56,8 +60,8 @@ describe('Silo inflows task', () => {
       expect(result[0].isLp).toBe(true);
     });
 
-    test('Partial transfer', () => {
-      const result = SiloInflowsTask.inflowsFromNetDeposits(
+    test('Partial transfer', async () => {
+      const result = await SiloInflowsTask.inflowsFromNetDeposits(
         {
           [C().PINTOWETH]: {
             abc: {
