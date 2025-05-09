@@ -10,11 +10,11 @@ const SiloService = require('../../service/silo-service');
 const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
 const Log = require('../../utils/logging');
-const { bigintFloatMultiplier } = require('../../utils/number');
+const { bigintFloatMultiplier, fromBigInt, toBigInt } = require('../../utils/number');
 const TaskRangeUtil = require('../util/task-range');
 
 // Maximum number of blocks to process in one invocation
-const MAX_BLOCKS = 2000;
+const MAX_BLOCKS = 10000;
 
 class SiloInflowsTask {
   // Returns true if the task can be called again immediately
@@ -27,21 +27,11 @@ class SiloInflowsTask {
     }
     Log.info(`Updating silo inflows for block range [${lastUpdate}, ${updateBlock}]`);
 
-    // Test range includes convert, withdrawal, and withdrawal to sow
     const events = await FilterLogs.getBeanstalkEvents(
-      ['AddDeposit', 'RemoveDeposit', 'RemoveDeposits', 'Plant', 'Convert'],
+      ['AddDeposit', 'RemoveDeposit', 'RemoveDeposits', 'Plant', 'Convert', 'ClaimPlenty'],
       {
         fromBlock: lastUpdate + 1,
         toBlock: updateBlock
-        // contains convert
-        // fromBlock: 29958513, /////
-        // toBlock: 29958578 /////
-        // contains plant
-        // fromBlock: 22650525, /////
-        // toBlock: 22651999 /////
-        // contains transfer
-        // fromBlock: 22651930,
-        // toBlock: 22651932
       }
     );
 
@@ -72,6 +62,16 @@ class SiloInflowsTask {
             txnHash
           }))
         );
+
+        // Record outflows from claim plenty
+        const claimPlenties = txnEvents.filter((e) => e.name === 'ClaimPlenty');
+        inflowDtos.push(
+          ...(await this.inflowsFromClaimPlenties(claimPlenties, {
+            block: txnEvents[0].rawLog.blockNumber,
+            timestamp: txnEvents[0].extra.timestamp,
+            txnHash
+          }))
+        );
       });
     }
     await Concurrent.allResolved(TAG);
@@ -97,6 +97,7 @@ class SiloInflowsTask {
         const data = {
           account,
           token,
+          isPlenty: false,
           block,
           timestamp,
           txnHash
@@ -155,6 +156,34 @@ class SiloInflowsTask {
     for (let i = 0; i < dtos.length; ++i) {
       dtos[i].assignInstValues(instBdvs[i] * signs[i], beanPrice.usdPrice);
     }
+  }
+
+  static async inflowsFromClaimPlenties(claimPlenties, { block, timestamp, txnHash }) {
+    // Price the value and bdvs of all claimed tokens
+    const tokens = claimPlenties.map((e) => e.args.token.toLowerCase());
+    const [beanPrice, ...tokenPrices] = (
+      await Promise.all([C().BEAN, ...tokens].map((t) => PriceService.getTokenPrice(t, { blockNumber: block })))
+    ).map((p) => p.usdPrice);
+    const pseudoBdvs = tokenPrices.map((p) => p / beanPrice);
+
+    const dtos = [];
+    for (let i = 0; i < claimPlenties.length; ++i) {
+      const e = claimPlenties[i];
+      const dto = SiloInflowDto.fromData({
+        account: e.args.account.toLowerCase(),
+        token: e.args.token.toLowerCase(),
+        amount: -BigInt(e.args.plenty),
+        isTransfer: false,
+        isPlenty: true,
+        block,
+        timestamp,
+        txnHash
+      });
+      const tokenAmount = fromBigInt(-BigInt(e.args.plenty), C().DECIMALS[e.args.token.toLowerCase()]);
+      dto.assignInstValues(toBigInt(pseudoBdvs[i] * tokenAmount, 6), beanPrice);
+      dtos.push(dto);
+    }
+    return dtos;
   }
 }
 module.exports = SiloInflowsTask;

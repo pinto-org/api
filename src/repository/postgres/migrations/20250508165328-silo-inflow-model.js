@@ -33,6 +33,10 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         allowNull: false
       },
+      isPlenty: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false
+      },
       block: {
         type: Sequelize.INTEGER,
         allowNull: false

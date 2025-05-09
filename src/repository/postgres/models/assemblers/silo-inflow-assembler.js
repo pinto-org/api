@@ -11,6 +11,7 @@ class SiloInflowAssembler {
       usd: inflowDto.usd,
       isLp: inflowDto.isLp,
       isTransfer: inflowDto.isTransfer,
+      isPlenty: inflowDto.isPlenty,
       block: inflowDto.block,
       timestamp: inflowDto.timestamp,
       txnHash: inflowDto.txnHash
