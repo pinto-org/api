@@ -1,5 +1,5 @@
-const { C } = require('../../constants/runtime-constants');
-const { fromBigInt } = require('../../utils/number');
+const { C } = require('../../../constants/runtime-constants');
+const { fromBigInt } = require('../../../utils/number');
 
 class SiloInflowDto {
   constructor(type, data) {

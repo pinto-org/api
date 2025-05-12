@@ -2,16 +2,17 @@ const { C } = require('../../constants/runtime-constants');
 const DepositEvents = require('../../datasources/events/deposit-events');
 const FilterLogs = require('../../datasources/events/filter-logs');
 const EventsUtils = require('../../datasources/events/util');
-const SiloInflowDto = require('../../repository/dto/SiloInflowDto');
+const SiloInflowDto = require('../../repository/dto/inflow/SiloInflowDto');
 const AppMetaService = require('../../service/meta-service');
 const PriceService = require('../../service/price-service');
-const SiloInflowService = require('../../service/silo-inflow-service');
+const SiloInflowService = require('../../service/inflow/silo-inflow-service');
 const SiloService = require('../../service/silo-service');
 const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
 const Log = require('../../utils/logging');
 const { bigintFloatMultiplier, fromBigInt, toBigInt } = require('../../utils/number');
 const TaskRangeUtil = require('../util/task-range');
+const SiloInflowSnapshotService = require('../../service/inflow/silo-inflow-snapshot-service');
 
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 10000;
@@ -79,6 +80,7 @@ class SiloInflowsTask {
     // Save new entities
     await AsyncContext.sequelizeTransaction(async () => {
       await SiloInflowService.insertInflows(inflowDtos);
+      await SiloInflowSnapshotService.takeMissingSnapshots(updateBlock);
       await AppMetaService.setLastSiloInflowUpdate(updateBlock);
     });
 

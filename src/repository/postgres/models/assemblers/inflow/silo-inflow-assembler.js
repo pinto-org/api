@@ -1,4 +1,4 @@
-const SiloInflowDto = require('../../../dto/SiloInflowDto');
+const SiloInflowDto = require('../../../../dto/inflow/SiloInflowDto');
 
 class SiloInflowAssembler {
   static toModel(inflowDto) {

@@ -1,5 +1,6 @@
 const Concurrent = require('../../../utils/async/concurrent');
 const AsyncContext = require('../../../utils/async/context');
+const { sequelize, Sequelize } = require('../models');
 
 class SharedRepository {
   // Retrieves all entities matching the criteria
@@ -31,6 +32,24 @@ class SharedRepository {
     if (returning) {
       return upserted;
     }
+  }
+
+  // Finds all "season"s that are missing from the given table
+  static async findMissingSeasons(tableName, maxSeason) {
+    const seasons = await sequelize.query(
+      `
+        SELECT s AS missingseason
+        FROM generate_series(2, :maxSeason) AS s
+        LEFT JOIN (SELECT DISTINCT season FROM ${tableName}) t ON s = t.season
+        WHERE t.season IS NULL;
+      `,
+      {
+        replacements: { maxSeason },
+        type: Sequelize.QueryTypes.SELECT,
+        transaction: AsyncContext.getOrUndef('transaction')
+      }
+    );
+    return seasons.map((s) => s.missingseason);
   }
 }
 module.exports = SharedRepository;

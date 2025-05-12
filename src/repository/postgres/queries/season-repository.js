@@ -1,23 +1,27 @@
+const AsyncContext = require('../../../utils/async/context');
 const { sequelize, Sequelize } = require('../models');
+const SharedRepository = require('./shared-repository');
 
 class SeasonRepository {
   // Find/Upsert can use generics in SharedRepository
 
+  // Returns the max processed season for a given block
+  static async findMaxSeasonForBlock(block) {
+    const maxSeason = await sequelize.models.Season.findOne({
+      where: {
+        block: {
+          [Sequelize.Op.lte]: block
+        }
+      },
+      order: [['season', 'DESC']],
+      transaction: AsyncContext.getOrUndef('transaction')
+    });
+    return maxSeason;
+  }
+
   // Returns a list of all seasons that are missing
   static async findMissingSeasons(maxSeason) {
-    const seasons = await sequelize.query(
-      `
-      SELECT s AS missingseason
-      FROM generate_series(1, :maxSeason) AS s
-      LEFT JOIN (SELECT DISTINCT season FROM season) e ON s = e.season
-      WHERE e.season IS NULL;
-    `,
-      {
-        replacements: { maxSeason },
-        type: Sequelize.QueryTypes.SELECT
-      }
-    );
-    return seasons.map((s) => s.missingseason);
+    return await SharedRepository.findMissingSeasons('season', maxSeason);
   }
 }
 module.exports = SeasonRepository;
