@@ -30,12 +30,23 @@ class FieldInflowSnapshotService {
           s.season,
           s.timestamp,
           s.block,
-          sub.beans as cumulative_beans,
-          sub.usd as cumulative_usd
+          sub.beans_net as cumulative_beans_net,
+          sub.beans_in as cumulative_beans_in,
+          sub.beans_out as cumulative_beans_out,
+          sub.usd_net as cumulative_usd_net,
+          sub.usd_in as cumulative_usd_in,
+          sub.usd_out as cumulative_usd_out
         from
           season s,
           lateral (
-            select sum(beans) as beans, sum(usd) as usd from field_inflow f where f.block < s.block
+            select
+              sum(beans) as beans_net,
+              sum(case when beans > 0 then beans else 0 end) as beans_in,
+              sum(case when beans < 0 then beans else 0 end) as beans_out,
+              sum(usd) as usd_net,
+              sum(case when usd > 0 then usd else 0 end) as usd_in,
+              sum(case when usd < 0 then usd else 0 end) as usd_out
+            from field_inflow f where f.block < s.block
           ) as sub
           where s.season in (${seasonsIn})
       )
@@ -43,10 +54,18 @@ class FieldInflowSnapshotService {
         season,
         block,
         timestamp,
-        cumulative_beans,
-        cumulative_usd,
-        cumulative_beans - lag(cumulative_beans) over (order by block) as delta_beans,
-        cumulative_usd - lag(cumulative_usd) over (order by block) as delta_usd
+        cumulative_beans_net,
+        cumulative_beans_in,
+        cumulative_beans_out,
+        cumulative_usd_net,
+        cumulative_usd_in,
+        cumulative_usd_out,
+        cumulative_beans_net - lag(cumulative_beans_net) over (order by block) as delta_beans_net,
+        cumulative_beans_in - lag(cumulative_beans_in) over (order by block) as delta_beans_in,
+        cumulative_beans_out - lag(cumulative_beans_out) over (order by block) as delta_beans_out,
+        cumulative_usd_net - lag(cumulative_usd_net) over (order by block) as delta_usd_net,
+        cumulative_usd_in - lag(cumulative_usd_in) over (order by block) as delta_usd_in,
+        cumulative_usd_out - lag(cumulative_usd_out) over (order by block) as delta_usd_out
       from
         cumulative
       order by timestamp asc

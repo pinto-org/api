@@ -21,13 +21,33 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false
       },
-      ...bigintNumericColumn('cumulativeBeans', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('deltaBeans', DataTypes, { allowNull: false }),
-      cumulativeUsd: {
+      ...bigintNumericColumn('cumulativeBeansNet', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeBeansIn', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeBeansOut', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('deltaBeansNet', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('deltaBeansIn', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('deltaBeansOut', DataTypes, { allowNull: false }),
+      cumulativeUsdNet: {
         type: DataTypes.FLOAT,
         allowNull: false
       },
-      deltaUsd: {
+      cumulativeUsdIn: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      cumulativeUsdOut: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      deltaUsdNet: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      deltaUsdIn: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      deltaUsdOut: {
         type: DataTypes.FLOAT,
         allowNull: false
       }

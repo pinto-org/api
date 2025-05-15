@@ -7,10 +7,18 @@ class SiloInflowSnapshotAssembler {
       snapshotTimestamp: snapshotDto.snapshotTimestamp,
       snapshotBlock: snapshotDto.snapshotBlock,
       season: snapshotDto.season,
-      cumulativeBdv: snapshotDto.cumulativeBdv,
-      deltaBdv: snapshotDto.deltaBdv,
-      cumulativeUsd: snapshotDto.cumulativeUsd,
-      deltaUsd: snapshotDto.deltaUsd
+      cumulativeBdvNet: snapshotDto.cumulativeBdvNet,
+      cumulativeBdvIn: snapshotDto.cumulativeBdvIn,
+      cumulativeBdvOut: snapshotDto.cumulativeBdvOut,
+      deltaBdvNet: snapshotDto.deltaBdvNet,
+      deltaBdvIn: snapshotDto.deltaBdvIn,
+      deltaBdvOut: snapshotDto.deltaBdvOut,
+      cumulativeUsdNet: snapshotDto.cumulativeUsdNet,
+      cumulativeUsdIn: snapshotDto.cumulativeUsdIn,
+      cumulativeUsdOut: snapshotDto.cumulativeUsdOut,
+      deltaUsdNet: snapshotDto.deltaUsdNet,
+      deltaUsdIn: snapshotDto.deltaUsdIn,
+      deltaUsdOut: snapshotDto.deltaUsdOut
     };
   }
 

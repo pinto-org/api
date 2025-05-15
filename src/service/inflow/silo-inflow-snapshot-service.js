@@ -30,12 +30,23 @@ class SiloInflowSnapshotService {
           s.season,
           s.timestamp,
           s.block,
-          sub.bdv as cumulative_bdv,
-          sub.usd as cumulative_usd
+          sub.bdv_net as cumulative_bdv_net,
+          sub.bdv_in as cumulative_bdv_in,
+          sub.bdv_out as cumulative_bdv_out,
+          sub.usd_net as cumulative_usd_net,
+          sub.usd_in as cumulative_usd_in,
+          sub.usd_out as cumulative_usd_out
         from
           season s,
           lateral (
-            select sum(bdv) as bdv, sum(usd) as usd from silo_inflow f where f.block < s.block
+            select
+              sum(bdv) as bdv_net,
+              sum(case when bdv > 0 then bdv else 0 end) as bdv_in,
+              sum(case when bdv < 0 then bdv else 0 end) as bdv_out,
+              sum(usd) as usd_net,
+              sum(case when usd > 0 then usd else 0 end) as usd_in,
+              sum(case when usd < 0 then usd else 0 end) as usd_out
+            from silo_inflow f where f.block < s.block
           ) as sub
           where s.season in (${seasonsIn})
       )
@@ -43,10 +54,18 @@ class SiloInflowSnapshotService {
         season,
         block,
         timestamp,
-        cumulative_bdv,
-        cumulative_usd,
-        cumulative_bdv - lag(cumulative_bdv) over (order by block) as delta_bdv,
-        cumulative_usd - lag(cumulative_usd) over (order by block) as delta_usd
+        cumulative_bdv_net,
+        cumulative_bdv_in,
+        cumulative_bdv_out,
+        cumulative_usd_net,
+        cumulative_usd_in,
+        cumulative_usd_out,
+        cumulative_bdv_net - lag(cumulative_bdv_net) over (order by block) as delta_bdv_net,
+        cumulative_bdv_in - lag(cumulative_bdv_in) over (order by block) as delta_bdv_in,
+        cumulative_bdv_out - lag(cumulative_bdv_out) over (order by block) as delta_bdv_out,
+        cumulative_usd_net - lag(cumulative_usd_net) over (order by block) as delta_usd_net,
+        cumulative_usd_in - lag(cumulative_usd_in) over (order by block) as delta_usd_in,
+        cumulative_usd_out - lag(cumulative_usd_out) over (order by block) as delta_usd_out
       from
         cumulative
       order by timestamp asc

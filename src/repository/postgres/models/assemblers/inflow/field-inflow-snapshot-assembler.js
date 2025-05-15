@@ -7,10 +7,18 @@ class FieldInflowSnapshotAssembler {
       snapshotTimestamp: snapshotDto.snapshotTimestamp,
       snapshotBlock: snapshotDto.snapshotBlock,
       season: snapshotDto.season,
-      cumulativeBeans: snapshotDto.cumulativeBeans,
-      deltaBeans: snapshotDto.deltaBeans,
-      cumulativeUsd: snapshotDto.cumulativeUsd,
-      deltaUsd: snapshotDto.deltaUsd
+      cumulativeBeansNet: snapshotDto.cumulativeBeansNet,
+      cumulativeBeansIn: snapshotDto.cumulativeBeansIn,
+      cumulativeBeansOut: snapshotDto.cumulativeBeansOut,
+      deltaBeansNet: snapshotDto.deltaBeansNet,
+      deltaBeansIn: snapshotDto.deltaBeansIn,
+      deltaBeansOut: snapshotDto.deltaBeansOut,
+      cumulativeUsdNet: snapshotDto.cumulativeUsdNet,
+      cumulativeUsdIn: snapshotDto.cumulativeUsdIn,
+      cumulativeUsdOut: snapshotDto.cumulativeUsdOut,
+      deltaUsdNet: snapshotDto.deltaUsdNet,
+      deltaUsdIn: snapshotDto.deltaUsdIn,
+      deltaUsdOut: snapshotDto.deltaUsdOut
     };
   }
 
