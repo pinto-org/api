@@ -2,6 +2,7 @@ const FilterLogs = require('../../datasources/events/filter-logs');
 const EventsUtils = require('../../datasources/events/util');
 const FieldInflowDto = require('../../repository/dto/inflow/FieldInflowDto');
 const FieldInflowService = require('../../service/inflow/field-inflow-service');
+const FieldInflowSnapshotService = require('../../service/inflow/field-inflow-snapshot-service');
 const AppMetaService = require('../../service/meta-service');
 const PriceService = require('../../service/price-service');
 const Concurrent = require('../../utils/async/concurrent');
@@ -44,7 +45,7 @@ class FieldInflowsTask {
     // Save new entities
     await AsyncContext.sequelizeTransaction(async () => {
       await FieldInflowService.insertInflows(inflowDtos);
-      // await FieldInflowSnapshotService.takeMissingSnapshots(updateBlock);
+      await FieldInflowSnapshotService.takeMissingSnapshots(updateBlock);
       await AppMetaService.setLastFieldInflowUpdate(updateBlock);
     });
 
