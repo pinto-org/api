@@ -37,5 +37,16 @@ class AppMetaService {
   static async setLastTractorUpdate(lastUpdate) {
     await MetaRepository.update(C().CHAIN, { lastTractorUpdate: lastUpdate });
   }
+
+  static async getSiloInflowMeta() {
+    const meta = await MetaRepository.get(C().CHAIN);
+    return {
+      lastUpdate: meta?.lastSiloInflowUpdate ? meta.lastSiloInflowUpdate : null
+    };
+  }
+
+  static async setLastSiloInflowUpdate(lastUpdate) {
+    await MetaRepository.update(C().CHAIN, { lastSiloInflowUpdate: lastUpdate });
+  }
 }
 module.exports = AppMetaService;

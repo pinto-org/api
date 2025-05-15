@@ -25,7 +25,7 @@ describe('TractorTask', () => {
     jest.spyOn(TaskRangeUtil, 'getUpdateInfo').mockResolvedValue({ isInitialized: false });
     const filterLogSpy = jest.spyOn(FilterLogs, 'getBeanstalkEvents');
 
-    const retval = await TractorTask.updateTractor();
+    const retval = await TractorTask.update();
 
     expect(retval).toBe(false);
     expect(filterLogSpy).not.toHaveBeenCalled();
@@ -60,7 +60,7 @@ describe('TractorTask', () => {
       const tractorSpy = jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
       const metaSpy = jest.spyOn(AppMetaService, 'setLastTractorUpdate').mockImplementation(() => {});
 
-      const retval = await TractorTask.updateTractor();
+      const retval = await TractorTask.update();
 
       expect(retval).toBe(true);
       expect(requisitionSpy).toHaveBeenCalledWith(expect.objectContaining({ value: 1 }));
@@ -80,7 +80,7 @@ describe('TractorTask', () => {
       jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
       jest.spyOn(AppMetaService, 'setLastTractorUpdate').mockImplementation(() => {});
 
-      await TractorTask.updateTractor();
+      await TractorTask.update();
 
       expect(blueprintSpy.periodicUpdate).toHaveBeenCalledWith(expect.any(Function), 4000);
     });

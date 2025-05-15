@@ -4,6 +4,30 @@ const SunriseTask = require('./tasks/sunrise');
 const Log = require('../utils/logging');
 const DepositsTask = require('./tasks/deposits');
 const TractorTask = require('./tasks/tractor');
+const SiloInflowsTask = require('./tasks/silo-inflows');
+
+const genericTask = (Executor, label) => ({
+  [label]: {
+    // 11 seconds into the minute; these tasks have a 5 block buffer, this will ensure it processes the block on the minute
+    cron: '11 * * * * *',
+    function: async () => {
+      if (Executor.__cronLock) {
+        Log.info(`${label} task is still running, skipping this minute...`);
+        return;
+      }
+
+      try {
+        Executor.__cronLock = true;
+        let canExecuteAgain = true;
+        while (canExecuteAgain) {
+          canExecuteAgain = await Executor.update();
+        }
+      } finally {
+        Executor.__cronLock = false;
+      }
+    }
+  }
+});
 
 // All cron jobs which could be activated are configured here
 const ALL_JOBS = {
@@ -12,46 +36,9 @@ const ALL_JOBS = {
     cron: '50-59 59 * * * *',
     function: SunriseTask.handleSunrise
   },
-  deposits: {
-    // 11 seconds into the minute; the task has a 5 block buffer, this will ensure it processes the block on the minute
-    cron: '11 * * * * *',
-    function: async () => {
-      if (DepositsTask.__cronLock) {
-        Log.info('Deposits task is still running, skipping this minute...');
-        return;
-      }
-
-      try {
-        DepositsTask.__cronLock = true;
-        let canExecuteAgain = true;
-        while (canExecuteAgain) {
-          canExecuteAgain = await DepositsTask.updateDeposits();
-        }
-      } finally {
-        DepositsTask.__cronLock = false;
-      }
-    }
-  },
-  tractor: {
-    // 11 seconds into the minute; the task has a 5 block buffer, this will ensure it processes the block on the minute
-    cron: '11 * * * * *',
-    function: async () => {
-      if (TractorTask.__cronLock) {
-        Log.info('Tractor task is still running, skipping this minute...');
-        return;
-      }
-
-      try {
-        TractorTask.__cronLock = true;
-        let canExecuteAgain = true;
-        while (canExecuteAgain) {
-          canExecuteAgain = await TractorTask.updateTractor();
-        }
-      } finally {
-        TractorTask.__cronLock = false;
-      }
-    }
-  },
+  ...genericTask(DepositsTask, 'deposits'),
+  ...genericTask(TractorTask, 'tractor'),
+  ...genericTask(SiloInflowsTask, 'silo-inflows'),
   alert: {
     cron: '*/10 * * * * *',
     function: () => Log.info('10 seconds testing Alert')
