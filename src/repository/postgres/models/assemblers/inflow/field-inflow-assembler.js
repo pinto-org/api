@@ -5,7 +5,7 @@ class FieldInflowAssembler {
     return {
       id: fieldInflowDto.id,
       account: fieldInflowDto.account,
-      amount: fieldInflowDto.amount,
+      beans: fieldInflowDto.beans,
       usd: fieldInflowDto.usd,
       isMarket: fieldInflowDto.isMarket,
       block: fieldInflowDto.block,

@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       // For isMarket=false, sows are positive, harvests are negative
-      ...bigintNumericColumn('amount', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('beans', DataTypes, { allowNull: false }),
       usd: {
         type: DataTypes.FLOAT,
         allowNull: false

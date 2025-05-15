@@ -15,7 +15,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
-      ...bigintNumericColumn('amount', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('beans', Sequelize, { allowNull: false }),
       usd: {
         type: Sequelize.FLOAT,
         allowNull: false

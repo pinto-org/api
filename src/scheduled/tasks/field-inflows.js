@@ -1,8 +1,13 @@
 const FilterLogs = require('../../datasources/events/filter-logs');
 const EventsUtils = require('../../datasources/events/util');
+const FieldInflowDto = require('../../repository/dto/inflow/FieldInflowDto');
+const FieldInflowService = require('../../service/inflow/field-inflow-service');
 const AppMetaService = require('../../service/meta-service');
+const PriceService = require('../../service/price-service');
 const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
+const Log = require('../../utils/logging');
+const { fromBigInt } = require('../../utils/number');
 const TaskRangeUtil = require('../util/task-range');
 
 // Maximum number of blocks to process in one invocation
@@ -31,12 +36,7 @@ class FieldInflowsTask {
     const TAG = Concurrent.tag('fieldInflows');
     for (const e of events) {
       await Concurrent.run(TAG, 25, async () => {
-        if (e.name in ['Sow', 'Harvest']) {
-          // beans
-        } else {
-          // 2 inflows: one per account
-          // costInBeans
-        }
+        inflowDtos.push(...(await this.inflowsFromEvent(e)));
       });
     }
     await Concurrent.allResolved(TAG);
@@ -49,6 +49,43 @@ class FieldInflowsTask {
     });
 
     return !isCaughtUp;
+  }
+
+  static async inflowsFromEvent(e) {
+    const beanPrice = (await PriceService.getBeanPrice({ blockNumber: e.rawLog.blockNumber })).usdPrice;
+    if (['Sow', 'Harvest'].includes(e.name)) {
+      return [
+        await this.inflowFromInfo(
+          e,
+          e.args.account.toLowerCase(),
+          e.name === 'Sow' ? BigInt(e.args.beans) : -BigInt(e.args.beans),
+          beanPrice,
+          false
+        )
+      ];
+    } else if (e.name === 'PodListingFilled') {
+      return [
+        await this.inflowFromInfo(e, e.args.filler.toLowerCase(), BigInt(e.args.costInBeans), beanPrice, true),
+        await this.inflowFromInfo(e, e.args.lister.toLowerCase(), -BigInt(e.args.costInBeans), beanPrice, true)
+      ];
+    } else if (e.name === 'PodOrderFilled') {
+      return [
+        await this.inflowFromInfo(e, e.args.orderer.toLowerCase(), BigInt(e.args.costInBeans), beanPrice, true),
+        await this.inflowFromInfo(e, e.args.filler.toLowerCase(), -BigInt(e.args.costInBeans), beanPrice, true)
+      ];
+    }
+  }
+
+  static async inflowFromInfo(e, account, beans, beanPrice, isMarket) {
+    return FieldInflowDto.fromData({
+      account,
+      beans,
+      usd: fromBigInt(beans, 6) * beanPrice,
+      isMarket,
+      block: e.rawLog.blockNumber,
+      timestamp: e.extra.timestamp,
+      txnHash: e.rawLog.transactionHash
+    });
   }
 }
 module.exports = FieldInflowsTask;

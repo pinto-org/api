@@ -1,9 +1,9 @@
 class FieldInflowDto {
   constructor(type, data) {
     if (type === 'data') {
-      const { account, amount, usd, isMarket, block, timestamp, txnHash } = data;
+      const { account, beans, usd, isMarket, block, timestamp, txnHash } = data;
       this.account = account;
-      this.amount = amount;
+      this.beans = beans;
       this.usd = usd;
       this.isMarket = isMarket;
       this.block = block;
@@ -12,7 +12,7 @@ class FieldInflowDto {
     } else if (type === 'db') {
       this.id = data.id;
       this.account = data.account;
-      this.amount = data.amount;
+      this.beans = data.beans;
       this.usd = data.usd;
       this.isMarket = data.isMarket;
       this.block = data.block;
@@ -21,8 +21,8 @@ class FieldInflowDto {
     }
   }
 
-  static fromData({ account, amount, usd, isMarket, block, timestamp, txnHash }) {
-    return new FieldInflowDto('data', { account, amount, usd, isMarket, block, timestamp, txnHash });
+  static fromData({ account, beans, usd, isMarket, block, timestamp, txnHash }) {
+    return new FieldInflowDto('data', { account, beans, usd, isMarket, block, timestamp, txnHash });
   }
 
   static fromModel(model) {
