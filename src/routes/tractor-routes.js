@@ -5,37 +5,10 @@ const SnapshotSowV0Service = require('../service/tractor/snapshot-sow-v0-service
 const TractorService = require('../service/tractor/tractor-service');
 
 const Router = require('koa-router');
+const RestParsingUtil = require('../utils/rest-parsing');
 const router = new Router({
   prefix: '/tractor'
 });
-
-const dateRangeValidation = (dateRange) => {
-  if (dateRange) {
-    if (
-      !Array.isArray(dateRange) ||
-      dateRange.length !== 2 ||
-      !(dateRange[0] instanceof Date) ||
-      !(dateRange[1] instanceof Date) ||
-      dateRange[1] <= dateRange[0]
-    ) {
-      throw new InputError('Invalid date range provided. Must be array of 2 dates with end date after start date.');
-    }
-  }
-};
-
-const numberRangeValidation = (numberRange) => {
-  if (numberRange) {
-    if (
-      !Array.isArray(numberRange) ||
-      numberRange.length !== 2 ||
-      typeof numberRange[0] !== 'number' ||
-      typeof numberRange[1] !== 'number' ||
-      numberRange[1] <= numberRange[0]
-    ) {
-      throw new InputError('Invalid seasons range provided.');
-    }
-  }
-};
 
 /**
  * Returns all tractor orders matching the requested criteria. Includes all info about specialized blueprints
@@ -60,8 +33,8 @@ router.post('/orders', async (ctx) => {
 
   body.publishedBetween = body.publishedBetween?.map((v) => new Date(v));
   body.validBetween = body.validBetween?.map((v) => new Date(v));
-  dateRangeValidation(body.publishedBetween);
-  dateRangeValidation(body.validBetween);
+  RestParsingUtil.dateRangeValidation(body.publishedBetween);
+  RestParsingUtil.dateRangeValidation(body.validBetween);
 
   if (body.blueprintParams) {
     if (!body.orderType) {
@@ -102,7 +75,7 @@ router.post('/executions', async (ctx) => {
   }
 
   body.executedBetween = body.executedBetween?.map((v) => new Date(v));
-  dateRangeValidation(body.executedBetween);
+  RestParsingUtil.dateRangeValidation(body.executedBetween);
 
   if (body.blueprintParams) {
     if (!body.orderType) {
@@ -139,9 +112,9 @@ router.post('/snapshots', async (ctx) => {
   }
 
   body.between = body.between?.map((v) => new Date(v));
-  dateRangeValidation(body.between);
+  RestParsingUtil.dateRangeValidation(body.between);
 
-  numberRangeValidation(body.betweenSeasons);
+  RestParsingUtil.numberRangeValidation(body.betweenSeasons);
 
   let method;
   if (body.orderType === 'SOW_V0') {

@@ -29,6 +29,34 @@ class RestParsingUtil {
     const definedProperties = Object.keys(object);
     return definedProperties.length === properties.length && definedProperties.every((op) => properties.includes(op));
   }
+
+  static dateRangeValidation(dateRange) {
+    if (dateRange) {
+      if (
+        !Array.isArray(dateRange) ||
+        dateRange.length !== 2 ||
+        !(dateRange[0] instanceof Date) ||
+        !(dateRange[1] instanceof Date) ||
+        dateRange[1] <= dateRange[0]
+      ) {
+        throw new InputError('Invalid date range provided. Must be array of 2 dates with end date after start date.');
+      }
+    }
+  }
+
+  static numberRangeValidation(numberRange) {
+    if (numberRange) {
+      if (
+        !Array.isArray(numberRange) ||
+        numberRange.length !== 2 ||
+        typeof numberRange[0] !== 'number' ||
+        typeof numberRange[1] !== 'number' ||
+        numberRange[1] <= numberRange[0]
+      ) {
+        throw new InputError('Invalid seasons range provided.');
+      }
+    }
+  }
 }
 
 module.exports = RestParsingUtil;

@@ -3,7 +3,7 @@ const { sequelize, Sequelize } = require('../models');
 
 class InflowRepository {
   // Returns the combined seasonal inflow data for silo and field
-  static async getCombinedInflowData({ criteriaList, limit, skip } = {}) {
+  static async getCombinedInflowSnapshots({ criteriaList, limit, skip } = {}) {
     const options = {
       attributes: [
         'season',
@@ -101,8 +101,8 @@ class InflowRepository {
       options.offset = skip;
     }
 
-    const results = await sequelize.models.SiloInflowSnapshot.findAll(options);
-    return results.map((row) => row.toJSON());
+    const { rows: results, count } = await sequelize.models.SiloInflowSnapshot.findAndCountAll(options);
+    return { snapshots: results.map((row) => row.toJSON()), total: count };
   }
 }
 module.exports = InflowRepository;
