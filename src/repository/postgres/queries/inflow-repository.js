@@ -7,6 +7,8 @@ class InflowRepository {
     const options = {
       attributes: [
         'season',
+        'snapshotBlock',
+        'snapshotTimestamp',
         [
           sequelize.literal('"SiloInflowSnapshot"."cumulativeUsdNet" + "FieldInflowSnapshot"."cumulativeUsdNet"'),
           'all_cumulative_usd_net'

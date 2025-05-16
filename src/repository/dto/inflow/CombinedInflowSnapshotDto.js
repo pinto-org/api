@@ -1,6 +1,8 @@
 class CombinedInflowSnapshotDto {
   constructor(row) {
     this.season = row.season;
+    this.snapshotBlock = row.snapshotBlock;
+    this.snapshotTimestamp = row.snapshotTimestamp;
     this.all = {
       cumulative: {
         net: row.all_cumulative_usd_net,

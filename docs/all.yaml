@@ -1503,6 +1503,13 @@ paths:
                         season:
                           type: integer
                           description: Season number
+                        snapshotBlock:
+                          type: integer
+                          description: Block number when the snapshot was taken
+                        snapshotTimestamp:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the snapshot was taken
                         all:
                           type: object
                           description: Combined metrics across all protocols
