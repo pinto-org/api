@@ -57,5 +57,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
+  // Association here is necessary for Sequelize to join the two tables in InflowRepository.
+  SiloInflowSnapshot.hasOne(sequelize.models.FieldInflowSnapshot, {
+    sourceKey: 'season',
+    foreignKey: 'season',
+    constraints: false // disables actual FK constraint in DB
+  });
+
   return SiloInflowSnapshot;
 };
