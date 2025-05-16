@@ -5,6 +5,7 @@ import SowV0OrderDto from '../src/repository/dto/tractor/SowV0OrderDto';
 import SowV0ExecutionDto from '../src/repository/dto/tractor/SowV0ExecutionDto';
 import { TractorOrderType } from '../src/repository/postgres/models/types/types';
 import SnapshotSowV0Dto from '../src/repository/dto/tractor/SnapshotSowV0Dto';
+import CombinedInflowSnapshotDto from '../src/repository/dto/inflow/CombinedInflowSnapshotDto';
 
 export type DepositYield = {
   // Percentage growth in deposit's bdv
@@ -190,5 +191,18 @@ export type TractorSnapshotsResult = {
   // Block number
   lastUpdated: number;
   snapshots: SnapshotResponse[];
+  totalRecords: number;
+};
+
+export type CombinedInflowSnapshotsRequest = {
+  betweenSeasons?: [number, number];
+  limit?: number;
+  skip?: number;
+};
+
+type CombinedInflowSnapshotResponse = CombinedInflowSnapshotDto;
+export type CombinedInflowSnapshotsResult = {
+  lastUpdated: number;
+  snapshots: CombinedInflowSnapshotResponse[];
   totalRecords: number;
 };

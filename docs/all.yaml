@@ -13,6 +13,7 @@ tags:
   - name: Price
   - name: Snapshot (DEPRECATED)
   - name: Tractor
+  - name: Inflows
 
 paths:
   /exchange/cg/tickers:
@@ -1454,6 +1455,78 @@ paths:
                       type: string
                       description: Transaction hash of the sunrise
                       example: "0x123..."
+  /inflows/combined:
+    post:
+      tags:
+        - Inflows
+      summary: Get combined inflow/outflow data across silo and field
+      description: Returns historical snapshots of combined inflow/outflow metrics for Pinto, including silo and field data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                betweenSeasons:
+                  type: array
+                  description: Season range for snapshot filtering
+                  items:
+                    type: integer
+                  minItems: 2
+                  maxItems: 2
+                limit:
+                  type: number
+                  description: Maximum number of snapshots to return
+                skip:
+                  type: number
+                  description: Number of snapshots to skip (for pagination)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lastUpdated:
+                    type: integer
+                    description: Block number of the last update
+                  totalRecords:
+                    type: integer
+                    description: Total number of snapshots matching the query
+                  snapshots:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        season:
+                          type: integer
+                          description: Season number
+                        all:
+                          type: object
+                          description: Combined metrics across all protocols
+                          properties:
+                            cumulative:
+                              $ref: "#/components/schemas/InflowMetrics"
+                            delta:
+                              $ref: "#/components/schemas/InflowMetrics"
+                        silo:
+                          type: object
+                          description: Metrics specific to the Silo protocol
+                          properties:
+                            cumulative:
+                              $ref: "#/components/schemas/InflowMetrics"
+                            delta:
+                              $ref: "#/components/schemas/InflowMetrics"
+                        field:
+                          type: object
+                          description: Metrics specific to the Field protocol
+                          properties:
+                            cumulative:
+                              $ref: "#/components/schemas/InflowMetrics"
+                            delta:
+                              $ref: "#/components/schemas/InflowMetrics"
 components:
   parameters:
     blockNumber:
@@ -1537,3 +1610,22 @@ components:
           type: string
           description: The number of seasonal reward beans as a BigInt string
           example: "213456789"
+    InflowMetrics:
+      type: object
+      properties:
+        net:
+          type: number
+          format: float
+          description: Net inflow (in - out)
+        in:
+          type: number
+          format: float
+          description: Total inflow
+        out:
+          type: number
+          format: float
+          description: Total outflow
+        volume:
+          type: number
+          format: float
+          description: Total volume (in + out)

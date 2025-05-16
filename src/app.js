@@ -6,6 +6,7 @@ const tractorRoutes = require('./routes/tractor-routes.js');
 const fieldRoutes = require('./routes/field-routes.js');
 const proxyRoutes = require('./routes/proxy-routes.js');
 const seasonRoutes = require('./routes/season-routes.js');
+const inflowRoutes = require('./routes/inflow-routes.js');
 
 const Koa = require('koa');
 const bodyParser = require('koa-bodyparser');
@@ -110,6 +111,8 @@ async function appStartup() {
   app.use(proxyRoutes.allowedMethods());
   app.use(seasonRoutes.routes());
   app.use(seasonRoutes.allowedMethods());
+  app.use(inflowRoutes.routes());
+  app.use(inflowRoutes.allowedMethods());
 
   const router = new Router();
   router.get('/healthcheck', async (ctx) => {

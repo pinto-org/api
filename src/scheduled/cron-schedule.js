@@ -5,6 +5,7 @@ const Log = require('../utils/logging');
 const DepositsTask = require('./tasks/deposits');
 const TractorTask = require('./tasks/tractor');
 const SiloInflowsTask = require('./tasks/silo-inflows');
+const FieldInflowsTask = require('./tasks/field-inflows');
 
 const genericTask = (Executor, label) => ({
   [label]: {
@@ -39,6 +40,7 @@ const ALL_JOBS = {
   ...genericTask(DepositsTask, 'deposits'),
   ...genericTask(TractorTask, 'tractor'),
   ...genericTask(SiloInflowsTask, 'silo-inflows'),
+  ...genericTask(FieldInflowsTask, 'field-inflows'),
   alert: {
     cron: '*/10 * * * * *',
     function: () => Log.info('10 seconds testing Alert')

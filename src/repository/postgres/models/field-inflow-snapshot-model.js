@@ -1,8 +1,8 @@
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
-  const SiloInflowSnapshot = sequelize.define(
-    'SiloInflowSnapshot',
+  const FieldInflowSnapshot = sequelize.define(
+    'FieldInflowSnapshot',
     {
       id: {
         type: DataTypes.INTEGER,
@@ -21,12 +21,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false
       },
-      ...bigintNumericColumn('cumulativeBdvNet', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('cumulativeBdvIn', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('cumulativeBdvOut', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('deltaBdvNet', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('deltaBdvIn', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('deltaBdvOut', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeBeansNet', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeBeansIn', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeBeansOut', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('deltaBeansNet', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('deltaBeansIn', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('deltaBeansOut', DataTypes, { allowNull: false }),
       cumulativeUsdNet: {
         type: DataTypes.FLOAT,
         allowNull: false
@@ -53,16 +53,9 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'silo_inflow_snapshot'
+      tableName: 'field_inflow_snapshot'
     }
   );
 
-  // Association here is necessary for Sequelize to join the two tables in InflowRepository.
-  SiloInflowSnapshot.hasOne(sequelize.models.FieldInflowSnapshot, {
-    sourceKey: 'season',
-    foreignKey: 'season',
-    constraints: false // disables actual FK constraint in DB
-  });
-
-  return SiloInflowSnapshot;
+  return FieldInflowSnapshot;
 };

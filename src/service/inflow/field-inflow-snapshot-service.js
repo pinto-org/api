@@ -1,12 +1,12 @@
-const SiloInflowSnapshotDto = require('../../repository/dto/inflow/SiloInflowSnapshotDto');
+const FieldInflowSnapshotDto = require('../../repository/dto/inflow/FieldInflowSnapshotDto');
 const SeasonDto = require('../../repository/dto/SeasonDto');
 const { sequelize } = require('../../repository/postgres/models');
-const SiloInflowSnapshotAssembler = require('../../repository/postgres/models/assemblers/inflow/silo-inflow-snapshot-assembler');
+const FieldInflowSnapshotAssembler = require('../../repository/postgres/models/assemblers/inflow/field-inflow-snapshot-assembler');
 const SeasonRepository = require('../../repository/postgres/queries/season-repository');
 const SharedRepository = require('../../repository/postgres/queries/shared-repository');
 const AsyncContext = require('../../utils/async/context');
 
-class SiloInflowSnapshotService {
+class FieldInflowSnapshotService {
   static async takeMissingSnapshots(lastInflowUpdate) {
     // Find max processed season for this block number
     const latestSeason = await SeasonRepository.findMaxSeasonForBlock(lastInflowUpdate);
@@ -30,9 +30,9 @@ class SiloInflowSnapshotService {
           s.season,
           s.timestamp,
           s.block,
-          sub.bdv_net as cumulative_bdv_net,
-          sub.bdv_in as cumulative_bdv_in,
-          sub.bdv_out as cumulative_bdv_out,
+          sub.beans_net as cumulative_beans_net,
+          sub.beans_in as cumulative_beans_in,
+          sub.beans_out as cumulative_beans_out,
           sub.usd_net as cumulative_usd_net,
           sub.usd_in as cumulative_usd_in,
           sub.usd_out as cumulative_usd_out
@@ -40,14 +40,14 @@ class SiloInflowSnapshotService {
           season s,
           lateral (
             select
-              sum(bdv) as bdv_net,
-              sum(case when bdv > 0 then bdv else 0 end) as bdv_in,
-              sum(case when bdv < 0 then -bdv else 0 end) as bdv_out,
+              sum(beans) as beans_net,
+              sum(case when beans > 0 then beans else 0 end) as beans_in,
+              sum(case when beans < 0 then -beans else 0 end) as beans_out,
               sum(usd) as usd_net,
               sum(case when usd > 0 then usd else 0 end) as usd_in,
               sum(case when usd < 0 then -usd else 0 end) as usd_out
-            from silo_inflow f
-            where f.block < s.block and f."isTransfer" = false
+            from field_inflow f
+            where f.block < s.block and f."isMarket" = false
           ) as sub
           where s.season in (${seasonsIn})
       )
@@ -55,15 +55,15 @@ class SiloInflowSnapshotService {
         season,
         block,
         timestamp,
-        cumulative_bdv_net,
-        cumulative_bdv_in,
-        cumulative_bdv_out,
+        cumulative_beans_net,
+        cumulative_beans_in,
+        cumulative_beans_out,
         cumulative_usd_net,
         cumulative_usd_in,
         cumulative_usd_out,
-        cumulative_bdv_net - lag(cumulative_bdv_net) over (order by block) as delta_bdv_net,
-        cumulative_bdv_in - lag(cumulative_bdv_in) over (order by block) as delta_bdv_in,
-        cumulative_bdv_out - lag(cumulative_bdv_out) over (order by block) as delta_bdv_out,
+        cumulative_beans_net - lag(cumulative_beans_net) over (order by block) as delta_beans_net,
+        cumulative_beans_in - lag(cumulative_beans_in) over (order by block) as delta_beans_in,
+        cumulative_beans_out - lag(cumulative_beans_out) over (order by block) as delta_beans_out,
         cumulative_usd_net - lag(cumulative_usd_net) over (order by block) as delta_usd_net,
         cumulative_usd_in - lag(cumulative_usd_in) over (order by block) as delta_usd_in,
         cumulative_usd_out - lag(cumulative_usd_out) over (order by block) as delta_usd_out
@@ -76,16 +76,16 @@ class SiloInflowSnapshotService {
 
     const models = [];
     for (const result of results) {
-      const dto = SiloInflowSnapshotDto.fromLiveSnapshot(result);
-      models.push(SiloInflowSnapshotAssembler.toModel(dto));
+      const dto = FieldInflowSnapshotDto.fromLiveSnapshot(result);
+      models.push(FieldInflowSnapshotAssembler.toModel(dto));
     }
 
-    await SharedRepository.genericUpsert(sequelize.models.SiloInflowSnapshot, models, false);
+    await SharedRepository.genericUpsert(sequelize.models.FieldInflowSnapshot, models, false);
   }
 
   static async findMissingSeasons(maxSeason) {
-    return await SharedRepository.findMissingSeasons('silo_inflow_snapshot', maxSeason);
+    return await SharedRepository.findMissingSeasons('field_inflow_snapshot', maxSeason);
   }
 }
 
-module.exports = SiloInflowSnapshotService;
+module.exports = FieldInflowSnapshotService;

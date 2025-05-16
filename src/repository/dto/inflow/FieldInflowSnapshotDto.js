@@ -1,15 +1,15 @@
-class SiloInflowSnapshotDto {
+class FieldInflowSnapshotDto {
   constructor(type, d) {
     if (type === 'init') {
       this.snapshotTimestamp = d.timestamp;
       this.snapshotBlock = d.block;
       this.season = d.season;
-      this.cumulativeBdvNet = BigInt(d.cumulative_bdv_net ?? 0n);
-      this.cumulativeBdvIn = BigInt(d.cumulative_bdv_in ?? 0n);
-      this.cumulativeBdvOut = BigInt(d.cumulative_bdv_out ?? 0n);
-      this.deltaBdvNet = BigInt(d.delta_bdv_net ?? 0n);
-      this.deltaBdvIn = BigInt(d.delta_bdv_in ?? 0n);
-      this.deltaBdvOut = BigInt(d.delta_bdv_out ?? 0n);
+      this.cumulativeBeansNet = BigInt(d.cumulative_beans_net ?? 0n);
+      this.cumulativeBeansIn = BigInt(d.cumulative_beans_in ?? 0n);
+      this.cumulativeBeansOut = BigInt(d.cumulative_beans_out ?? 0n);
+      this.deltaBeansNet = BigInt(d.delta_beans_net ?? 0n);
+      this.deltaBeansIn = BigInt(d.delta_beans_in ?? 0n);
+      this.deltaBeansOut = BigInt(d.delta_beans_out ?? 0n);
       this.cumulativeUsdNet = d.cumulative_usd_net ?? 0;
       this.cumulativeUsdIn = d.cumulative_usd_in ?? 0;
       this.cumulativeUsdOut = d.cumulative_usd_out ?? 0;
@@ -21,12 +21,12 @@ class SiloInflowSnapshotDto {
       this.snapshotTimestamp = d.snapshotTimestamp;
       this.snapshotBlock = d.snapshotBlock;
       this.season = d.season;
-      this.cumulativeBdvNet = d.cumulativeBdvNet;
-      this.cumulativeBdvIn = d.cumulativeBdvIn;
-      this.cumulativeBdvOut = d.cumulativeBdvOut;
-      this.deltaBdvNet = d.deltaBdvNet;
-      this.deltaBdvIn = d.deltaBdvIn;
-      this.deltaBdvOut = d.deltaBdvOut;
+      this.cumulativeBeansNet = d.cumulativeBeansNet;
+      this.cumulativeBeansIn = d.cumulativeBeansIn;
+      this.cumulativeBeansOut = d.cumulativeBeansOut;
+      this.deltaBeansNet = d.deltaBeansNet;
+      this.deltaBeansIn = d.deltaBeansIn;
+      this.deltaBeansOut = d.deltaBeansOut;
       this.cumulativeUsdNet = d.cumulativeUsdNet;
       this.cumulativeUsdIn = d.cumulativeUsdIn;
       this.cumulativeUsdOut = d.cumulativeUsdOut;
@@ -37,12 +37,12 @@ class SiloInflowSnapshotDto {
   }
 
   static fromLiveSnapshot(liveSnapshot) {
-    return new SiloInflowSnapshotDto('init', liveSnapshot);
+    return new FieldInflowSnapshotDto('init', liveSnapshot);
   }
 
   static fromModel(dbModel) {
-    return new SiloInflowSnapshotDto('model', dbModel);
+    return new FieldInflowSnapshotDto('model', dbModel);
   }
 }
 
-module.exports = SiloInflowSnapshotDto;
+module.exports = FieldInflowSnapshotDto;

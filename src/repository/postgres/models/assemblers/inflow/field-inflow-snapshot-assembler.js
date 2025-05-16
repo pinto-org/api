@@ -1,18 +1,18 @@
-const SiloInflowSnapshotDto = require('../../../../dto/inflow/SiloInflowSnapshotDto');
+const FieldInflowSnapshotDto = require('../../../../dto/inflow/FieldInflowSnapshotDto');
 
-class SiloInflowSnapshotAssembler {
+class FieldInflowSnapshotAssembler {
   static toModel(snapshotDto) {
     return {
       id: snapshotDto.id,
       snapshotTimestamp: snapshotDto.snapshotTimestamp,
       snapshotBlock: snapshotDto.snapshotBlock,
       season: snapshotDto.season,
-      cumulativeBdvNet: snapshotDto.cumulativeBdvNet,
-      cumulativeBdvIn: snapshotDto.cumulativeBdvIn,
-      cumulativeBdvOut: snapshotDto.cumulativeBdvOut,
-      deltaBdvNet: snapshotDto.deltaBdvNet,
-      deltaBdvIn: snapshotDto.deltaBdvIn,
-      deltaBdvOut: snapshotDto.deltaBdvOut,
+      cumulativeBeansNet: snapshotDto.cumulativeBeansNet,
+      cumulativeBeansIn: snapshotDto.cumulativeBeansIn,
+      cumulativeBeansOut: snapshotDto.cumulativeBeansOut,
+      deltaBeansNet: snapshotDto.deltaBeansNet,
+      deltaBeansIn: snapshotDto.deltaBeansIn,
+      deltaBeansOut: snapshotDto.deltaBeansOut,
       cumulativeUsdNet: snapshotDto.cumulativeUsdNet,
       cumulativeUsdIn: snapshotDto.cumulativeUsdIn,
       cumulativeUsdOut: snapshotDto.cumulativeUsdOut,
@@ -23,8 +23,8 @@ class SiloInflowSnapshotAssembler {
   }
 
   static fromModel(snapshotModel) {
-    return SiloInflowSnapshotDto.fromModel(snapshotModel);
+    return FieldInflowSnapshotDto.fromModel(snapshotModel);
   }
 }
 
-module.exports = SiloInflowSnapshotAssembler;
+module.exports = FieldInflowSnapshotAssembler;
