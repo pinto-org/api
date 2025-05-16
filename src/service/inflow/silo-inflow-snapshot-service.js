@@ -42,11 +42,12 @@ class SiloInflowSnapshotService {
             select
               sum(bdv) as bdv_net,
               sum(case when bdv > 0 then bdv else 0 end) as bdv_in,
-              sum(case when bdv < 0 then bdv else 0 end) as bdv_out,
+              sum(case when bdv < 0 then -bdv else 0 end) as bdv_out,
               sum(usd) as usd_net,
               sum(case when usd > 0 then usd else 0 end) as usd_in,
-              sum(case when usd < 0 then usd else 0 end) as usd_out
-            from silo_inflow f where f.block < s.block
+              sum(case when usd < 0 then -usd else 0 end) as usd_out
+            from silo_inflow f
+            where f.block < s.block and f."isTransfer" = false
           ) as sub
           where s.season in (${seasonsIn})
       )

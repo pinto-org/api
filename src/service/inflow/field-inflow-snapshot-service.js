@@ -42,11 +42,12 @@ class FieldInflowSnapshotService {
             select
               sum(beans) as beans_net,
               sum(case when beans > 0 then beans else 0 end) as beans_in,
-              sum(case when beans < 0 then beans else 0 end) as beans_out,
+              sum(case when beans < 0 then -beans else 0 end) as beans_out,
               sum(usd) as usd_net,
               sum(case when usd > 0 then usd else 0 end) as usd_in,
-              sum(case when usd < 0 then usd else 0 end) as usd_out
-            from field_inflow f where f.block < s.block
+              sum(case when usd < 0 then -usd else 0 end) as usd_out
+            from field_inflow f
+            where f.block < s.block and f."isMarket" = false
           ) as sub
           where s.season in (${seasonsIn})
       )
