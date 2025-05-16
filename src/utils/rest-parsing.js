@@ -1,3 +1,5 @@
+const InputError = require('../error/input-error');
+
 // Unmapped properties will pass through directly
 const standardMapping = {
   blockNumber: parseInt,
@@ -37,7 +39,7 @@ class RestParsingUtil {
         dateRange.length !== 2 ||
         !(dateRange[0] instanceof Date) ||
         !(dateRange[1] instanceof Date) ||
-        dateRange[1] <= dateRange[0]
+        dateRange[1] < dateRange[0]
       ) {
         throw new InputError('Invalid date range provided. Must be array of 2 dates with end date after start date.');
       }
@@ -51,7 +53,7 @@ class RestParsingUtil {
         numberRange.length !== 2 ||
         typeof numberRange[0] !== 'number' ||
         typeof numberRange[1] !== 'number' ||
-        numberRange[1] <= numberRange[0]
+        numberRange[1] < numberRange[0]
       ) {
         throw new InputError('Invalid seasons range provided.');
       }
