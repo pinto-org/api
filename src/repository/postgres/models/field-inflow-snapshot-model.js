@@ -53,7 +53,13 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'field_inflow_snapshot'
+      tableName: 'field_inflow_snapshot',
+      indexes: [
+        {
+          unique: true,
+          fields: ['season']
+        }
+      ]
     }
   );
 
