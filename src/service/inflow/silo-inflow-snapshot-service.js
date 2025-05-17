@@ -21,7 +21,8 @@ class SiloInflowSnapshotService {
       return;
     }
     // Always need to include the previous season so deltas can be computed
-    missingSeasons.unshift(missingSeasons[0] - 1);
+    const prevSeason = missingSeasons[0] - 1;
+    missingSeasons.push(prevSeason);
     const seasonsIn = missingSeasons.join(',');
 
     const [results] = await sequelize.query(
@@ -76,6 +77,9 @@ class SiloInflowSnapshotService {
 
     const models = [];
     for (const result of results) {
+      if (result.season === prevSeason) {
+        continue;
+      }
       const dto = SiloInflowSnapshotDto.fromLiveSnapshot(result);
       models.push(SiloInflowSnapshotAssembler.toModel(dto));
     }
