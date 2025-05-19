@@ -30,7 +30,7 @@ module.exports = {
 
     // Null silo data on any existing eth tokens
     await queryInterface.bulkUpdate(
-      TOKEN_TABLE.prod,
+      TOKEN_TABLE.env,
       {
         bdv: null,
         stalkEarnedPerSeason: null,
@@ -101,7 +101,7 @@ module.exports = {
         });
       }
 
-      await queryInterface.bulkInsert(TOKEN_TABLE.prod, rows);
+      await queryInterface.bulkInsert(TOKEN_TABLE.env, rows);
     }
   },
 
@@ -120,7 +120,7 @@ module.exports = {
         c.UNRIPE_BEAN,
         c.UNRIPE_LP
       ];
-      await queryInterface.bulkDelete(TOKEN_TABLE.prod, {
+      await queryInterface.bulkDelete(TOKEN_TABLE.env, {
         address: {
           [Sequelize.Op.in]: tokens
         }

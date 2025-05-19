@@ -74,7 +74,7 @@ module.exports = {
         });
       }
 
-      await queryInterface.bulkInsert(TOKEN_TABLE.prod, rows);
+      await queryInterface.bulkInsert(TOKEN_TABLE.env, rows);
     }
   },
 
@@ -82,7 +82,7 @@ module.exports = {
     if (EnvUtil.isChainEnabled('eth')) {
       const c = C('eth');
       const tokens = [c.BEAN, c.BEANWETH, c.BEANWSTETH, c.BEAN3CRV, c.UNRIPE_BEAN, c.UNRIPE_LP];
-      await queryInterface.bulkDelete(TOKEN_TABLE.prod, {
+      await queryInterface.bulkDelete(TOKEN_TABLE.env, {
         address: {
           [Sequelize.Op.in]: tokens
         }

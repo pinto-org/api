@@ -6,13 +6,13 @@ const { API_META_TABLE } = require('../../../constants/tables');
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.bulkUpdate(
-      API_META_TABLE.prod,
+      API_META_TABLE.env,
       { lastFieldInflowUpdate: 22622961 },
       { lastFieldInflowUpdate: null }
     );
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkUpdate(API_META_TABLE.prod, { lastFieldInflowUpdate: null }, {});
+    await queryInterface.bulkUpdate(API_META_TABLE.env, { lastFieldInflowUpdate: null }, {});
   }
 };

@@ -76,7 +76,7 @@ module.exports = {
         });
       }
 
-      await queryInterface.bulkInsert(TOKEN_TABLE.prod, rows);
+      await queryInterface.bulkInsert(TOKEN_TABLE.env, rows);
     }
   },
 
@@ -85,7 +85,7 @@ module.exports = {
       const c = C('base');
       const tokens = [c.BEAN, c.PINTOWETH, c.PINTOCBETH, c.PINTOCBBTC, c.PINTOWSOL, c.PINTOUSDC];
       // Delete pinto tokens
-      await queryInterface.bulkDelete(TOKEN_TABLE.prod, {
+      await queryInterface.bulkDelete(TOKEN_TABLE.env, {
         address: {
           [Sequelize.Op.in]: tokens
         }

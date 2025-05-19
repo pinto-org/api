@@ -12,7 +12,7 @@ module.exports = {
     password: 'beanstalk',
     database: 'beanstalk_api',
     host: 'postgres',
-    dialect: 'postgres'
-    // logging: false
+    dialect: 'postgres',
+    logging: false
   }
 };
