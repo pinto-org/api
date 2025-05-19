@@ -1,11 +1,11 @@
 'use strict';
 
-const { TRACTOR_EXECUTION_SOW_V0_TABLE } = require('../../../constants/tables');
+const { TRACTOR_SNAPSHOT_SOW_V0_TABLE } = require('../../../constants/tables');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn(TRACTOR_EXECUTION_SOW_V0_TABLE.prod, 'maxSowThisSeason', {
+    await queryInterface.addColumn(TRACTOR_SNAPSHOT_SOW_V0_TABLE.prod, 'maxSowThisSeason', {
       type: Sequelize.NUMERIC(38, 0),
       allowNull: false
     });
@@ -16,7 +16,7 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.removeColumn(TRACTOR_EXECUTION_SOW_V0_TABLE.prod, 'maxSowThisSeason');
-    await queryInterface.removeColumn(TRACTOR_EXECUTION_SOW_V0_TABLE.prod, 'uniquePublishers');
+    await queryInterface.removeColumn(TRACTOR_SNAPSHOT_SOW_V0_TABLE.prod, 'maxSowThisSeason');
+    await queryInterface.removeColumn(TRACTOR_SNAPSHOT_SOW_V0_TABLE.prod, 'uniquePublishers');
   }
 };

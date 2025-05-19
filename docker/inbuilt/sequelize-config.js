@@ -6,5 +6,13 @@ module.exports = {
     host: 'postgres',
     dialect: 'postgres'
     // logging: false
+  },
+  'indexing': {
+    username: 'api_user',
+    password: 'beanstalk',
+    database: 'beanstalk_api',
+    host: 'postgres',
+    dialect: 'postgres'
+    // logging: false
   }
 };

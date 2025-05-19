@@ -1,11 +1,12 @@
 const EnvUtil = require('../utils/env');
 
 // Allows accessing the indexing environment table. Queries within the application
-// should use the env table, prod table should only be used for migrations.
+// should use the env table, prod/indexing should only be explicitly used for migrations.
 const envNamed = (name) => {
   return {
     env: EnvUtil.getDeploymentEnv() === 'indexing' ? `indexing_${name}` : name,
-    prod: name
+    prod: name,
+    indexing: `indexing_${name}`
   };
 };
 

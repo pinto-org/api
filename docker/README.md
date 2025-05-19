@@ -5,3 +5,5 @@
 To stop, run `./stop.sh`.
 
 When rebuilding new images, it is recommended to delete the old ones when they are no longer needed. You can do so with the following command: `docker rmi <image id>`. The image ids can be found from the `docker images` command. Or simply use `docker image prune` to remove unused/dangling images.
+
+The indexing- fi
