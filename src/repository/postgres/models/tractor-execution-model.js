@@ -1,3 +1,4 @@
+const { TRACTOR_EXECUTION_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
@@ -39,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'tractor_execution',
+      tableName: TRACTOR_EXECUTION_TABLE.env,
       indexes: [
         {
           fields: ['operator']

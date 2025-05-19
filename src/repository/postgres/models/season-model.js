@@ -1,3 +1,4 @@
+const { SEASON_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
@@ -22,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'season'
+      tableName: SEASON_TABLE.env
     }
   );
 

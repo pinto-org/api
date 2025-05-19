@@ -1,12 +1,14 @@
 'use strict';
 
+const { API_META_TABLE } = require('../../../constants/tables');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkUpdate('ApiMeta', { lastTractorUpdate: 29114231 }, { lastTractorUpdate: null });
+    await queryInterface.bulkUpdate(API_META_TABLE.prod, { lastTractorUpdate: 29114231 }, { lastTractorUpdate: null });
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkUpdate('ApiMeta', { lastTractorUpdate: null }, {});
+    await queryInterface.bulkUpdate(API_META_TABLE.prod, { lastTractorUpdate: null }, {});
   }
 };

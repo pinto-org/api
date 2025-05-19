@@ -1,3 +1,4 @@
+const { SEASON_TABLE } = require('../../../constants/tables');
 const AsyncContext = require('../../../utils/async/context');
 const { sequelize, Sequelize } = require('../models');
 const SharedRepository = require('./shared-repository');
@@ -21,7 +22,7 @@ class SeasonRepository {
 
   // Returns a list of all seasons that are missing
   static async findMissingSeasons(maxSeason) {
-    return await SharedRepository.findMissingSeasons('season', maxSeason);
+    return await SharedRepository.findMissingSeasons(SEASON_TABLE.env, maxSeason);
   }
 }
 module.exports = SeasonRepository;

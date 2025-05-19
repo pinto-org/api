@@ -1,3 +1,5 @@
+const { API_META_TABLE } = require('../../../constants/tables');
+
 module.exports = (sequelize, DataTypes) => {
   const Meta = sequelize.define(
     'Meta',
@@ -28,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'ApiMeta',
+      tableName: API_META_TABLE.env,
       indexes: [
         {
           unique: true,

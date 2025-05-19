@@ -1,11 +1,12 @@
 'use strict';
 
-const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
+const { SEASON_TABLE } = require('../../../constants/tables');
+const { timestamps } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('season', {
+    await queryInterface.createTable(SEASON_TABLE.prod, {
       season: {
         type: Sequelize.INTEGER,
         primaryKey: true
@@ -27,6 +28,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('season');
+    await queryInterface.dropTable(SEASON_TABLE.prod);
   }
 };

@@ -1,12 +1,13 @@
 'use strict';
 
+const { DEPOSIT_TABLE } = require('../../../constants/tables');
 const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable(
-      'deposit',
+      DEPOSIT_TABLE.prod,
       {
         id: {
           type: Sequelize.INTEGER,
@@ -65,6 +66,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('deposit');
+    await queryInterface.dropTable(DEPOSIT_TABLE.prod);
   }
 };

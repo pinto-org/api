@@ -1,3 +1,4 @@
+const { TRACTOR_ORDER_SOW_V0_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
@@ -38,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('slippageRatio', DataTypes, { allowNull: false })
     },
     {
-      tableName: 'tractor_order_sow_v0'
+      tableName: TRACTOR_ORDER_SOW_V0_TABLE.env
     }
   );
 

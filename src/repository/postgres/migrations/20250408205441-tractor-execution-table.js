@@ -1,11 +1,12 @@
 'use strict';
 
+const { TRACTOR_EXECUTION_TABLE, TRACTOR_ORDER_TABLE } = require('../../../constants/tables');
 const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tractor_execution', {
+    await queryInterface.createTable(TRACTOR_EXECUTION_TABLE.prod, {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -14,7 +15,7 @@ module.exports = {
       blueprintHash: {
         type: Sequelize.STRING(66),
         references: {
-          model: 'tractor_order',
+          model: TRACTOR_ORDER_TABLE.prod,
           key: 'blueprintHash'
         },
         onDelete: 'RESTRICT',
@@ -48,11 +49,11 @@ module.exports = {
       ...timestamps(Sequelize)
     });
 
-    await queryInterface.addIndex('tractor_execution', ['operator']);
-    await queryInterface.addIndex('tractor_execution', ['blueprintHash']);
+    await queryInterface.addIndex(TRACTOR_EXECUTION_TABLE.prod, ['operator']);
+    await queryInterface.addIndex(TRACTOR_EXECUTION_TABLE.prod, ['blueprintHash']);
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tractor_execution');
+    await queryInterface.dropTable(TRACTOR_EXECUTION_TABLE.prod);
   }
 };

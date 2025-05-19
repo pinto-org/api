@@ -1,12 +1,13 @@
 'use strict';
 
+const { TRACTOR_ORDER_TABLE } = require('../../../constants/tables');
 const { TractorOrderType } = require('../models/types/types');
 const { timestamps, bigintNumericColumn, largeBigintTextColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('tractor_order', {
+    await queryInterface.createTable(TRACTOR_ORDER_TABLE.prod, {
       blueprintHash: {
         type: Sequelize.STRING(66),
         primaryKey: true
@@ -59,11 +60,11 @@ module.exports = {
       ...timestamps(Sequelize)
     });
 
-    await queryInterface.addIndex('tractor_order', ['orderType']);
-    await queryInterface.addIndex('tractor_order', ['publisher']);
+    await queryInterface.addIndex(TRACTOR_ORDER_TABLE.prod, ['orderType']);
+    await queryInterface.addIndex(TRACTOR_ORDER_TABLE.prod, ['publisher']);
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('tractor_order');
+    await queryInterface.dropTable(TRACTOR_ORDER_TABLE.prod);
   }
 };

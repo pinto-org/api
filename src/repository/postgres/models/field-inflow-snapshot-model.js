@@ -1,3 +1,4 @@
+const { FIELD_INFLOW_SNAPSHOT_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
@@ -53,7 +54,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'field_inflow_snapshot',
+      tableName: FIELD_INFLOW_SNAPSHOT_TABLE.env,
       indexes: [
         {
           unique: true,

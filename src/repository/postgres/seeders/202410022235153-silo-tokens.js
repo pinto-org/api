@@ -6,6 +6,7 @@ const { C } = require('../../../constants/runtime-constants');
 const AlchemyUtil = require('../../../datasources/alchemy');
 const PromiseUtil = require('../../../utils/async/promise');
 const EnvUtil = require('../../../utils/env');
+const { TOKEN_TABLE } = require('../../../constants/tables');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -73,7 +74,7 @@ module.exports = {
         });
       }
 
-      await queryInterface.bulkInsert('token', rows);
+      await queryInterface.bulkInsert(TOKEN_TABLE.prod, rows);
     }
   },
 
@@ -81,7 +82,7 @@ module.exports = {
     if (EnvUtil.isChainEnabled('eth')) {
       const c = C('eth');
       const tokens = [c.BEAN, c.BEANWETH, c.BEANWSTETH, c.BEAN3CRV, c.UNRIPE_BEAN, c.UNRIPE_LP];
-      await queryInterface.bulkDelete('token', {
+      await queryInterface.bulkDelete(TOKEN_TABLE.prod, {
         address: {
           [Sequelize.Op.in]: tokens
         }

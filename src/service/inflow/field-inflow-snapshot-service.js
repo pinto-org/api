@@ -1,3 +1,4 @@
+const { FIELD_INFLOW_SNAPSHOT_TABLE, FIELD_INFLOW_TABLE } = require('../../constants/tables');
 const FieldInflowSnapshotDto = require('../../repository/dto/inflow/FieldInflowSnapshotDto');
 const SeasonDto = require('../../repository/dto/SeasonDto');
 const { sequelize } = require('../../repository/postgres/models');
@@ -47,7 +48,7 @@ class FieldInflowSnapshotService {
               sum(usd) as usd_net,
               sum(case when usd > 0 then usd else 0 end) as usd_in,
               sum(case when usd < 0 then -usd else 0 end) as usd_out
-            from field_inflow f
+            from ${FIELD_INFLOW_TABLE.env} f
             where f.block < s.block and f."isMarket" = false
           ) as sub
           where s.season in (${seasonsIn})
@@ -88,7 +89,7 @@ class FieldInflowSnapshotService {
   }
 
   static async findMissingSeasons(maxSeason) {
-    return await SharedRepository.findMissingSeasons('field_inflow_snapshot', maxSeason);
+    return await SharedRepository.findMissingSeasons(FIELD_INFLOW_SNAPSHOT_TABLE.env, maxSeason);
   }
 }
 

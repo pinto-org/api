@@ -1,3 +1,4 @@
+const { FIELD_INFLOW_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
@@ -37,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'field_inflow'
+      tableName: FIELD_INFLOW_TABLE.env
     }
   );
 

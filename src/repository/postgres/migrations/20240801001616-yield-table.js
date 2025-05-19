@@ -1,5 +1,6 @@
 'use strict';
 
+const { TOKEN_TABLE, YIELD_TABLE } = require('../../../constants/tables');
 const { ApyInitType } = require('../models/types/types');
 const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 
@@ -7,7 +8,7 @@ const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable(
-      'yield',
+      YIELD_TABLE.prod,
       {
         id: {
           type: Sequelize.INTEGER,
@@ -17,7 +18,7 @@ module.exports = {
         tokenId: {
           type: Sequelize.INTEGER,
           references: {
-            model: 'token',
+            model: TOKEN_TABLE.prod,
             key: 'id'
           },
           onDelete: 'RESTRICT',
@@ -66,6 +67,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('yield');
+    await queryInterface.dropTable(YIELD_TABLE.prod);
   }
 };
