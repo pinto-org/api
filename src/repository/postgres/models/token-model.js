@@ -1,3 +1,4 @@
+const { TOKEN_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
@@ -42,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('totalDepositedBdv', DataTypes, { allowNull: false })
     },
     {
-      tableName: 'token',
+      tableName: TOKEN_TABLE.env,
       indexes: [
         {
           unique: true,

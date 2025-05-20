@@ -35,6 +35,10 @@ After starting the database, you need to run the sequelize migrations/seeders to
 2. `npm run migrate`
 2. `npm run seed`
 
+## Advanced
+
+Sometimes it may be necessary to restart the scheduled processes that scan events (in the case of adding new datapoints, or rpc failures leading to data inconsistency). Restarting these processes makes current data unavailable until the entire history can be processed again. To mitigate this, parallel tables with "indexing_" prefix are created when `NODE_ENV=indexing`. In practice, a second application instance can be created having this configuration. When the indexing tables catch up to the current chain head, a cutover can be performed to replace the "live" data with the "indexing_" data. See docker directory for the cutover queries and configuration details.
+
 ## License
 
 [MIT](https://github.com/pinto-org/api/blob/main/LICENSE.txt)

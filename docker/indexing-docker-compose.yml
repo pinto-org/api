@@ -1,0 +1,16 @@
+services:
+  koajs:
+    build:
+      context: ../  # Context is set to the project root
+      dockerfile: docker/Dockerfile
+    image: beanstalk-api:${DOCKER_ENV}
+    env_file:
+      - .env
+    entrypoint: ["./entrypoint-proxy.sh", "postgres", "5432", "npm", "start"]
+    restart: no
+    networks:
+      - api_indexable_network
+
+networks:
+  api_indexable_network:
+    external: true

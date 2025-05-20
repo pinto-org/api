@@ -1,3 +1,4 @@
+const { SILO_INFLOW_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
@@ -49,7 +50,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'silo_inflow'
+      tableName: SILO_INFLOW_TABLE.env
     }
   );
 

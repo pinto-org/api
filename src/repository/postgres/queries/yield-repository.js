@@ -1,3 +1,4 @@
+const { YIELD_TABLE } = require('../../../constants/tables');
 const AsyncContext = require('../../../utils/async/context');
 const { sequelize, Sequelize } = require('../models');
 const { ApyInitType } = require('../models/types/types');
@@ -81,7 +82,7 @@ class YieldRepository {
 
   // Returns a list of all seasons that are missing yield entries
   static async findMissingSeasons(maxSeason) {
-    return await SharedRepository.findMissingSeasons('yield', maxSeason);
+    return await SharedRepository.findMissingSeasons(YIELD_TABLE.env, maxSeason);
   }
 }
 

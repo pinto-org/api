@@ -5,7 +5,7 @@ const DepositSeeder = require('./deposit-seeder');
 const DevSeeder = require('./dev-seeder');
 const SeasonSeeder = require('./season-seeder');
 
-const SEEDERS = [DevSeeder, DepositSeeder, ApySeeder, SeasonSeeder];
+const SEEDERS = [DevSeeder, DepositSeeder, SeasonSeeder, ApySeeder];
 let progress = 0;
 
 // For seeding the database during api uptime, ideal for longer running seeds.

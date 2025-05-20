@@ -1,4 +1,10 @@
 const { C } = require('../../constants/runtime-constants');
+const {
+  TRACTOR_EXECUTION_SOW_V0_TABLE,
+  TRACTOR_ORDER_SOW_V0_TABLE,
+  TRACTOR_ORDER_TABLE,
+  TRACTOR_EXECUTION_TABLE
+} = require('../../constants/tables');
 const Contracts = require('../../datasources/contracts/contracts');
 const SnapshotSowV0Dto = require('../../repository/dto/tractor/SnapshotSowV0Dto');
 const { sequelize, Sequelize } = require('../../repository/postgres/models');
@@ -30,17 +36,21 @@ class SnapshotSowV0Service {
       (async () => Number(await Contracts.getBeanstalk().season({ blockTag: snapshotBlock })))(),
       (async () => BigInt(await Contracts.getBeanstalk().maxTemperature({ blockTag: snapshotBlock })))()
     ]);
+    const o = TRACTOR_ORDER_TABLE.env;
+    const e = TRACTOR_EXECUTION_TABLE.env;
+    const osow = TRACTOR_ORDER_SOW_V0_TABLE.env;
+    const esow = TRACTOR_EXECUTION_SOW_V0_TABLE.env;
     const [[result]] = await sequelize.query(
       `SELECT
-        (SELECT COALESCE(SUM(beans), 0) FROM tractor_execution_sow_v0) AS sum_beans,
-        (SELECT COALESCE(SUM(pods), 0) FROM tractor_execution_sow_v0) AS sum_pods,
-        (SELECT COALESCE(SUM(osow."cascadeAmountFunded"), 0) FROM tractor_order o, tractor_order_sow_v0 osow WHERE osow."minTemp" <= ${Number(temperature)} AND o."blueprintHash" = osow."blueprintHash" AND NOT o.cancelled AND NOT osow."orderComplete") AS sum_cascade_below_temp,
-        (SELECT COALESCE(SUM(osow."cascadeAmountFunded"), 0) FROM tractor_order o, tractor_order_sow_v0 osow WHERE o."blueprintHash" = osow."blueprintHash" AND NOT o.cancelled AND NOT osow."orderComplete") AS sum_cascade_total,
-        (SELECT COALESCE(SUM(LEAST(osow."cascadeAmountFunded", osow."maxAmountToSowPerSeason")), 0) FROM tractor_order_sow_v0 osow WHERE osow."minTemp" <= ${Number(temperature)}) AS max_sow_this_season,
-        (SELECT COALESCE(SUM(o."beanTip"), 0) FROM tractor_order o JOIN tractor_execution e ON o."blueprintHash" = e."blueprintHash" WHERE o."orderType" = 'SOW_V0') AS sum_paid_tips,
-        (SELECT COALESCE(MAX(o."beanTip"), 0) FROM tractor_order o, tractor_order_sow_v0 osow WHERE o."blueprintHash" = osow."blueprintHash" AND NOT o.cancelled AND NOT osow."orderComplete" AND osow."amountFunded" > 0 AND osow."minTemp" <= ${Number(temperature)}) AS max_bean_tip,
-        (SELECT COUNT(*) FROM tractor_execution_sow_v0) AS count_executions,
-        (SELECT COUNT(DISTINCT o."publisher") FROM tractor_order o WHERE o."orderType" = 'SOW_V0') AS unique_publishers;`,
+        (SELECT COALESCE(SUM(beans), 0) FROM ${esow}) AS sum_beans,
+        (SELECT COALESCE(SUM(pods), 0) FROM ${esow}) AS sum_pods,
+        (SELECT COALESCE(SUM(osow."cascadeAmountFunded"), 0) FROM ${o} o, ${osow} osow WHERE osow."minTemp" <= ${Number(temperature)} AND o."blueprintHash" = osow."blueprintHash" AND NOT o.cancelled AND NOT osow."orderComplete") AS sum_cascade_below_temp,
+        (SELECT COALESCE(SUM(osow."cascadeAmountFunded"), 0) FROM ${o} o, ${osow} osow WHERE o."blueprintHash" = osow."blueprintHash" AND NOT o.cancelled AND NOT osow."orderComplete") AS sum_cascade_total,
+        (SELECT COALESCE(SUM(LEAST(osow."cascadeAmountFunded", osow."maxAmountToSowPerSeason")), 0) FROM ${osow} osow WHERE osow."minTemp" <= ${Number(temperature)}) AS max_sow_this_season,
+        (SELECT COALESCE(SUM(o."beanTip"), 0) FROM ${o} o JOIN ${e} e ON o."blueprintHash" = e."blueprintHash" WHERE o."orderType" = 'SOW_V0') AS sum_paid_tips,
+        (SELECT COALESCE(MAX(o."beanTip"), 0) FROM ${o} o, ${osow} osow WHERE o."blueprintHash" = osow."blueprintHash" AND NOT o.cancelled AND NOT osow."orderComplete" AND osow."amountFunded" > 0 AND osow."minTemp" <= ${Number(temperature)}) AS max_bean_tip,
+        (SELECT COUNT(*) FROM ${esow}) AS count_executions,
+        (SELECT COUNT(DISTINCT o."publisher") FROM ${o} o WHERE o."orderType" = 'SOW_V0') AS unique_publishers;`,
       { transaction: AsyncContext.getOrUndef('transaction') }
     );
 

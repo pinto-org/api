@@ -1,11 +1,12 @@
 'use strict';
 
+const { FIELD_INFLOW_SNAPSHOT_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn, timestamps } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('field_inflow_snapshot', {
+    await queryInterface.createTable(FIELD_INFLOW_SNAPSHOT_TABLE.prod, {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -58,6 +59,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('field_inflow_snapshot');
+    await queryInterface.dropTable(FIELD_INFLOW_SNAPSHOT_TABLE.prod);
   }
 };

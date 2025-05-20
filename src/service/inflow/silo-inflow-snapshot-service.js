@@ -1,3 +1,4 @@
+const { SILO_INFLOW_SNAPSHOT_TABLE, SILO_INFLOW_TABLE } = require('../../constants/tables');
 const SiloInflowSnapshotDto = require('../../repository/dto/inflow/SiloInflowSnapshotDto');
 const SeasonDto = require('../../repository/dto/SeasonDto');
 const { sequelize } = require('../../repository/postgres/models');
@@ -47,7 +48,7 @@ class SiloInflowSnapshotService {
               sum(usd) as usd_net,
               sum(case when usd > 0 then usd else 0 end) as usd_in,
               sum(case when usd < 0 then -usd else 0 end) as usd_out
-            from silo_inflow f
+            from ${SILO_INFLOW_TABLE.env} f
             where f.block < s.block and f."isTransfer" = false
           ) as sub
           where s.season in (${seasonsIn})
@@ -88,7 +89,7 @@ class SiloInflowSnapshotService {
   }
 
   static async findMissingSeasons(maxSeason) {
-    return await SharedRepository.findMissingSeasons('silo_inflow_snapshot', maxSeason);
+    return await SharedRepository.findMissingSeasons(SILO_INFLOW_SNAPSHOT_TABLE.env, maxSeason);
   }
 }
 

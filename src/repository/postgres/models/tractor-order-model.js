@@ -1,3 +1,4 @@
+const { TRACTOR_ORDER_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn, largeBigintTextColumn } = require('../util/sequelize-util');
 const { TractorOrderType } = require('./types/types');
 
@@ -59,7 +60,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'tractor_order',
+      tableName: TRACTOR_ORDER_TABLE.env,
       indexes: [
         {
           fields: ['orderType']

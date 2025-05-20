@@ -1,11 +1,12 @@
 'use strict';
 
+const { TOKEN_TABLE } = require('../../../constants/tables');
 const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('token', {
+    await queryInterface.createTable(TOKEN_TABLE.prod, {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -41,6 +42,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('token');
+    await queryInterface.dropTable(TOKEN_TABLE.prod);
   }
 };

@@ -1,3 +1,4 @@
+const { DEPOSIT_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
@@ -42,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('seedsOnLambda', DataTypes, { allowNull: false })
     },
     {
-      tableName: 'deposit',
+      tableName: DEPOSIT_TABLE.env,
       indexes: [
         {
           unique: true,

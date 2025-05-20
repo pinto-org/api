@@ -1,0 +1,11 @@
+services:
+  koajs:
+    networks:
+      - api_indexable_network
+  postgres:
+    networks:
+      - api_indexable_network
+
+networks:
+  api_indexable_network:
+    external: true

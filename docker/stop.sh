@@ -10,4 +10,8 @@ fi
 
 export DOCKER_ENV
 
-docker compose -p web-api-$DOCKER_ENV stop ${SERVICE:+ $SERVICE}
+docker compose \
+  -p web-api-$DOCKER_ENV \
+  -f docker-compose.yml \
+  ${DOCKER_ENV:+$([[ "$DOCKER_ENV" == "local" ]] && echo "-f docker-compose.indexable.yml")} \
+  stop ${SERVICE:+$SERVICE}

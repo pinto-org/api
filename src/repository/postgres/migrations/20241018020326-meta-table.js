@@ -1,12 +1,13 @@
 'use strict';
 
+const { API_META_TABLE } = require('../../../constants/tables');
 const { timestamps } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable(
-      'ApiMeta',
+      API_META_TABLE.prod,
       {
         id: {
           type: Sequelize.INTEGER,
@@ -36,6 +37,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('ApiMeta');
+    await queryInterface.dropTable(API_META_TABLE.prod);
   }
 };

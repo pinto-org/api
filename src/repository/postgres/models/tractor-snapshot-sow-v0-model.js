@@ -1,3 +1,4 @@
+const { TRACTOR_EXECUTION_SOW_V0_TABLE, TRACTOR_SNAPSHOT_SOW_V0_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
@@ -47,7 +48,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'tractor_snapshot_sow_v0'
+      tableName: TRACTOR_SNAPSHOT_SOW_V0_TABLE.env
     }
   );
 

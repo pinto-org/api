@@ -1,3 +1,4 @@
+const { TRACTOR_EXECUTION_SOW_V0_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
@@ -25,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'tractor_execution_sow_v0',
+      tableName: TRACTOR_EXECUTION_SOW_V0_TABLE.env,
       indexes: [
         {
           fields: ['blueprintHash']

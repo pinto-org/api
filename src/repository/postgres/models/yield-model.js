@@ -1,3 +1,4 @@
+const { YIELD_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 const { ApyInitType } = require('./types/types');
 
@@ -43,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: 'yield',
+      tableName: YIELD_TABLE.env,
       indexes: [
         {
           unique: true,

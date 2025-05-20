@@ -17,4 +17,8 @@ export KOAJS_PORT
 export POSTGRES_PORT
 
 # Can optionally provide a specific service to start. Defaults to all
-docker compose -p web-api-$DOCKER_ENV up -d ${SERVICE:+ $SERVICE}
+docker compose \
+  -p web-api-$DOCKER_ENV \
+  -f docker-compose.yml \
+  ${DOCKER_ENV:+$([[ "$DOCKER_ENV" == "local" ]] && echo "-f docker-compose.indexable.yml")} \
+  up -d ${SERVICE:+$SERVICE}

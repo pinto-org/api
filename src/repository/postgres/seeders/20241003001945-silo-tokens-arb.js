@@ -6,6 +6,7 @@ const AlchemyUtil = require('../../../datasources/alchemy');
 const PromiseUtil = require('../../../utils/async/promise');
 const Contracts = require('../../../datasources/contracts/contracts');
 const EnvUtil = require('../../../utils/env');
+const { TOKEN_TABLE } = require('../../../constants/tables');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -29,7 +30,7 @@ module.exports = {
 
     // Null silo data on any existing eth tokens
     await queryInterface.bulkUpdate(
-      'token',
+      TOKEN_TABLE.env,
       {
         bdv: null,
         stalkEarnedPerSeason: null,
@@ -100,7 +101,7 @@ module.exports = {
         });
       }
 
-      await queryInterface.bulkInsert('token', rows);
+      await queryInterface.bulkInsert(TOKEN_TABLE.env, rows);
     }
   },
 
@@ -119,7 +120,7 @@ module.exports = {
         c.UNRIPE_BEAN,
         c.UNRIPE_LP
       ];
-      await queryInterface.bulkDelete('token', {
+      await queryInterface.bulkDelete(TOKEN_TABLE.env, {
         address: {
           [Sequelize.Op.in]: tokens
         }
