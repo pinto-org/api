@@ -61,21 +61,9 @@ class TractorSowV0Service extends Blueprint {
     const TAG = Concurrent.tag(`periodicUpdate-${this.orderType}`);
     for (const publisher in sowOrdersByPublisher) {
       const existingPlans = [];
+      const publisherHasMultiple = sowOrdersByPublisher[publisher].length > 1;
       await Concurrent.run(TAG, 20, async () => {
         for (const order of sowOrdersByPublisher[publisher]) {
-          // Combine any existing plans from previously processed orders
-          let combinedExistingPlan = null;
-          if (existingPlans.length > 0) {
-            try {
-              combinedExistingPlan = await tractorHelpers.combineWithdrawalPlans(
-                { target: 'SuperContract', skipTransform: true },
-                existingPlans,
-                {
-                  blockTag: blockNumber
-                }
-              );
-            } catch (e) {}
-          }
           // Gets withdraw plans for this order. Onchain call throws if the amount is zero
           try {
             const soloPlan = await tractorHelpers.getWithdrawalPlanExcludingPlan(
@@ -91,20 +79,39 @@ class TractorSowV0Service extends Blueprint {
           } catch (e) {
             order.amountFunded = 0n;
           }
-          try {
-            const cascadePlan = await tractorHelpers.getWithdrawalPlanExcludingPlan(
-              { target: 'SuperContract', skipTransform: true },
-              publisher,
-              order.sourceTokenIndices,
-              order.totalAmountToSow - order.pintoSownCounter,
-              order.maxGrownStalkPerBdv,
-              combinedExistingPlan ?? emptyPlan,
-              { blockTag: blockNumber }
-            );
-            existingPlans.push(cascadePlan);
-            order.cascadeAmountFunded = BigInt(cascadePlan.totalAvailableBeans);
-          } catch (e) {
-            order.cascadeAmountFunded = 0n;
+
+          if (!publisherHasMultiple) {
+            // If this publisher has a single order, there is nothing to cascade; the amount is the same
+            order.cascadeAmountFunded = order.amountFunded;
+          } else {
+            // Combine any existing plans from previously processed orders
+            let combinedExistingPlan = null;
+            if (existingPlans.length > 0) {
+              try {
+                combinedExistingPlan = await tractorHelpers.combineWithdrawalPlans(
+                  { target: 'SuperContract', skipTransform: true },
+                  existingPlans,
+                  {
+                    blockTag: blockNumber
+                  }
+                );
+              } catch (e) {}
+            }
+            try {
+              const cascadePlan = await tractorHelpers.getWithdrawalPlanExcludingPlan(
+                { target: 'SuperContract', skipTransform: true },
+                publisher,
+                order.sourceTokenIndices,
+                order.totalAmountToSow - order.pintoSownCounter,
+                order.maxGrownStalkPerBdv,
+                combinedExistingPlan ?? emptyPlan,
+                { blockTag: blockNumber }
+              );
+              existingPlans.push(cascadePlan);
+              order.cascadeAmountFunded = BigInt(cascadePlan.totalAvailableBeans);
+            } catch (e) {
+              order.cascadeAmountFunded = 0n;
+            }
           }
         }
       });
