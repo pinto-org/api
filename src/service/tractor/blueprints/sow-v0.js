@@ -31,7 +31,9 @@ class TractorSowV0Service extends Blueprint {
       await TractorService_getOrders({
         orderType: TractorOrderType.SOW_V0,
         cancelled: false,
-        orderComplete: false,
+        blueprintParams: {
+          orderComplete: false
+        },
         // Skip/publisher sort isnt necessary unless there are many open orders.
         limit: 25000
       })
