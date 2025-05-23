@@ -67,7 +67,7 @@ class TractorSowV0Service extends Blueprint {
           // Gets withdraw plans for this order. Onchain call throws if the amount is zero
           try {
             const soloPlan = await tractorHelpers.getWithdrawalPlanExcludingPlan(
-              { target: 'SuperContract', skipTransform: true },
+              { target: 'SuperContract', skipTransform: true, skipRetry: (e) => e.reason === 'No beans available' },
               publisher,
               order.sourceTokenIndices,
               order.totalAmountToSow - order.pintoSownCounter,
@@ -99,7 +99,7 @@ class TractorSowV0Service extends Blueprint {
             }
             try {
               const cascadePlan = await tractorHelpers.getWithdrawalPlanExcludingPlan(
-                { target: 'SuperContract', skipTransform: true },
+                { target: 'SuperContract', skipTransform: true, skipRetry: (e) => e.reason === 'No beans available' },
                 publisher,
                 order.sourceTokenIndices,
                 order.totalAmountToSow - order.pintoSownCounter,

@@ -18,7 +18,12 @@ class SuperContract {
 
         return async (...args) => {
           const { superOptions, contractArgs } = SuperContract._identifySuperArgs(args);
-          const rawResult = await retryable(() => contract[property](...contractArgs));
+
+          const retryableOptions = {};
+          if (superOptions?.skipRetry) {
+            retryableOptions.earlyTerminate = superOptions.skipRetry;
+          }
+          const rawResult = await retryable(() => contract[property](...contractArgs), retryableOptions);
 
           if (superOptions?.skipTransform) {
             return rawResult;
