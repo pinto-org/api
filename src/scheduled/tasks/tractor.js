@@ -99,7 +99,7 @@ class TractorTask {
     ]);
     if (!order) {
       // For now I want an alert when this happens.
-      sendWebhookMessage(`Tractor event received for unpublished blueprint hash: ${event.args.blueprintHash}`);
+      // sendWebhookMessage(`Tractor event received for unpublished blueprint hash: ${event.args.blueprintHash}`);
       return;
     }
     const txnEvents = await FilterLogs.getTransactionEvents(
