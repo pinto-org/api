@@ -161,17 +161,17 @@ class SiloService {
     // Verify which tokens are whitelisted (bdv function does not revert)
     const tokens = new Set(calldata.tokens);
     const whitelistResult = await Promise.all(
-      tokens.map(async (t) => {
+      [...tokens].map(async (t) => {
         try {
           await beanstalk.bdv(t, BigInt(10 ** C().DECIMALS[t]), { blockTag: block });
-          return { [t]: true };
+          return [t, true];
         } catch (e) {
-          return { [t]: false };
+          return [t, false];
         }
       })
     );
-    const whitelistMap = Object.keys(whitelistResult).reduce((acc, next) => {
-      acc[next] = whitelistResult[next];
+    const whitelistMap = whitelistResult.reduce((acc, [token, isWhitelisted]) => {
+      acc[token] = isWhitelisted;
       return acc;
     }, {});
 
@@ -209,9 +209,9 @@ class SiloService {
 
     // For each expected response, if whitelisted, append from batch result, else default to 1n
     const retval = [];
-    for (let i = 0; i < calldata.tokens.length; ++i) {
+    for (let i = 0, j = 0; i < calldata.tokens.length; ++i) {
       if (whitelistMap[calldata.tokens[i]]) {
-        retval.push(bdvResults[i]);
+        retval.push(bdvResults[j++]);
       } else {
         retval.push(1n);
       }
