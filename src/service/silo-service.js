@@ -157,11 +157,41 @@ class SiloService {
 
   static async batchBdvs(calldata, block, batchSize = 100) {
     const beanstalk = Contracts.getBeanstalk();
-    const tokenBatches = ArraysUtil.toChunks(calldata.tokens, batchSize);
-    const amountBatches = ArraysUtil.toChunks(calldata.amounts, batchSize);
 
-    const results = [];
-    results.length = calldata.tokens.length;
+    // Verify which tokens are whitelisted (bdv function does not revert)
+    const tokens = new Set(calldata.tokens);
+    const whitelistResult = await Promise.all(
+      [...tokens].map(async (t) => {
+        try {
+          await beanstalk.bdv(t, BigInt(10 ** C().DECIMALS[t]), { blockTag: block });
+          return [t, true];
+        } catch (e) {
+          return [t, false];
+        }
+      })
+    );
+    const whitelistMap = whitelistResult.reduce((acc, [token, isWhitelisted]) => {
+      acc[token] = isWhitelisted;
+      return acc;
+    }, {});
+
+    // Extract both batches but only for whitelisted tokens
+    const whitelisted = {
+      tokens: [],
+      amounts: []
+    };
+    for (let i = 0; i < calldata.tokens.length; ++i) {
+      if (whitelistMap[calldata.tokens[i]]) {
+        whitelisted.tokens.push(calldata.tokens[i]);
+        whitelisted.amounts.push(calldata.amounts[i]);
+      }
+    }
+
+    const tokenBatches = ArraysUtil.toChunks(whitelisted.tokens, batchSize);
+    const amountBatches = ArraysUtil.toChunks(whitelisted.amounts, batchSize);
+
+    const bdvResults = [];
+    bdvResults.length = whitelisted.tokens.length;
 
     const TAG = Concurrent.tag('batchBdvs');
     for (let i = 0; i < tokenBatches.length; i++) {
@@ -172,11 +202,21 @@ class SiloService {
       await Concurrent.run(TAG, 50, async () => {
         const bdvsResult = await beanstalk.bdvs(batchTokens, batchAmounts, { blockTag: block });
         // Preserve result order
-        results.splice(i * batchSize, batchSize, ...bdvsResult);
+        bdvResults.splice(i * batchSize, batchSize, ...bdvsResult);
       });
     }
     await Concurrent.allResolved(TAG);
-    return results;
+
+    // For each expected response, if whitelisted, append from batch result, else default to 1n
+    const retval = [];
+    for (let i = 0, j = 0; i < calldata.tokens.length; ++i) {
+      if (whitelistMap[calldata.tokens[i]]) {
+        retval.push(bdvResults[j++]);
+      } else {
+        retval.push(1n);
+      }
+    }
+    return retval;
   }
 
   // Updates all whitelisted tokens in the database
