@@ -15,7 +15,9 @@ class BasinSubgraphRepository {
         }
       }`,
       `block: {number: ${blockNumber}}`,
-      'isBeanstalk: true',
+      // The exchange subgraph needs to update to indiate isBeanstalk or wasBeanstalk (for dewhitelisted)
+      '',
+      // 'isBeanstalk: true',
       {
         field: 'symbol',
         lastValue: ' ',
