@@ -2,6 +2,7 @@ const { C } = require('../../constants/runtime-constants');
 const Log = require('../../utils/logging');
 const AlchemyUtil = require('../alchemy');
 const Contracts = require('../contracts/contracts');
+const Beanstalk = require('../contracts/upgradeable/beanstalk');
 
 class FilterLogs {
   // Retrieves beanstalk events matching the requested names
@@ -9,32 +10,54 @@ class FilterLogs {
     eventNames,
     { indexedTopics = [], fromBlock = 0, toBlock = 'latest', safeBatch = true, c = C() } = {}
   ) {
-    return this.getEvents(Contracts.getBeanstalk(c), eventNames, { indexedTopics, fromBlock, toBlock, safeBatch, c });
+    return this.getEvents(C().BEANSTALK, Beanstalk.getAllInterfaces(), eventNames, {
+      indexedTopics,
+      fromBlock,
+      toBlock,
+      safeBatch,
+      c
+    });
   }
 
-  // Retrieves beanstalk events from a specific transaction
+  /**
+   * Retrieves beanstalk events from a specific transaction
+   * @deprecated Not functional when event signatures have changed over time
+   */
   static async getBeanstalkTransactionEvents(receipt, c = C()) {
     return this.getTransactionEvents([Contracts.getBeanstalk(c)], receipt);
   }
 
+  // Gets events emitted by the given address. Uses any of the provided interfaces to match/parse
+  // the given event names. If the event name cannot be found in any interface, it will be skipped.
   static async getEvents(
-    contract,
+    address,
+    interfaces,
     eventNames,
     { indexedTopics = [], fromBlock = 0, toBlock = 'latest', safeBatch = true, c = C() } = {}
   ) {
-    const iface = contract.interface;
-    const topics = eventNames.map((n) => iface.getEventTopic(n));
+    // Build mapping of topicId to the interface that can parse it. This handles situations
+    // where the event signature changes over time.
+    const topicInterfaces = {};
+    for (const eventName of eventNames) {
+      for (const iface of interfaces) {
+        const topicHash = iface.getEventTopic(eventName);
+        if (topicHash) {
+          // If multiple interfaces have the same name/topicHash mapping, doesn't matter which interface is used.
+          topicInterfaces[topicHash] = iface;
+        }
+      }
+    }
 
     const filter = {
-      address: contract.address,
-      topics: [topics, ...indexedTopics],
+      address,
+      topics: [Object.keys(topicInterfaces), ...indexedTopics],
       fromBlock,
       toBlock
     };
     const logs = safeBatch ? await FilterLogs.safeGetBatchLogs(filter, c) : await c.RPC.getLogs(filter);
 
     const events = logs.map((log) => {
-      const parsed = iface.parseLog(log);
+      const parsed = topicInterfaces[log.topics[0]].parseLog(log);
       parsed.rawLog = log;
       return parsed;
     });
@@ -82,7 +105,10 @@ class FilterLogs {
     return all;
   }
 
-  // Gets all events from specific transactions to the given contract(s)
+  /**
+   * Gets all events from specific transactions to the given contract(s)
+   * @deprecated Not functional when event signatures have changed over time
+   */
   static async getTransactionEvents(contracts, receipt) {
     const contractsByAddress = contracts.reduce((acc, next) => {
       acc[next.address.toLowerCase()] = next;
@@ -111,8 +137,14 @@ module.exports = FilterLogs;
 if (require.main === module) {
   (async () => {
     await AlchemyUtil.ready('base');
-    const events = await FilterLogs.getBeanstalkEvents(['AddDeposit', 'RemoveDeposit', 'RemoveDeposits'], {
-      fromBlock: 22668331,
+    // const events = await FilterLogs.getBeanstalkEvents(['AddDeposit', 'RemoveDeposit', 'RemoveDeposits'], {
+    //   fromBlock: 22668331,
+    //   toBlock: 23088331,
+    //   c: C('base')
+    // });
+    // console.log(events.length);
+    const events = await FilterLogs.getBeanstalkEvents(['Convert'], {
+      fromBlock: 23088331,
       toBlock: 23088331,
       c: C('base')
     });
