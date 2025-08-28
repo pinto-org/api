@@ -1,5 +1,5 @@
 const { C } = require('../../../constants/runtime-constants');
-const Interfaces = require('../interfaces');
+const Contracts = require('../contracts');
 const UpgradeableContract = require('../upgradeable-contract');
 
 const mapping = [
@@ -35,11 +35,14 @@ class Beanstalk {
     return new Beanstalk(block, c);
   }
 
+  // Returns all interfaces (for all abi versions) of this contract. Pulls the Alchemy Contract interface
+  // rather than ethersjs interface for backwards compatibility with BigNumber/BigInt typing in parsed events.
   static getAllInterfaces(c = C()) {
     const ifaces = [];
     for (const entry of mapping) {
       if (entry.chain === c.CHAIN) {
-        ifaces.push(Interfaces.makeInterface(entry.abi));
+        const contract = Contracts.makeContract(entry.address, entry.abi, c.RPC);
+        ifaces.push(contract.interface);
       }
     }
     return ifaces;

@@ -40,7 +40,7 @@ class FilterLogs {
     const topicInterfaces = {};
     for (const eventName of eventNames) {
       for (const iface of interfaces) {
-        const topicHash = iface.getEvent(eventName)?.topicHash;
+        const topicHash = iface.getEventTopic(eventName);
         if (topicHash) {
           // If multiple interfaces have the same name/topicHash mapping, doesn't matter which interface is used.
           topicInterfaces[topicHash] = iface;
