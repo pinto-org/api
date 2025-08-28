@@ -89,7 +89,9 @@ class BasinSubgraphRepository {
         }
       `,
       '',
-      `timestamp_lte: "${toTimestamp}"`,
+      // Filter small trades to avoid retrieving too many enties that don't have significant price impact
+      // In the future, these should be removed at the subgraph level as well to avoid entity bloat.
+      `tradeVolumeUSD_gte: "100", timestamp_lte: "${toTimestamp}"`,
       {
         field: 'timestamp',
         lastValue: fromTimestamp.toFixed(0),
