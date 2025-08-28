@@ -1,4 +1,6 @@
+const { C } = require('../../src/constants/runtime-constants');
 const FilterLogs = require('../../src/datasources/events/filter-logs');
+const { mockPintoConstants } = require('../util/mock-constants');
 
 describe('FilterLogs', () => {
   afterEach(() => {
@@ -7,13 +9,12 @@ describe('FilterLogs', () => {
 
   describe('getEvents', () => {
     const iface1 = {
-      getEvent: (evtName) =>
-        evtName === 'Event1' ? { topicHash: '0x1234' } : evtName === 'Event2' ? { topicHash: '0x5678' } : null,
+      getEventTopic: (evtName) => (evtName === 'Event1' ? '0x1234' : evtName === 'Event2' ? '0x5678' : null),
       parseLog: jest.fn().mockImplementation((log) => ({ v: `parsed_${log.topics[0]}` }))
     };
 
     const iface2 = {
-      getEvent: (evtName) => (evtName === 'Event1' ? { topicHash: '0xabcd' } : null),
+      getEventTopic: (evtName) => (evtName === 'Event1' ? '0xabcd' : null),
       parseLog: jest.fn().mockImplementation((log) => ({ v: `parsed_${log.topics[0]}` }))
     };
 
@@ -65,6 +66,26 @@ describe('FilterLogs', () => {
       expect(iface1.parseLog).toHaveBeenCalledWith(evt1_1);
       expect(iface2.parseLog).toHaveBeenCalledTimes(1);
       expect(iface2.parseLog).toHaveBeenCalledWith(evt1_2);
+    });
+  });
+
+  describe('getBeanstalkEvents', () => {
+    beforeEach(() => {
+      mockPintoConstants();
+    });
+
+    test('Supports both PI-12 Convert and the old Convert', async () => {
+      const safeLogsSpy = jest.spyOn(FilterLogs, 'safeGetBatchLogs').mockResolvedValue([]);
+
+      await FilterLogs.getBeanstalkEvents(['Convert']);
+
+      expect(safeLogsSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          address: C().BEANSTALK,
+          topics: [expect.objectContaining({ length: 2 })]
+        }),
+        expect.anything()
+      );
     });
   });
 });
