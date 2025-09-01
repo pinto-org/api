@@ -1,5 +1,4 @@
 const { C } = require('../constants/runtime-constants');
-const BeanstalkSubgraphRepository = require('../repository/subgraph/beanstalk-subgraph');
 const CommonSubgraphRepository = require('../repository/subgraph/common-subgraph');
 
 class BlockUtil {
@@ -47,6 +46,16 @@ class BlockUtil {
       }
     }
     return bestBlock;
+  }
+
+  // Transforms a block during a pause to the block right before the pause.
+  static pauseGuard(block, c = C()) {
+    for (const [pauseBlock, unpauseBlock] of c.MILESTONE.pauseBlocks) {
+      if (block >= pauseBlock && block < unpauseBlock) {
+        return pauseBlock - 1;
+      }
+    }
+    return block;
   }
 }
 

@@ -49,4 +49,20 @@ describe('TaskRangeUtil', () => {
     expect(results2.updateBlock).toBe(1000);
     expect(results2.isCaughtUp).toBe(false);
   });
+
+  test('Skips paused range', async () => {
+    jest.spyOn(AlchemyUtil, 'providerForChain').mockReturnValue({
+      getBlock: jest.fn().mockResolvedValue({ number: 34986390 })
+    });
+    // pauseBlocks: [[34970269, 34985390]]
+    const prePause = await TaskRangeUtil.getUpdateInfo({ lastUpdate: 34970250 }, 500, { skipPausedRange: true });
+
+    expect(prePause.lastUpdate).toBe(34970250);
+    expect(prePause.updateBlock).toBe(34970268);
+
+    const postPause = await TaskRangeUtil.getUpdateInfo({ lastUpdate: 34970268 }, 500, { skipPausedRange: true });
+
+    expect(postPause.lastUpdate).toBe(34985390);
+    expect(postPause.updateBlock).toBeGreaterThan(34985390);
+  });
 });

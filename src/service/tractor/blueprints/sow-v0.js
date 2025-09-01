@@ -9,6 +9,7 @@ const SowV0ExecutionAssembler = require('../../../repository/postgres/models/ass
 const SowV0OrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-sow-v0-assembler');
 const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
 const Concurrent = require('../../../utils/async/concurrent');
+const BlockUtil = require('../../../utils/block');
 const { fromBigInt } = require('../../../utils/number');
 const PriceService = require('../../price-service');
 const Blueprint = require('./blueprint');
@@ -73,7 +74,7 @@ class TractorSowV0Service extends Blueprint {
               order.totalAmountToSow - order.pintoSownCounter,
               order.maxGrownStalkPerBdv,
               emptyPlan,
-              { blockTag: blockNumber }
+              { blockTag: BlockUtil.pauseGuard(blockNumber) }
             );
             order.amountFunded = BigInt(soloPlan.totalAvailableBeans);
           } catch (e) {
@@ -92,7 +93,7 @@ class TractorSowV0Service extends Blueprint {
                   { target: 'SuperContract', skipTransform: true },
                   existingPlans,
                   {
-                    blockTag: blockNumber
+                    blockTag: BlockUtil.pauseGuard(blockNumber)
                   }
                 );
               } catch (e) {}
@@ -105,7 +106,7 @@ class TractorSowV0Service extends Blueprint {
                 order.totalAmountToSow - order.pintoSownCounter,
                 order.maxGrownStalkPerBdv,
                 combinedExistingPlan ?? emptyPlan,
-                { blockTag: blockNumber }
+                { blockTag: BlockUtil.pauseGuard(blockNumber) }
               );
               existingPlans.push(cascadePlan);
               order.cascadeAmountFunded = BigInt(cascadePlan.totalAvailableBeans);
