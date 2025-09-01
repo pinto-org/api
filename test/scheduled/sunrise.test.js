@@ -38,16 +38,17 @@ describe('OnSunrise', () => {
     // Fast-forward timers and continue
     jest.advanceTimersByTime(5000);
     jest.runAllTimers();
-    await checkLastPromiseResult(checkSpy, false);
-
-    // Now, bean/basin are ready also
-    const metaReady = require('../mock-responses/subgraph/scheduled/sunrise/metaReady.json');
-    beanSGSpy.mockResolvedValueOnce(metaReady);
-    basinSGSpy.mockResolvedValueOnce(metaReady);
-
-    jest.advanceTimersByTime(5000);
-    jest.runAllTimers();
     await checkLastPromiseResult(checkSpy, true);
+
+    /// Disabled due to not checking for these in the waiting function anymore
+    // // Now, bean/basin are ready also
+    // const metaReady = require('../mock-responses/subgraph/scheduled/sunrise/metaReady.json');
+    // beanSGSpy.mockResolvedValueOnce(metaReady);
+    // basinSGSpy.mockResolvedValueOnce(metaReady);
+
+    // jest.advanceTimersByTime(5000);
+    // jest.runAllTimers();
+    // await checkLastPromiseResult(checkSpy, true);
 
     await expect(waitPromise).resolves.toBeUndefined();
   });

@@ -46,8 +46,14 @@ class OnSunriseUtil {
       const newSeasonBlock = parseInt(beanstalkSeason.sunriseBlock);
       // See if bean, basin subgraphs are ready also
       const [beanMeta, basinMeta] = await Promise.all([
-        CommonSubgraphRepository.getMeta(C().SG.BEAN),
-        CommonSubgraphRepository.getMeta(C().SG.BASIN)
+        /// Currently we don't need either of these subgraphs to be ready for downstream use cases.
+        /// Test cases were modified to not test bean/basin anymore.
+        /// This is a temporary measure that was added due to this subgraph crashign and being unavailable for a long period.
+        /// A more robust solution would allow upstream callers to specify which subgraphs they expect to be ready.
+        Promise.resolve({ block: Number.MAX_SAFE_INTEGER.toString() }),
+        Promise.resolve({ block: Number.MAX_SAFE_INTEGER.toString() })
+        /// CommonSubgraphRepository.getMeta(C().SG.BEAN),
+        /// CommonSubgraphRepository.getMeta(C().SG.BASIN)
       ]);
       return Math.min(parseInt(beanMeta.block), parseInt(basinMeta.block)) >= newSeasonBlock;
     }

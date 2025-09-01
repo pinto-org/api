@@ -17,6 +17,7 @@ const MAX_BLOCKS = 2000;
 
 class DepositsTask {
   // Set by SunriseTask when a new season is encountered. Indicates that all deposits should be updated.
+  // This approach would not work if also taking deposit snapshots (this flag/behavior is only triggered in real-time).
   static __seasonUpdate = false;
 
   // Returns true if the task can be called again immediately
@@ -29,6 +30,9 @@ class DepositsTask {
     }
     Log.info(`Updating deposits for block range [${lastUpdate}, ${updateBlock}]`);
 
+    // FIXME: there is an issue here when whitelisting or pausing (and their inverse) occurs.
+    // Should assign the updateBlock to the block right before one of those events.
+    // When paused, the indexer should auto advance (since there can be no deposit activity)
     const tokenInfos = await SiloService.getWhitelistedTokenInfo({ block: updateBlock, chain: C().CHAIN });
 
     await AsyncContext.sequelizeTransaction(async () => {
