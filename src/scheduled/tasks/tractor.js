@@ -11,13 +11,12 @@ const SnapshotSowV0Service = require('../../service/tractor/snapshot-sow-v0-serv
 const TractorService = require('../../service/tractor/tractor-service');
 const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
-const { sendWebhookMessage } = require('../../utils/discord');
 const EnvUtil = require('../../utils/env');
 const Log = require('../../utils/logging');
 const TaskRangeUtil = require('../util/task-range');
 
 // Maximum number of blocks to process in one invocation
-const MAX_BLOCKS = 2000;
+const MAX_BLOCKS = 10000;
 
 class TractorTask {
   // Returns true if the task can be called again immediately
@@ -27,7 +26,11 @@ class TractorTask {
       SnapshotSowV0Service.nextSnapshotBlock()
     ]);
     let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS, {
-      maxReturnBlock: snapshotBlock
+      maxReturnBlock: snapshotBlock,
+      // In the case of a pause, need to continue processing PublishRequisition/CancelBlueprint, which don't depend on any diamond
+      // onchain function. Tractor would never emit.
+      // The snapshot will however avoid calling view functions with blocks during the pause.
+      skipPausedRange: false
     });
 
     if (EnvUtil.getDeploymentEnv() === 'local' && !!EnvUtil.getCustomRpcUrl(C().CHAIN)) {
@@ -62,7 +65,7 @@ class TractorTask {
         })
       );
 
-      if (updateBlock === snapshotBlock) {
+      if (updateBlock >= snapshotBlock) {
         await SnapshotSowV0Service.takeSnapshot(updateBlock);
       }
 
@@ -98,8 +101,7 @@ class TractorTask {
       PriceService.getTokenPrice(C().WETH, { blockNumber: event.rawLog.blockNumber })
     ]);
     if (!order) {
-      // For now I want an alert when this happens.
-      // sendWebhookMessage(`Tractor event received for unpublished blueprint hash: ${event.args.blueprintHash}`);
+      // Tractor event received for unpublished blueprint hash. Skip it
       return;
     }
     const txnEvents = await FilterLogs.getTransactionEvents(

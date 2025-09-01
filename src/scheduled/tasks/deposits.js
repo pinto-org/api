@@ -13,7 +13,7 @@ const TaskRangeUtil = require('../util/task-range');
 const DEFAULT_UPDATE_THRESHOLD = 0.01;
 const HOURLY_UPDATE_THRESHOLD = 0.005;
 // Maximum number of blocks to process in one invocation
-const MAX_BLOCKS = 2000;
+const MAX_BLOCKS = 10000;
 
 class DepositsTask {
   // Set by SunriseTask when a new season is encountered. Indicates that all deposits should be updated.
@@ -23,16 +23,16 @@ class DepositsTask {
   // Returns true if the task can be called again immediately
   static async update() {
     const meta = await AppMetaService.getLambdaMeta();
-    const { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS);
+    const { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS, {
+      // When the diamond is paused, skip processing completely
+      skipPausedRange: true
+    });
     if (!isInitialized || lastUpdate === updateBlock) {
       Log.info(`Skipping task, has not been initialized yet or last update is the same as the suggested update block.`);
       return false;
     }
     Log.info(`Updating deposits for block range [${lastUpdate}, ${updateBlock}]`);
 
-    // FIXME: there is an issue here when whitelisting or pausing (and their inverse) occurs.
-    // Should assign the updateBlock to the block right before one of those events.
-    // When paused, the indexer should auto advance (since there can be no deposit activity)
     const tokenInfos = await SiloService.getWhitelistedTokenInfo({ block: updateBlock, chain: C().CHAIN });
 
     await AsyncContext.sequelizeTransaction(async () => {

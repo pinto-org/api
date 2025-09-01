@@ -12,6 +12,7 @@ const SnapshotSowV0Assembler = require('../../repository/postgres/models/assembl
 const SharedRepository = require('../../repository/postgres/queries/shared-repository');
 const SnapshotSowV0Repository = require('../../repository/postgres/queries/snapshot-sow-v0-repository');
 const AsyncContext = require('../../utils/async/context');
+const BlockUtil = require('../../utils/block');
 const ChainUtil = require('../../utils/chain');
 const AppMetaService = require('../meta-service');
 
@@ -32,9 +33,11 @@ class SnapshotSowV0Service {
   // Data must have already been updated through snapshotBlock (having written to meta is optional).
   static async takeSnapshot(snapshotBlock) {
     const blockTimestamp = new Date((await C().RPC.getBlock(snapshotBlock)).timestamp * 1000);
+    // Set the block to before any pause if this hour was while the diamond was paused
+    const blockTag = BlockUtil.pauseGuard(snapshotBlock);
     const [season, temperature] = await Promise.all([
-      (async () => Number(await Contracts.getBeanstalk().season({ blockTag: snapshotBlock })))(),
-      (async () => BigInt(await Contracts.getBeanstalk().maxTemperature({ blockTag: snapshotBlock })))()
+      (async () => Number(await Contracts.getBeanstalk().season({ blockTag })))(),
+      (async () => BigInt(await Contracts.getBeanstalk().maxTemperature({ blockTag })))()
     ]);
     const o = TRACTOR_ORDER_TABLE.env;
     const e = TRACTOR_EXECUTION_TABLE.env;

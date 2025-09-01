@@ -49,7 +49,9 @@ const DECIMALS = {
 const MILESTONE = {
   startSeason: 1,
   endSeason: 99999999,
-  isGaugeEnabled: ({ season, block }) => true
+  isGaugeEnabled: ({ season, block }) => true,
+  // [[pauseBlock, unpauseBlock]]
+  pauseBlocks: [[34970269, 34985390]]
 };
 
 const SG = EnvUtil.getSG('base');
