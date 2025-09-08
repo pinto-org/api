@@ -2,6 +2,7 @@ const BeanstalkSubgraphRepository = require('../../repository/subgraph/beanstalk
 const SeasonService = require('../../service/season-service');
 const SiloService = require('../../service/silo-service');
 const YieldService = require('../../service/yield-service');
+const { sendWebhookMessage } = require('../../utils/discord');
 const Log = require('../../utils/logging');
 const OnSunriseUtil = require('../util/on-sunrise');
 const DepositsTask = require('./deposits');
@@ -20,16 +21,23 @@ class SunriseTask {
     }
     Log.info(`Season ${nextSeason} was processed by the subgraphs, proceeding.`);
 
-    // Insert basic season info
-    await SeasonService.insertSeasonFromEvent(nextSeason);
+    try {
+      // Insert basic season info
+      await SeasonService.insertSeasonFromEvent(nextSeason);
 
-    // Update whitelisted token info
-    const tokenModels = await SiloService.updateWhitelistedTokenInfo();
+      // Update whitelisted token info
+      const tokenModels = await SiloService.updateWhitelistedTokenInfo();
 
-    await YieldService.saveSeasonalApys({ tokenModels });
+      await YieldService.saveSeasonalApys({ tokenModels });
 
-    // Next deposit update should mow all/etc.
-    DepositsTask.__seasonUpdate = true;
+      // Next deposit update should mow all/etc.
+      DepositsTask.__seasonUpdate = true;
+    } catch (e) {
+      // Need to understand why this error happens before it can be properly mitigated. Can redeploy upon receiving this notification.
+      await sendWebhookMessage(`Failed to complete processing for season ${nextSeason}`);
+      Log.info(e);
+      throw e;
+    }
   }
 }
 

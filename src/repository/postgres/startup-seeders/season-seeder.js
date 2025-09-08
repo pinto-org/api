@@ -1,5 +1,3 @@
-const { ethers } = require('ethers');
-const FilterLogs = require('../../../datasources/events/filter-logs');
 const SeasonService = require('../../../service/season-service');
 const Concurrent = require('../../../utils/async/concurrent');
 const Log = require('../../../utils/logging');
