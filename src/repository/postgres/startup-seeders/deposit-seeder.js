@@ -8,6 +8,8 @@ const BeanstalkSubgraphRepository = require('../../subgraph/beanstalk-subgraph')
 
 // Seeds the deposits table with initial info
 class DepositSeeder {
+  static __active = false;
+
   static async run() {
     const lambdaMeta = await AppMetaService.getLambdaMeta();
     if (lambdaMeta.lastUpdate !== null) {

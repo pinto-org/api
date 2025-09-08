@@ -1,3 +1,5 @@
+const ApySeeder = require('../../repository/postgres/startup-seeders/apy-seeder');
+const SeasonSeeder = require('../../repository/postgres/startup-seeders/season-seeder');
 const BeanstalkSubgraphRepository = require('../../repository/subgraph/beanstalk-subgraph');
 const SeasonService = require('../../service/season-service');
 const SiloService = require('../../service/silo-service');
@@ -33,10 +35,19 @@ class SunriseTask {
       // Next deposit update should mow all/etc.
       DepositsTask.__seasonUpdate = true;
     } catch (e) {
-      // Need to understand why this error happens before it can be properly mitigated. Can redeploy upon receiving this notification.
+      // Need to understand why this error happens before it can be properly mitigated. Currently the data will be unavailable
+      // for at least one hour, until the subsequent sunrise and the seeders are triggered afterwards.
       await sendWebhookMessage(`Failed to complete processing for season ${nextSeason}`);
       Log.info(e);
       throw e;
+    }
+
+    // Rerun the seeders to fill in any seasons which are missing.
+    if (!SeasonSeeder.__active) {
+      await SeasonSeeder.run();
+    }
+    if (!ApySeeder.__active) {
+      await ApySeeder.run();
     }
   }
 }

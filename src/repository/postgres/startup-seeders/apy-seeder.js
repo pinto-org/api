@@ -4,6 +4,8 @@ const Concurrent = require('../../../utils/async/concurrent');
 const Log = require('../../../utils/logging');
 
 class ApySeeder {
+  static __active = false;
+
   static async run() {
     // Find all missing seasons
     let missingSeasons = await YieldService.findMissingSeasons();
@@ -11,7 +13,7 @@ class ApySeeder {
       await SiloService.updateWhitelistedTokenInfo();
     }
 
-    // Calculate and save all vapys for each season (this will take a long time)
+    // Calculate and save all vapys for each season (this will take a long time for many seasons)
     const TAG = Concurrent.tag('apySeeder');
     for (const season of missingSeasons) {
       await Concurrent.run(TAG, 5, async () => {
