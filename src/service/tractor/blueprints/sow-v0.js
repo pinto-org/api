@@ -123,7 +123,6 @@ class TractorSowV0Service extends Blueprint {
     await this.updateOrders(orders.map((o) => o.blueprintData));
   }
 
-  // Invoked upon PublishRequisition. Does nothing if the requision is not of this blueprint type
   static async tryAddRequisition(orderDto, blueprintData) {
     // Decode data
     const sowV0Call = this.decodeBlueprintData(blueprintData);
@@ -143,7 +142,6 @@ class TractorSowV0Service extends Blueprint {
     return sowV0Call.args.params.opParams.operatorTipAmount;
   }
 
-  // Invoked upon tractor execution of this blueprint
   static async orderExecuted(orderDto, executionDto, innerEvents) {
     // Update current order entity state
     const sowOrder = await this.getOrder(orderDto.blueprintHash);
