@@ -5,6 +5,8 @@ const Log = require('../../../utils/logging');
 const { sequelize } = require('../models');
 
 class DevSeeder {
+  static __active = false;
+
   static async run() {
     if (process.env.DEV_TRACTOR) {
       Log.info('Running Tractor dev seeder');

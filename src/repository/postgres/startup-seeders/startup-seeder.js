@@ -16,7 +16,12 @@ class StartupSeeder {
 
     for (let i = 0; i < SEEDERS.length; ++i) {
       Log.info(`Running seeder [${progress}]...`);
-      await SEEDERS[i].run();
+      try {
+        SEEDERS[i].__active = true;
+        await SEEDERS[i].run();
+      } finally {
+        SEEDERS[i].__active = false;
+      }
       ++progress;
     }
     Log.info(`Completed all seeders`);
