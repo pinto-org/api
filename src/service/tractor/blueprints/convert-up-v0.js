@@ -1,13 +1,17 @@
 const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
 const Blueprint = require('./blueprint');
 const { sequelize } = require('../../../repository/postgres/models');
+const ConvertUpV0ExecutionDto = require('../../../repository/dto/tractor/ConvertUpV0ExecutionDto');
+const ConvertUpV0OrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-convert-up-v0-assembler');
+const ConvertUpV0ExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-convert-up-v0-assembler');
 
 class TractorConvertUpV0Service extends Blueprint {
   static orderType = TractorOrderType.CONVERT_UP_V0;
-  // static orderModel = sequelize.models.TractorOrderConvertUpV0;
-  // static orderAssembler = ConvertUpV0OrderAssembler;
-  // static executionModel = sequelize.models.TractorExecutionConvertUpV0;
-  // static executionAssembler = ConvertUpV0ExecutionAssembler;
+  static orderModel = sequelize.models.TractorOrderConvertUpV0;
+  static orderAssembler = ConvertUpV0OrderAssembler;
+  static executionModel = sequelize.models.TractorExecutionConvertUpV0;
+  static executionAssembler = ConvertUpV0ExecutionAssembler;
+  static executionDto = ConvertUpV0ExecutionDto;
 
   // Behavior TBD
   static async periodicUpdate(TractorService_getOrders, blockNumber) {
