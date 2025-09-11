@@ -8,6 +8,12 @@ const TractorOrderType = {
   CONVERT_UP_V0: 'CONVERT_UP_V0'
 };
 
+const StalkMode = {
+  USE: 'USE',
+  OMIT: 'OMIT',
+  USE_LAST: 'USE_LAST'
+};
+
 module.exports = {
   ApyInitType,
   TractorOrderType

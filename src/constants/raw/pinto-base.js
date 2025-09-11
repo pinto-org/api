@@ -3,7 +3,7 @@
 const EnvUtil = require('../../utils/env');
 const SubgraphClients = require('../../datasources/subgraph-client');
 
-const pintoDiamondAbi = require('../../datasources/abi/beanstalk/Pinto-PI12.json');
+const pintoDiamondAbi = require('../../datasources/abi/beanstalk/Pinto-PI13.json');
 const erc20Abi = require('../../datasources/abi/ERC20.json');
 const wrappedDepositAbi = require('../../datasources/abi/WrappedDepositERC20.json');
 const wellAbi = require('../../datasources/abi/basin/Well.json');

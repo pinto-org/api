@@ -1,4 +1,4 @@
-const { TRACTOR_EXECUTION_SOW_V0_TABLE, TRACTOR_SNAPSHOT_SOW_V0_TABLE } = require('../../../constants/tables');
+const { TRACTOR_SNAPSHOT_SOW_V0_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {

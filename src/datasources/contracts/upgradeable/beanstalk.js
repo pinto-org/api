@@ -13,16 +13,16 @@ const mapping = [
   {
     chain: 'base',
     start: 29064231,
-    end: 99999999999, // TODO: PI-12 block TBD
+    end: 99999999999, // TODO: PI-13 block TBD
     address: '0xD1A0D188E861ed9d15773a2F3574a2e94134bA8f',
     abi: require('../../abi/beanstalk/Pinto-PI8.json')
   },
   {
     chain: 'base',
-    start: 99999999999, // TODO: PI-12 block TBD
+    start: 99999999999, // TODO: PI-13 block TBD
     end: 'latest',
     address: '0xD1A0D188E861ed9d15773a2F3574a2e94134bA8f',
-    abi: require('../../abi/beanstalk/Pinto-PI12.json')
+    abi: require('../../abi/beanstalk/Pinto-PI13.json')
   }
 ];
 
