@@ -1,5 +1,6 @@
 const { TRACTOR_ORDER_CONVERT_UP_V0_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
+const { StalkMode } = require('./types/types');
 
 module.exports = (sequelize, DataTypes) => {
   const TractorOrderConvertUpV0 = sequelize.define(

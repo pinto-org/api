@@ -10,8 +10,6 @@ const SowV0OrderAssembler = require('../../../repository/postgres/models/assembl
 const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
 const Concurrent = require('../../../utils/async/concurrent');
 const BlockUtil = require('../../../utils/block');
-const { fromBigInt } = require('../../../utils/number');
-const PriceService = require('../../price-service');
 const Blueprint = require('./blueprint');
 const BlueprintConstants = require('./blueprint-constants');
 
@@ -21,6 +19,7 @@ class TractorSowV0Service extends Blueprint {
   static orderAssembler = SowV0OrderAssembler;
   static executionModel = sequelize.models.TractorExecutionSowV0;
   static executionAssembler = SowV0ExecutionAssembler;
+  static executionDto = SowV0ExecutionDto;
 
   /**
    * Determine how many pinto can be sown into each order, accounting for cascading order execution.
@@ -140,25 +139,6 @@ class TractorSowV0Service extends Blueprint {
 
     // Return amount of tip offered
     return sowV0Call.args.params.opParams.operatorTipAmount;
-  }
-
-  static async orderExecuted(orderDto, executionDto, innerEvents) {
-    // Update current order entity state
-    const sowOrder = await this.getOrder(orderDto.blueprintHash);
-    await sowOrder.updateFieldsUponExecution(innerEvents);
-    await this.updateOrders([sowOrder]);
-
-    // Insert execution entity
-    const sowExecutionDto = await SowV0ExecutionDto.fromExecutionContext({ executionDto, innerEvents });
-    await this.updateExecutions([sowExecutionDto]);
-
-    // Return amount of tip paid in usd
-    const operatorReward = innerEvents.find((e) => e.name === 'OperatorReward');
-    if (operatorReward.args.token.toLowerCase() === C().BEAN) {
-      const beanPrice = await PriceService.getBeanPrice({ blockNumber: operatorReward.rawLog.blockNumber });
-      const tipUsd = fromBigInt(BigInt(operatorReward.args.amount), 6) * beanPrice.usdPrice;
-      return tipUsd;
-    }
   }
 
   static async orderCancelled(orderDto) {

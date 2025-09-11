@@ -5,11 +5,11 @@ const { fromBigInt } = require('../../../utils/number');
 class SowV0ExecutionDto {
   constructor(type, d) {
     if (type === 'data') {
-      const { executionDto, innerEvents } = d;
+      const { baseExecutionDto, innerEvents } = d;
       const sowEvt = innerEvents.find((e) => e.name === 'Sow');
 
-      this.id = executionDto.id;
-      this.blueprintHash = executionDto.blueprintHash;
+      this.id = baseExecutionDto.id;
+      this.blueprintHash = baseExecutionDto.blueprintHash;
       this.index = BigInt(sowEvt.args.index);
       this.beans = BigInt(sowEvt.args.beans);
       this.pods = BigInt(sowEvt.args.pods);

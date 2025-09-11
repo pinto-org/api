@@ -15,11 +15,7 @@ class TractorConvertUpV0Service extends Blueprint {
   }
 
   static async tryAddRequisition(orderDto, blueprintData) {
-    //
-  }
-
-  static async orderExecuted(orderDto, executionDto, innerEvents) {
-    //
+    // Cant write this until we have a blueprint to test with
   }
 
   static async orderCancelled(orderDto) {

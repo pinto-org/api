@@ -23,7 +23,6 @@ describe('TractorSowV0Service', () => {
   });
 
   it('Creates matching execution data for order executed', async () => {
-    const mockOrderDto = { blueprintHash: '0x123' };
     const mockInnerEvents = [
       {
         name: 'OperatorReward',
@@ -37,15 +36,13 @@ describe('TractorSowV0Service', () => {
     const mockSowOrder = {
       updateFieldsUponExecution: jest.fn()
     };
-    const getOrderSpy = jest.spyOn(TractorSowV0Service, 'getOrder').mockResolvedValue(mockSowOrder);
     const updateOrderSpy = jest.spyOn(TractorSowV0Service, 'updateOrders').mockImplementation(() => {});
     jest.spyOn(SowV0ExecutionDto, 'fromExecutionContext').mockImplementation(() => {});
     const updateExecutionSpy = jest.spyOn(TractorSowV0Service, 'updateExecutions').mockImplementation(() => {});
     const priceSpy = jest.spyOn(PriceService, 'getBeanPrice').mockResolvedValue({ usdPrice: 1.5 });
 
-    const result = await TractorSowV0Service.orderExecuted(mockOrderDto, null, mockInnerEvents);
+    const result = await TractorSowV0Service.orderExecuted(mockSowOrder, null, mockInnerEvents);
 
-    expect(getOrderSpy).toHaveBeenCalledWith(mockOrderDto.blueprintHash);
     expect(mockSowOrder.updateFieldsUponExecution).toHaveBeenCalledWith(mockInnerEvents);
     expect(updateOrderSpy).toHaveBeenCalledWith([mockSowOrder]);
     expect(updateExecutionSpy).toHaveBeenCalled();

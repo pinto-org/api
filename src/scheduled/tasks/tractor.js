@@ -104,6 +104,7 @@ class TractorTask {
       // Tractor event received for unpublished blueprint hash. Skip it
       return;
     }
+    // TODO: this might actually break for convert since we will be checking the Convert event (which is changing)
     const txnEvents = await FilterLogs.getTransactionEvents(
       [Contracts.getBeanstalk(), Contracts.get(C().TRACTOR_HELPERS), Contracts.get(C().SOW_V0)],
       receipt
@@ -137,7 +138,7 @@ class TractorTask {
       const innerEvents = txnEvents.filter(
         (e) => logIndex(e.rawLog) > logIndex(began.rawLog) && logIndex(e.rawLog) < logIndex(event.rawLog)
       );
-      const tipUsd = await blueprintTask.orderExecuted(order, inserted, innerEvents);
+      const tipUsd = await blueprintTask.orderExecuted(order.blueprintData, inserted, innerEvents);
       if (tipUsd) {
         inserted.tipUsd = tipUsd;
         await TractorService.updateExecutions([inserted]);

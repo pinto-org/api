@@ -16,5 +16,6 @@ const StalkMode = {
 
 module.exports = {
   ApyInitType,
-  TractorOrderType
+  TractorOrderType,
+  StalkMode
 };
