@@ -6,6 +6,8 @@ const ConvertUpV0OrderAssembler = require('../../../repository/postgres/models/a
 const ConvertUpV0ExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-convert-up-v0-assembler');
 const BlueprintConstants = require('./blueprint-constants');
 const InputError = require('../../../error/input-error');
+const Contracts = require('../../../datasources/contracts/contracts');
+const { C } = require('../../../constants/runtime-constants');
 
 class TractorConvertUpV0Service extends Blueprint {
   static orderType = TractorOrderType.CONVERT_UP_V0;
@@ -29,8 +31,7 @@ class TractorConvertUpV0Service extends Blueprint {
         limit: 25000
       })
     ).orders.sort((a, b) => {
-      // Sorting TBD
-      // Sort by most restrictive conditions first
+      // Sort first by what can be executed now, then by blueprint hash to keep deterministic.
       //
       // Sort by temperature, and hash to keep deterministic
       // const tempDiff = a.blueprintData.temperature - b.blueprintData.temperature;
@@ -54,13 +55,16 @@ class TractorConvertUpV0Service extends Blueprint {
 
     const filterParams = [
       uint256(int256(type(int96).max)), // maxGrownStalkPerBdv (TODO params.convertUpParams.maxGrownStalkPerBdv)
-      type(int96).min, // minStem
+      -(2n ** 95n), // minStem
       true, // excludeGerminatingDeposits
       true, // excludeBean
       Model.USE, // lowStalkDeposits (TODO params.convertUpParams.lowStalkDeposits)
       0, // lowGrownStalkPerBdv (TODO beanstalk.getConvertStalkPerBdvBonusAndRemainingCapacity()[0])
-      type(int96).max // maxStem
+      2n ** 95n - 1n // maxStem
     ];
+
+    // Consider how to solve the problem of pulling the "wrong source tokens" from an earlier order
+    // and thus having fewer funds to to execute a future order. This is not currently handled for sowing.
 
     const TAG = Concurrent.tag(`periodicUpdate-${this.orderType}`);
     for (const publisher in ordersByPublisher) {
@@ -78,10 +82,30 @@ class TractorConvertUpV0Service extends Blueprint {
 
   static async orderCancelled(orderDto) {
     // Reset funding amounts
+    const convertOrder = await this.getOrder(orderDto.blueprintHash);
+    convertOrder.amountFunded = 0n;
+    convertOrder.cascadeAmountFunded = 0n;
+    await this.updateOrders([convertOrder]);
   }
 
   static decodeBlueprintData(blueprintData) {
     //
+  }
+
+  static _orderCanExecuteNow(blueprintOrderDto) {
+    // Need to check the following fields/conditions
+    // The view function results can be passed in?
+    // minConvertBonusCapacity;
+    // minGrownStalkPerBdvBonus;
+    // minPriceToConvertUp;
+    // maxPriceToConvertUp;
+    // remainingCapacity = beanstalk.getConvertStalkPerBdvBonusAndRemainingCapacity()[1];
+    // require(remainingCapacity >= cup.minConvertBonusCapacity);
+    // bonusStalkPerBdv = beanstalk.getConvertStalkPerBdvBonusAndRemainingCapacity()[0];
+    // require(bonusStalkPerBdv >= cup.minGrownStalkPerBdvBonus);
+    // currentPrice = beanstalkPrice.price(ReservesType.INSTANTANEOUS_RESERVES).price;
+    // require(currentPrice >= cup.minPriceToConvertUp);
+    // require(currentPrice <= cup.maxPriceToConvertUp);
   }
 
   // TODO: can put these in a general location and allow blueprints to mix/match which validations and conversions they use

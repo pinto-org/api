@@ -44,6 +44,7 @@ class SnapshotSowV0Service {
     const osow = TRACTOR_ORDER_SOW_V0_TABLE.env;
     const esow = TRACTOR_EXECUTION_SOW_V0_TABLE.env;
     const [[result]] = await sequelize.query(
+      // There should perhaps also be a sum_cascade_below_line_length
       `SELECT
         (SELECT COALESCE(SUM(beans), 0) FROM ${esow}) AS sum_beans,
         (SELECT COALESCE(SUM(pods), 0) FROM ${esow}) AS sum_pods,

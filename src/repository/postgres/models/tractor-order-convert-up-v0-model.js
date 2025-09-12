@@ -20,15 +20,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         allowNull: false
       },
-      // TODO: consider how to do amount funded/cascade funding amounts
-      // Check total BDV user has deposited of the given source tokens.
-      // Pull equivalent withdrawl plan as the blueprint but with a huge bdv limit.
-      // Check total totalConvertBdv across similar orders
-      // But is this bdv deposited or instantaneous?
-
-      // If P between range, can convert maximum or only up to top P?
-      // -> Only an initial check, can convert max
-
+      // Amount that is funded to be executed now (as of the last update). i.e. 10k order but 5k is available
+      ...bigintNumericColumn('amountFunded', DataTypes, { allowNull: false }),
+      // Actual amount funded when considering potential cascading execution of other blueprints by the same publisher
+      ...bigintNumericColumn('cascadeAmountFunded', DataTypes, { allowNull: false }),
       /* Order information */
       // uint8[], in practice this list will be small so we store as comma separated string rather than ABI encoding
       sourceTokenIndices: {
