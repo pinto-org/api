@@ -24,10 +24,6 @@ module.exports = (sequelize, DataTypes) => {
       usedTokenIndices: {
         type: DataTypes.TEXT,
         allowNull: false
-      },
-      usedGrownStalkPerBdv: {
-        type: DataTypes.FLOAT,
-        allowNull: false
       }
     },
     {

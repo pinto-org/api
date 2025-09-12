@@ -29,11 +29,6 @@ module.exports = (sequelize, DataTypes) => {
       // If P between range, can convert maximum or only up to top P?
       // -> Only an initial check, can convert max
 
-      // Below fields that affect the widrawal plan:
-      // maxGrownStalkPerBdv
-      // lowStalkDeposits
-      // also lowGrownStalkPerBdv which is the reuslt of beanstalk.getConvertStalkPerBdvBonusAndRemainingCapacity()[0]
-
       /* Order information */
       // uint8[], in practice this list will be small so we store as comma separated string rather than ABI encoding
       sourceTokenIndices: {

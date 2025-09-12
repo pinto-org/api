@@ -5,7 +5,23 @@ class ConvertUpV0OrderDto {
       // TBD
     } else if (type === 'db') {
       this.blueprintHash = d.blueprintHash;
-      // TBD
+      this.lastExecutedTimestamp = new Date(d.lastExecutedTimestamp * 1000);
+      this.bdvLeftToConvert = d.bdvLeftToConvert;
+      this.orderComplete = d.orderComplete;
+      // Funding amount fields TBD
+      this.sourceTokenIndices = d.sourceTokenIndices.split(',');
+      this.totalConvertBdv = d.totalConvertBdv;
+      this.minConvertBdvPerExecution = d.minConvertBdvPerExecution;
+      this.maxConvertBdvPerExecution = d.maxConvertBdvPerExecution;
+      this.minTimeBetweenConverts = d.minTimeBetweenConverts;
+      this.minConvertBonusCapacity = d.minConvertBonusCapacity;
+      this.maxGrownStalkPerBdv = d.maxGrownStalkPerBdv;
+      this.minGrownStalkPerBdvBonus = d.minGrownStalkPerBdvBonus;
+      this.maxPriceToConvertUp = d.maxPriceToConvertUp;
+      this.minPriceToConvertUp = d.minPriceToConvertUp;
+      this.maxGrownStalkPerBdvPenalty = d.maxGrownStalkPerBdvPenalty;
+      this.slippageRatio = d.slippageRatio;
+      this.lowStalkDeposits = d.lowStalkDeposits;
     }
   }
 

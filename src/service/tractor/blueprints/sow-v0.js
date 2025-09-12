@@ -39,6 +39,7 @@ class TractorSowV0Service extends Blueprint {
       })
     ).orders.sort((a, b) => {
       // Sort by temperature, and hash to keep deterministic
+      // TODO: check/fix this, temperature is a nonexistent property
       const tempDiff = a.blueprintData.temperature - b.blueprintData.temperature;
       return tempDiff !== 0 ? tempDiff : a.blueprintHash.localeCompare(b.blueprintHash);
     });

@@ -30,6 +30,8 @@ class TractorConvertUpV0Service extends Blueprint {
       })
     ).orders.sort((a, b) => {
       // Sorting TBD
+      // Sort by most restrictive conditions first
+      //
       // Sort by temperature, and hash to keep deterministic
       // const tempDiff = a.blueprintData.temperature - b.blueprintData.temperature;
       // return tempDiff !== 0 ? tempDiff : a.blueprintHash.localeCompare(b.blueprintHash);

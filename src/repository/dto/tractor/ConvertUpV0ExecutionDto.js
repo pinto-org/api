@@ -9,7 +9,11 @@ class ConvertUpV0ExecutionDto {
     } else if (type === 'db') {
       this.id = d.id;
       this.blueprintHash = d.blueprintHash;
-      // TBD
+      // Fields TBD
+      this.usedTokens = d.usedTokenIndices
+        .split(',')
+        .map(Number)
+        .map((index) => BlueprintConstants.tokenIndexReverseMap()[index]);
     }
   }
 

@@ -23,6 +23,7 @@ class TractorTask {
   static async update() {
     const [meta, snapshotBlock] = await Promise.all([
       AppMetaService.getTractorMeta(),
+      // TODO: is it necessary to have multiple snapshot block methods for the differen order types?
       SnapshotSowV0Service.nextSnapshotBlock()
     ]);
     let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS, {
