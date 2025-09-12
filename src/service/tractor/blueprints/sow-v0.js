@@ -49,7 +49,7 @@ class TractorSowV0Service extends Blueprint {
       return acc;
     }, {});
 
-    const tractorHelpers = Contracts.get(C().TRACTOR_HELPERS);
+    const tractorHelpers = Contracts.get(C().SOW_V0_TRACTOR_HELPERS);
     const emptyPlan = {
       sourceTokens: [],
       stems: [],

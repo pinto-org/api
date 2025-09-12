@@ -106,7 +106,7 @@ class TractorTask {
     }
     // TODO: this might actually break for convert since we will be checking the Convert event (which is changing)
     const txnEvents = await FilterLogs.getTransactionEvents(
-      [Contracts.getBeanstalk(), Contracts.get(C().TRACTOR_HELPERS), Contracts.get(C().SOW_V0)],
+      [Contracts.getBeanstalk(), Contracts.get(C().SOW_V0_TRACTOR_HELPERS), Contracts.get(C().SOW_V0)],
       receipt
     );
 
