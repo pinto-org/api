@@ -109,7 +109,6 @@ class TractorConvertUpV0Service extends Blueprint {
     // require(currentPrice <= cup.maxPriceToConvertUp);
   }
 
-  // TODO: can put these in a general location and allow blueprints to mix/match which validations and conversions they use
   static validateOrderParams(blueprintParams) {
     if (blueprintParams.orderComplete !== undefined && typeof blueprintParams.orderComplete !== 'boolean') {
       throw new InputError('orderComplete must be a boolean');

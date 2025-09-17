@@ -44,6 +44,9 @@ class BlueprintService {
     throw new Error('decodeBlueprintData must be implemented by subclass');
   }
 
+  // Future work is to put the params/validations in a general location such that blueprints can mix/match
+  // which ones they want to use. This would be helpful if we have many different blueprints.
+
   /**
    * Validates blueprint-specific order parameters
    * @abstract

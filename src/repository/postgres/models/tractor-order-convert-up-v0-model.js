@@ -44,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
       lowStalkDeposits: {
         type: DataTypes.ENUM,
         values: Object.values(StalkMode),
-        allowNull: true
+        allowNull: false
       }
     },
     {

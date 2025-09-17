@@ -23,7 +23,7 @@ class TractorTask {
   static async update() {
     const [meta, snapshotBlock] = await Promise.all([
       AppMetaService.getTractorMeta(),
-      // TODO: is it necessary to have multiple snapshot block methods for the differen order types?
+      // TODO: is it necessary to have multiple snapshot block methods for the different order types?
       SnapshotSowV0Service.nextSnapshotBlock()
     ]);
     let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS, {
@@ -107,7 +107,13 @@ class TractorTask {
     }
     // TODO: this might actually break for convert since we will be checking the Convert event (which is changing)
     const txnEvents = await FilterLogs.getTransactionEvents(
-      [Contracts.getBeanstalk(), Contracts.get(C().SOW_V0_TRACTOR_HELPERS), Contracts.get(C().SOW_V0)],
+      [
+        Contracts.getBeanstalk(),
+        Contracts.get(C().SOW_V0),
+        Contracts.get(C().SOW_V0_TRACTOR_HELPERS),
+        Contracts.get(C().CONVERT_UP_V0),
+        Contracts.get(C().CONVERT_UP_V0_TRACTOR_HELPERS)
+      ],
       receipt
     );
 
