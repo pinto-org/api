@@ -1,16 +1,20 @@
 const AsyncContext = require('../../../utils/async/context');
-const { sequelize, Sequelize } = require('../models');
+const { Sequelize } = require('../models');
 
-class SnapshotSowV0Repository {
+class TractorSnapshotRepository {
+  constructor(model) {
+    this.model = model;
+  }
+
   // Returns the latest snapshot
-  static async latestSnapshot() {
-    return await sequelize.models.TractorSnapshotSowV0.findOne({
+  async latestSnapshot() {
+    return await this.model.findOne({
       order: [['snapshotBlock', 'DESC']],
       transaction: AsyncContext.getOrUndef('transaction')
     });
   }
 
-  static async findAllWithOptions({ criteriaList, limit, skip } = {}) {
+  async findAllWithOptions({ criteriaList, limit, skip } = {}) {
     const options = {
       where: {},
       order: [['snapshotBlock', 'DESC']],
@@ -28,8 +32,8 @@ class SnapshotSowV0Repository {
       options.offset = skip;
     }
 
-    const { rows: snapshots, count } = await sequelize.models.TractorSnapshotSowV0.findAndCountAll(options);
+    const { rows: snapshots, count } = await this.model.findAndCountAll(options);
     return { snapshots, total: count };
   }
 }
-module.exports = SnapshotSowV0Repository;
+module.exports = TractorSnapshotRepository;

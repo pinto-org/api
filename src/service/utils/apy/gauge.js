@@ -181,12 +181,16 @@ class GaugeApyUtil {
       // Handle multiple whitelisted gauge LP, or gauge points changing during germination
       if (gaugeLpPoints.length > 1 || i < 2) {
         for (let j = 0; j < gaugeLpDepositedBdvCopy.length; ++j) {
-          gaugeLpPointsCopy[j] = GPFunction.forSeason(
-            season + i + 1,
-            gaugeLpPointsCopy[j],
-            gaugeLpOptimalPercentBdvCopy[j],
-            currentPercentLpBdv[j]
-          );
+          // In PI-13, the gauge point handling was changed to use normalization rather than strict adding/subtracting.
+          // A more robust solution would be needed to simulate this properly, so in consideration of its marginal
+          // impact on the apy calculations, we keep the gauge points fixed throughout the simulation.
+
+          // gaugeLpPointsCopy[j] = GPFunction.forSeason(
+          //   season + i + 1,
+          //   gaugeLpPointsCopy[j],
+          //   gaugeLpOptimalPercentBdvCopy[j],
+          //   currentPercentLpBdv[j]
+          // );
           lpGpPerBdv[j] = gaugeLpPointsCopy[j] / gaugeLpDepositedBdvCopy[j];
         }
         largestLpGpPerBdv = Math.max(...lpGpPerBdv);
