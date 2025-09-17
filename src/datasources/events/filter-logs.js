@@ -107,7 +107,8 @@ class FilterLogs {
 
   /**
    * Gets all events from specific transactions to the given contract(s)
-   * @deprecated Not functional when event signatures have changed over time
+   * @deprecated Not functional when event signatures have changed over time - the provided receipt
+   * must match with the abi of the provided contract
    */
   static async getTransactionEvents(contracts, receipt) {
     const contractsByAddress = contracts.reduce((acc, next) => {

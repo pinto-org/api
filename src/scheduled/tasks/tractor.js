@@ -36,7 +36,7 @@ class TractorTask {
 
     if (EnvUtil.getDeploymentEnv() === 'local' && !!EnvUtil.getCustomRpcUrl(C().CHAIN)) {
       const latestBlock = (await C().RPC.getBlock()).number;
-      lastUpdate = Math.max(lastUpdate, latestBlock - 10000);
+      lastUpdate = Math.max(lastUpdate, latestBlock - 10); // Small buffer is preferred to not collide with any actual activity
       updateBlock = latestBlock;
     }
 
@@ -67,6 +67,7 @@ class TractorTask {
       );
 
       if (updateBlock >= snapshotBlock) {
+        // This needs to be generalized and account for differing block numbers
         await SnapshotSowV0Service.takeSnapshot(updateBlock);
       }
 
@@ -105,7 +106,8 @@ class TractorTask {
       // Tractor event received for unpublished blueprint hash. Skip it
       return;
     }
-    // TODO: this might actually break for convert since we will be checking the Convert event (which is changing)
+    // This should be refactored to not use the deprecated method; however in practice it is acceptable currently
+    // because though the Convert event signature changed, it was not during the lifetime of any existing Convert blueprint.
     const txnEvents = await FilterLogs.getTransactionEvents(
       [
         Contracts.getBeanstalk(),
