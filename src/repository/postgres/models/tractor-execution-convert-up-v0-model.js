@@ -12,19 +12,37 @@ module.exports = (sequelize, DataTypes) => {
       },
       /// TractorOrderConvertUpV0 blueprintHash added via association below ///
 
-      // price before
-      // price after
-      // bdv before
-      // bdv after
-      // grown stalk bonus gained
-      // bdv used towards gs bonus
-      //? amount of bdv that the gs bonus applied to
-
       // uint8[], in practice this list will be small so we store as comma separated string rather than ABI encoding
       usedTokenIndices: {
         type: DataTypes.TEXT,
         allowNull: false
-      }
+      },
+      // uint256[], indices corresponding to usedTokenIndices. Amount of tokens convert from
+      tokenFromAmounts: {
+        type: DataTypes.TEXT,
+        allowNull: false
+      },
+      // uint256[], indices corresponding to usedTokenIndices. Amount of tokens convert to
+      tokenToAmounts: {
+        type: DataTypes.TEXT,
+        allowNull: false
+      },
+      // Amount of bdv converted, equal to the sum of tokenToAmounts (Bean denominated)
+      ...bigintNumericColumn('bdvConverted', DataTypes, { allowNull: false }),
+      // Non-manipulation resistant prices as of end of block values. Not intrablock safe.
+      // Note that the convert execution conditions consider the manipulation resistant prices instead.
+      beanPriceBefore: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      beanPriceAfter: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      // Amount of grown stalk bonus awarded to this execution
+      ...bigintNumericColumn('gsBonusGained', DataTypes, { allowNull: false }),
+      // Amount of bdv that was awarded a grown stalk bonus
+      ...bigintNumericColumn('gsBonusBdv', DataTypes, { allowNull: false })
     },
     {
       tableName: TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.env,

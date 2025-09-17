@@ -65,6 +65,7 @@ class TractorConvertUpV0Service extends Blueprint {
 
     // Consider how to solve the problem of pulling the "wrong source tokens" from an earlier order
     // and thus having fewer funds to to execute a future order. This is not currently handled for sowing.
+    // Withdrawal plan always goes in order of the token indices
 
     const TAG = Concurrent.tag(`periodicUpdate-${this.orderType}`);
     for (const publisher in ordersByPublisher) {
