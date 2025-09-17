@@ -9,7 +9,7 @@ const TaskRangeUtil = require('../../src/scheduled/util/task-range');
 const AppMetaService = require('../../src/service/meta-service');
 const PriceService = require('../../src/service/price-service');
 const TractorSowV0Service = require('../../src/service/tractor/blueprints/sow-v0');
-const SnapshotSowV0Service = require('../../src/service/tractor/snapshot-sow-v0-service');
+const SnapshotSowV0Service = require('../../src/service/tractor/snapshots/snapshot-sow-v0-service');
 const TractorService = require('../../src/service/tractor/tractor-service');
 
 describe('TractorTask', () => {

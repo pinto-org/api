@@ -1,23 +1,22 @@
-const { C } = require('../../constants/runtime-constants');
+const { C } = require('../../../constants/runtime-constants');
 const {
   TRACTOR_EXECUTION_SOW_V0_TABLE,
   TRACTOR_ORDER_SOW_V0_TABLE,
   TRACTOR_ORDER_TABLE,
   TRACTOR_EXECUTION_TABLE
-} = require('../../constants/tables');
-const Contracts = require('../../datasources/contracts/contracts');
-const SnapshotSowV0Dto = require('../../repository/dto/tractor/SnapshotSowV0Dto');
-const { sequelize, Sequelize } = require('../../repository/postgres/models');
-const SnapshotSowV0Assembler = require('../../repository/postgres/models/assemblers/tractor/snapshot-sow-v0-assembler');
-const SharedRepository = require('../../repository/postgres/queries/shared-repository');
-const SnapshotSowV0Repository = require('../../repository/postgres/queries/snapshot-sow-v0-repository');
-const AsyncContext = require('../../utils/async/context');
-const BlockUtil = require('../../utils/block');
-const ChainUtil = require('../../utils/chain');
-const AppMetaService = require('../meta-service');
+} = require('../../../constants/tables');
+const Contracts = require('../../../datasources/contracts/contracts');
+const SnapshotSowV0Dto = require('../../../repository/dto/tractor/SnapshotSowV0Dto');
+const { sequelize, Sequelize } = require('../../../repository/postgres/models');
+const SnapshotSowV0Assembler = require('../../../repository/postgres/models/assemblers/tractor/snapshot-sow-v0-assembler');
+const SharedRepository = require('../../../repository/postgres/queries/shared-repository');
+const SnapshotSowV0Repository = require('../../../repository/postgres/queries/snapshot-sow-v0-repository');
+const AsyncContext = require('../../../utils/async/context');
+const BlockUtil = require('../../../utils/block');
+const ChainUtil = require('../../../utils/chain');
+const AppMetaService = require('../../meta-service');
 
 class SnapshotSowV0Service {
-  // Returns the block number of when the next snapshot should be taken
   static async nextSnapshotBlock() {
     const latestSnapshot = await SnapshotSowV0Repository.latestSnapshot();
     if (latestSnapshot) {
@@ -29,8 +28,6 @@ class SnapshotSowV0Service {
     return 29115727;
   }
 
-  // Inserts a snapshot of the current state.
-  // Data must have already been updated through snapshotBlock (having written to meta is optional).
   static async takeSnapshot(snapshotBlock) {
     const blockTimestamp = new Date((await C().RPC.getBlock(snapshotBlock)).timestamp * 1000);
     // Set the block to before any pause if this hour was while the diamond was paused
@@ -70,8 +67,8 @@ class SnapshotSowV0Service {
   }
 
   /**
-   * @param {import('../../../types/types').TractorSnapshotsRequest} request
-   * @returns {Promise<import('../../../types/types').TractorSnapshotsResult>}
+   * @param {import('../../../../types/types').TractorSnapshotsRequest} request
+   * @returns {Promise<import('../../../../types/types').TractorSnapshotsResult>}
    */
   static async getSnapshots(request) {
     const criteriaList = [];

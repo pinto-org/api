@@ -1,7 +1,7 @@
 const TractorConstants = require('../constants/tractor');
 const InputError = require('../error/input-error');
 const { TractorOrderType } = require('../repository/postgres/models/types/types');
-const SnapshotSowV0Service = require('../service/tractor/snapshot-sow-v0-service');
+const SnapshotSowV0Service = require('../service/tractor/snapshots/snapshot-sow-v0-service');
 const TractorService = require('../service/tractor/tractor-service');
 
 const Router = require('koa-router');

@@ -471,6 +471,7 @@ module.exports = {
         ...timestamps(Sequelize)
       });
     }
+    // TODO: need to add the new tractor convert v0 tables here
 
     if (!existingTables.includes(SILO_INFLOW_TABLE.indexing)) {
       await queryInterface.createTable(SILO_INFLOW_TABLE.indexing, {
