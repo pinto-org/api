@@ -42,7 +42,7 @@ class TractorSowV0Service extends Blueprint {
       // Least restrictive temperature considered first so an accurate max sow per season can be calculated.
       // Ideally this will also consider the maxPodlineLength/sort all currently executable orders first,
       // though thats not currently included in the snapshotting logic.
-      const tempDiff = a.blueprintData.minTemp - b.blueprintData.minTemp;
+      const tempDiff = Number(a.blueprintData.minTemp - b.blueprintData.minTemp);
       return tempDiff !== 0 ? tempDiff : a.blueprintHash.localeCompare(b.blueprintHash);
     });
 

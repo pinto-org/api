@@ -44,7 +44,7 @@ class TractorConvertUpV0Service extends Blueprint {
       return acc;
     }, {});
 
-    const tractorHelpers = Contracts.get(C().CONVERT_UP_V0_TRACTOR_HELPERS);
+    const siloHelpers = Contracts.get(C().CONVERT_UP_V0_SILO_HELPERS);
     const emptyPlan = {
       sourceTokens: [],
       stems: [],
