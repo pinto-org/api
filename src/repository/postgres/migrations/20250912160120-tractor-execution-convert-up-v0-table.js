@@ -2,15 +2,15 @@
 
 const {
   TRACTOR_EXECUTION_TABLE,
-  TRACTOR_EXECUTION_SOW_V0_TABLE,
-  TRACTOR_ORDER_SOW_V0_TABLE
+  TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE,
+  TRACTOR_ORDER_CONVERT_UP_V0_TABLE
 } = require('../../../constants/tables');
 const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable(TRACTOR_EXECUTION_SOW_V0_TABLE.prod, {
+    await queryInterface.createTable(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.prod, {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -25,31 +25,42 @@ module.exports = {
       blueprintHash: {
         type: Sequelize.STRING(66),
         references: {
-          model: TRACTOR_ORDER_SOW_V0_TABLE.prod,
+          model: TRACTOR_ORDER_CONVERT_UP_V0_TABLE.prod,
           key: 'blueprintHash'
         },
         onDelete: 'RESTRICT',
         allowNull: false
       },
-      ...bigintNumericColumn('index', Sequelize, { allowNull: false }),
-      ...bigintNumericColumn('beans', Sequelize, { allowNull: false }),
-      ...bigintNumericColumn('pods', Sequelize, { allowNull: false }),
-      ...bigintNumericColumn('placeInLine', Sequelize, { allowNull: false }),
       usedTokenIndices: {
         type: Sequelize.TEXT,
         allowNull: false
       },
-      usedGrownStalkPerBdv: {
+      tokenFromAmounts: {
+        type: Sequelize.TEXT,
+        allowNull: false
+      },
+      tokenToAmounts: {
+        type: Sequelize.TEXT,
+        allowNull: false
+      },
+      ...bigintNumericColumn('bdvConverted', Sequelize, { allowNull: false }),
+      beanPriceBefore: {
         type: Sequelize.FLOAT,
         allowNull: false
       },
+      beanPriceAfter: {
+        type: Sequelize.FLOAT,
+        allowNull: false
+      },
+      ...bigintNumericColumn('gsBonusGained', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('gsBonusBdv', Sequelize, { allowNull: false }),
       ...timestamps(Sequelize)
     });
 
-    await queryInterface.addIndex(TRACTOR_EXECUTION_SOW_V0_TABLE.prod, ['blueprintHash']);
+    await queryInterface.addIndex(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.prod, ['blueprintHash']);
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable(TRACTOR_EXECUTION_SOW_V0_TABLE.prod);
+    await queryInterface.dropTable(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.prod);
   }
 };
