@@ -58,7 +58,7 @@ class ConvertUpV0OrderDto {
     // There can be potentially multiple Convert events (for different tokens)
     const convertEvts = executionEvents.filter((e) => e.name === 'Convert');
     this.bdvLeftToConvert =
-      this.bdvLeftToConvert - convertEvts.reduce((acc, next) => acc + BigInt(next.args.toBdv), 0n);
+      this.bdvLeftToConvert - convertEvts.reduce((acc, next) => acc + BigInt(next.args.toAmount), 0n);
     this.lastExecutedTimestamp = new Date((await C().RPC.getBlock(convertEvts[0].rawLog.blockNumber)).timestamp * 1000);
     this.orderComplete = !!executionEvents.find((e) => e.name === 'ConvertUpOrderComplete');
     if (this.orderComplete) {

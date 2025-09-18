@@ -19,8 +19,9 @@ class TractorConvertUpV0Service extends Blueprint {
   static executionAssembler = ConvertUpV0ExecutionAssembler;
   static executionDto = ConvertUpV0ExecutionDto;
 
-  // Behavior TBD
   static async periodicUpdate(TractorService_getOrders, blockNumber) {
+    return;
+
     // This will check all entities and try to update amountFunded/cascade amounts
     const orders = (
       await TractorService_getOrders({

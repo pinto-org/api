@@ -29,7 +29,6 @@ class PriceService {
     return readable;
   }
 
-  // In practice, current implementation of getUsdPrice can only get the wsteth/eth price
   static async getUsdOracleTokenPrice(token, options = {}) {
     const block = await BlockUtil.blockFromOptions(options);
     const usdOracle = UsdOracle.make({ block: block.number });
