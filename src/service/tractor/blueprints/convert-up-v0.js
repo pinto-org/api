@@ -131,6 +131,8 @@ class TractorConvertUpV0Service extends Blueprint {
     }
   }
 
+  // Should check whether it can execute this season according to what is the seasonal max value for convert capacity
+  // getConvertStalkPerBdvBonusAndMaximumCapacity gives this value for the current season
   static _orderCanExecuteNow(blueprintOrderDto) {
     // Need to check the following fields/conditions
     // The view function results can be passed in?

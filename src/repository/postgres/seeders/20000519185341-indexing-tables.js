@@ -14,10 +14,13 @@ const {
   FIELD_INFLOW_TABLE,
   TOKEN_TABLE,
   SEASON_TABLE,
-  YIELD_TABLE
+  YIELD_TABLE,
+  TRACTOR_ORDER_CONVERT_UP_V0_TABLE,
+  TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE,
+  TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE
 } = require('../../../constants/tables');
 const EnvUtil = require('../../../utils/env');
-const { TractorOrderType, ApyInitType } = require('../models/types/types');
+const { TractorOrderType, ApyInitType, StalkMode } = require('../models/types/types');
 const { timestamps, bigintNumericColumn, largeBigintTextColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
@@ -471,7 +474,142 @@ module.exports = {
         ...timestamps(Sequelize)
       });
     }
-    // TODO: need to add the new tractor convert v0 tables here
+    // TODO: might need to update these if schema changes
+    if (!existingTables.includes(TRACTOR_ORDER_CONVERT_UP_V0_TABLE.indexing)) {
+      await queryInterface.createTable(TRACTOR_ORDER_CONVERT_UP_V0_TABLE.indexing, {
+        blueprintHash: {
+          type: Sequelize.STRING(66),
+          primaryKey: true,
+          references: {
+            model: TRACTOR_ORDER_TABLE.indexing,
+            key: 'blueprintHash'
+          },
+          onDelete: 'RESTRICT',
+          allowNull: false
+        },
+        lastExecutedTimestamp: {
+          type: Sequelize.INTEGER,
+          allowNull: false
+        },
+        ...bigintNumericColumn('bdvLeftToConvert', Sequelize, { allowNull: false }),
+        orderComplete: {
+          type: Sequelize.BOOLEAN,
+          allowNull: false
+        },
+        ...bigintNumericColumn('amountFunded', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('cascadeAmountFunded', Sequelize, { allowNull: false }),
+        sourceTokenIndices: {
+          type: Sequelize.TEXT,
+          allowNull: false
+        },
+        ...bigintNumericColumn('totalConvertBdv', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('minConvertBdvPerExecution', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('maxConvertBdvPerExecution', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('minTimeBetweenConverts', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('minConvertBonusCapacity', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('maxGrownStalkPerBdv', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('minGrownStalkPerBdvBonus', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('maxPriceToConvertUp', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('minPriceToConvertUp', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('maxGrownStalkPerBdvPenalty', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('slippageRatio', Sequelize, { allowNull: false }),
+        lowStalkDeposits: {
+          type: Sequelize.ENUM,
+          values: Object.values(StalkMode),
+          allowNull: false
+        },
+        ...timestamps(Sequelize)
+      });
+    }
+
+    if (!existingTables.includes(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.indexing)) {
+      await queryInterface.createTable(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.indexing, {
+        id: {
+          type: Sequelize.INTEGER,
+          primaryKey: true,
+          autoIncrement: true,
+          references: {
+            model: TRACTOR_EXECUTION_TABLE.indexing,
+            key: 'id'
+          },
+          onDelete: 'RESTRICT',
+          allowNull: false
+        },
+        blueprintHash: {
+          type: Sequelize.STRING(66),
+          references: {
+            model: TRACTOR_ORDER_CONVERT_UP_V0_TABLE.indexing,
+            key: 'blueprintHash'
+          },
+          onDelete: 'RESTRICT',
+          allowNull: false
+        },
+        usedTokenIndices: {
+          type: Sequelize.TEXT,
+          allowNull: false
+        },
+        tokenFromAmounts: {
+          type: Sequelize.TEXT,
+          allowNull: false
+        },
+        tokenToAmounts: {
+          type: Sequelize.TEXT,
+          allowNull: false
+        },
+        ...bigintNumericColumn('beansConverted', Sequelize, { allowNull: false }),
+        beanPriceBefore: {
+          type: Sequelize.FLOAT,
+          allowNull: false
+        },
+        beanPriceAfter: {
+          type: Sequelize.FLOAT,
+          allowNull: false
+        },
+        ...bigintNumericColumn('gsBonusAmount', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('gsBonusBdv', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('gsPenaltyAmount', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('gsPenaltyBdv', Sequelize, { allowNull: false }),
+        ...timestamps(Sequelize)
+      });
+      await queryInterface.addIndex(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.indexing, ['blueprintHash']);
+    }
+
+    if (!existingTables.includes(TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE.indexing)) {
+      await queryInterface.createTable(TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE.indexing, {
+        id: {
+          type: Sequelize.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        snapshotTimestamp: {
+          type: Sequelize.DATE,
+          allowNull: false
+        },
+        snapshotBlock: {
+          type: Sequelize.INTEGER,
+          allowNull: false
+        },
+        season: {
+          type: Sequelize.INTEGER,
+          allowNull: false
+        },
+        ...bigintNumericColumn('totalBeansConverted', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('totalGsBonusApplied', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('totalGsPenaltyApplied', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('totalCascadeFunded', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('totalTipsPaid', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('currentMaxTip', Sequelize, { allowNull: false }),
+        totalExecutions: {
+          type: Sequelize.INTEGER,
+          allowNull: false
+        },
+        uniquePublishers: {
+          type: Sequelize.INTEGER,
+          allowNull: false
+        },
+        ...timestamps(Sequelize)
+      });
+    }
 
     if (!existingTables.includes(SILO_INFLOW_TABLE.indexing)) {
       await queryInterface.createTable(SILO_INFLOW_TABLE.indexing, {
@@ -693,6 +831,9 @@ module.exports = {
     await queryInterface.dropTable(TRACTOR_ORDER_SOW_V0_TABLE.indexing);
     await queryInterface.dropTable(TRACTOR_EXECUTION_SOW_V0_TABLE.indexing);
     await queryInterface.dropTable(TRACTOR_SNAPSHOT_SOW_V0_TABLE.indexing);
+    await queryInterface.dropTable(TRACTOR_ORDER_CONVERT_UP_V0_TABLE.indexing);
+    await queryInterface.dropTable(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.indexing);
+    await queryInterface.dropTable(TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE.indexing);
     await queryInterface.dropTable(SILO_INFLOW_TABLE.indexing);
     await queryInterface.dropTable(SILO_INFLOW_SNAPSHOT_TABLE.indexing);
     await queryInterface.dropTable(FIELD_INFLOW_TABLE.indexing);

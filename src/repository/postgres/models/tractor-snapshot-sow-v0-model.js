@@ -34,14 +34,14 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('maxSowThisSeason', DataTypes, { allowNull: false }),
       // Cumulative operator rewards
       ...bigintNumericColumn('totalTipsPaid', DataTypes, { allowNull: false }),
-      // The current max tip across all orders
+      // The current max tip across all orders of this type
       ...bigintNumericColumn('currentMaxTip', DataTypes, { allowNull: false }),
       // Total number of times this order type has been executed
       totalExecutions: {
         type: DataTypes.INTEGER,
         allowNull: false
       },
-      // Total number of unique publishers
+      // Total number of unique publishers of this order type
       uniquePublishers: {
         type: DataTypes.INTEGER,
         allowNull: false

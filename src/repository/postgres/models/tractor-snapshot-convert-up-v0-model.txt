@@ -1,5 +1,0 @@
-// Potential fields for snapshots
-// total bdv converted
-// total gs bonus applied
-// total cascade funded at current conditions
-// total cascade funded any conditions
