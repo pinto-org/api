@@ -8,6 +8,8 @@ const BlueprintConstants = require('./blueprint-constants');
 const InputError = require('../../../error/input-error');
 const Contracts = require('../../../datasources/contracts/contracts');
 const { C } = require('../../../constants/runtime-constants');
+const Interfaces = require('../../../datasources/contracts/interfaces');
+const ConvertUpV0OrderDto = require('../../../repository/dto/tractor/ConvertUpV0OrderDto');
 
 class TractorConvertUpV0Service extends Blueprint {
   static orderType = TractorOrderType.CONVERT_UP_V0;
@@ -78,7 +80,22 @@ class TractorConvertUpV0Service extends Blueprint {
   }
 
   static async tryAddRequisition(orderDto, blueprintData) {
-    // Cant write this until we have a blueprint to test with
+    // Decode data
+    const convertUpV0Call = this.decodeBlueprintData(blueprintData);
+    if (!convertUpV0Call) {
+      return;
+    }
+
+    const dto = ConvertUpV0OrderDto.fromBlueprintCalldata({
+      blueprintHash: orderDto.blueprintHash,
+      convertUpParams: convertUpV0Call.args.params.convertUpParams
+    });
+
+    // Insert entity
+    await this.updateOrders([dto]);
+
+    // Return amount of tip offered
+    return convertUpV0Call.args.params.opParams.operatorTipAmount;
   }
 
   static async orderCancelled(orderDto) {
@@ -90,7 +107,27 @@ class TractorConvertUpV0Service extends Blueprint {
   }
 
   static decodeBlueprintData(blueprintData) {
-    //
+    const iBeanstalk = Interfaces.getBeanstalk();
+    const iConvertUpV0 = Interfaces.get(C().CONVERT_UP_V0);
+
+    const advFarm = Interfaces.safeParseTxn(iBeanstalk, blueprintData);
+    if (!advFarm || advFarm.name !== 'advancedFarm') {
+      return;
+    }
+
+    for (const advFarmData of advFarm.args.data) {
+      const advFarmCall = Interfaces.safeParseTxn(iBeanstalk, advFarmData.callData);
+      if (advFarmCall.name !== 'advancedPipe') {
+        return;
+      }
+
+      for (const pipeCall of advFarmCall.args.pipes) {
+        if (pipeCall.target.toLowerCase() !== C().CONVERT_UP_V0) {
+          return;
+        }
+        return Interfaces.safeParseTxn(iConvertUpV0, pipeCall.callData);
+      }
+    }
   }
 
   static _orderCanExecuteNow(blueprintOrderDto) {

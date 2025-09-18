@@ -1,7 +1,10 @@
 // This utility is used to manage discrepancies between different RPC providers (i.e. local anvil vs prod)
 class RpcDiscrepancies {
   static effectiveGasPriceBI(receipt) {
-    return BigInt(receipt.effectiveGasPrice) ?? receipt.gasPrice;
+    if (receipt.effectiveGasPrice !== undefined && receipt.effectiveGasPrice !== null) {
+      return BigInt(receipt.effectiveGasPrice);
+    }
+    return receipt.gasPrice;
   }
 
   static logIndex(rawLog) {

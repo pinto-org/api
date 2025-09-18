@@ -7,7 +7,8 @@ class ConvertUpV0OrderAssembler {
       lastExecutedTimestamp: orderDto.lastExecutedTimestamp.getTime() / 1000,
       bdvLeftToConvert: orderDto.bdvLeftToConvert,
       orderComplete: orderDto.orderComplete,
-      // Funding amounts TBD
+      amountFunded: orderDto.amountFunded,
+      cascadeAmountFunded: orderDto.cascadeAmountFunded,
       sourceTokenIndices: orderDto.sourceTokenIndices.join(','),
       totalConvertBdv: orderDto.totalConvertBdv,
       minConvertBdvPerExecution: orderDto.minConvertBdvPerExecution,

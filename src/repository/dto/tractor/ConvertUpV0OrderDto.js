@@ -1,14 +1,35 @@
+const { C } = require('../../../constants/runtime-constants');
+const { intToStalkMode } = require('../../postgres/models/types/types');
+
 class ConvertUpV0OrderDto {
   constructor(type, d) {
     if (type === 'data') {
       this.blueprintHash = d.blueprintHash;
-      // TBD
+      this.lastExecutedTimestamp = new Date(0);
+      this.bdvLeftToConvert = d.convertUpParams.totalConvertBdv;
+      this.orderComplete = false;
+      this.amountFunded = 0n;
+      this.cascadeAmountFunded = 0n;
+      this.sourceTokenIndices = Array.from(d.convertUpParams.sourceTokenIndices);
+      this.totalConvertBdv = d.convertUpParams.totalConvertBdv;
+      this.minConvertBdvPerExecution = d.convertUpParams.minConvertBdvPerExecution;
+      this.maxConvertBdvPerExecution = d.convertUpParams.maxConvertBdvPerExecution;
+      this.minTimeBetweenConverts = d.convertUpParams.minTimeBetweenConverts;
+      this.minConvertBonusCapacity = d.convertUpParams.minConvertBonusCapacity;
+      this.maxGrownStalkPerBdv = d.convertUpParams.maxGrownStalkPerBdv;
+      this.minGrownStalkPerBdvBonus = d.convertUpParams.minGrownStalkPerBdvBonus;
+      this.maxPriceToConvertUp = d.convertUpParams.maxPriceToConvertUp;
+      this.minPriceToConvertUp = d.convertUpParams.minPriceToConvertUp;
+      this.maxGrownStalkPerBdvPenalty = d.convertUpParams.maxGrownStalkPerBdvPenalty;
+      this.slippageRatio = d.convertUpParams.slippageRatio;
+      this.lowStalkDeposits = intToStalkMode(Number(d.convertUpParams.lowStalkDeposits));
     } else if (type === 'db') {
       this.blueprintHash = d.blueprintHash;
       this.lastExecutedTimestamp = new Date(d.lastExecutedTimestamp * 1000);
       this.bdvLeftToConvert = d.bdvLeftToConvert;
       this.orderComplete = d.orderComplete;
-      // Funding amount fields TBD
+      this.amountFunded = d.amountFunded;
+      this.cascadeAmountFunded = d.cascadeAmountFunded;
       this.sourceTokenIndices = d.sourceTokenIndices.split(',');
       this.totalConvertBdv = d.totalConvertBdv;
       this.minConvertBdvPerExecution = d.minConvertBdvPerExecution;
@@ -34,7 +55,17 @@ class ConvertUpV0OrderDto {
   }
 
   async updateFieldsUponExecution(executionEvents) {
-    throw new Error('Not implemented');
+    // There can be potentially multiple Convert events (for different tokens)
+    const convertEvts = executionEvents.filter((e) => e.name === 'Convert');
+    this.bdvLeftToConvert =
+      this.bdvLeftToConvert - convertEvts.reduce((acc, next) => acc + BigInt(next.args.toBdv), 0n);
+    this.lastExecutedTimestamp = new Date((await C().RPC.getBlock(convertEvts[0].rawLog.blockNumber)).timestamp * 1000);
+    this.orderComplete = !!executionEvents.find((e) => e.name === 'ConvertUpOrderComplete');
+    if (this.orderComplete) {
+      // Funding amounts could remain nonzero if there is capacity under the minimum amount to sow.
+      this.amountFunded = 0n;
+      this.cascadeAmountFunded = 0n;
+    }
   }
 }
 

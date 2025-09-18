@@ -8,14 +8,19 @@ const TractorOrderType = {
   CONVERT_UP_V0: 'CONVERT_UP_V0'
 };
 
-const StalkMode = {
-  USE: 'USE',
-  OMIT: 'OMIT',
-  USE_LAST: 'USE_LAST'
-};
+const StalkModeArray = ['USE', 'OMIT', 'USE_LAST'];
+const intToStalkMode = (i) => StalkModeArray[i];
+const stalkModeToInt = (stalkMode) => StalkModeArray.indexOf(stalkMode);
+
+const StalkMode = StalkModeArray.reduce((acc, value) => {
+  acc[value] = value;
+  return acc;
+}, {});
 
 module.exports = {
   ApyInitType,
   TractorOrderType,
-  StalkMode
+  StalkMode,
+  intToStalkMode,
+  stalkModeToInt
 };

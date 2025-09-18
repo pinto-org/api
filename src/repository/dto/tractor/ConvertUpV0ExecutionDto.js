@@ -1,4 +1,5 @@
 class ConvertUpV0ExecutionDto {
+  // TODO: expand this
   constructor(type, d) {
     if (type === 'data') {
       const { baseExecutionDto, innerEvents } = d;
