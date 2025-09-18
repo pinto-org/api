@@ -59,7 +59,7 @@ class SowV0ExecutionDto {
     this.usedTokens = [];
     for (const evt of removeDeposits) {
       const token = evt.args.token.toLowerCase();
-      if (!this.usedTokens.includes(token) && token in BlueprintConstants.tokenIndexMap()) {
+      if (!this.usedTokens.includes(token)) {
         this.usedTokens.push(token);
       }
       // Support both RemoveDeposits and RemoveDeposit

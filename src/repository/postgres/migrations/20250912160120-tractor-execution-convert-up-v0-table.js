@@ -43,7 +43,7 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false
       },
-      ...bigintNumericColumn('bdvConverted', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('beansConverted', Sequelize, { allowNull: false }),
       beanPriceBefore: {
         type: Sequelize.FLOAT,
         allowNull: false
@@ -52,8 +52,10 @@ module.exports = {
         type: Sequelize.FLOAT,
         allowNull: false
       },
-      ...bigintNumericColumn('gsBonusGained', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('gsBonusAmount', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('gsBonusBdv', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('gsPenaltyAmount', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('gsPenaltyBdv', Sequelize, { allowNull: false }),
       ...timestamps(Sequelize)
     });
 

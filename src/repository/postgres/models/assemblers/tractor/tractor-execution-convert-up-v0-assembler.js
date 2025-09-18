@@ -4,8 +4,19 @@ class ConvertUpV0ExecutionAssembler {
   static toModel(executionDto) {
     return {
       id: executionDto.id,
-      blueprintHash: executionDto.blueprintHash
-      // TBD
+      blueprintHash: executionDto.blueprintHash,
+      usedTokenIndices: executionDto.usedTokens
+        .map((token) => BlueprintConstants.tokenIndexMap()[token.toLowerCase()])
+        .join(','),
+      tokenFromAmounts: executionDto.tokenFromAmounts.join(','),
+      tokenToAmounts: executionDto.tokenToAmounts.join(','),
+      beansConverted: executionDto.beansConverted,
+      beanPriceBefore: executionDto.beanPriceBefore,
+      beanPriceAfter: executionDto.beanPriceAfter,
+      gsBonusAmount: executionDto.gsBonusAmount,
+      gsBonusBdv: executionDto.gsBonusBdv,
+      gsPenaltyAmount: executionDto.gsPenaltyAmount,
+      gsPenaltyBdv: executionDto.gsPenaltyBdv
     };
   }
 

@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       // Amount of bdv converted, equal to the sum of tokenToAmounts (Bean denominated)
-      ...bigintNumericColumn('bdvConverted', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('beansConverted', DataTypes, { allowNull: false }),
       // Non-manipulation resistant prices as of end of block values. Not intrablock safe.
       // Note that the convert execution conditions consider the manipulation resistant prices instead.
       beanPriceBefore: {
@@ -40,9 +40,13 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       // Amount of grown stalk bonus awarded to this execution
-      ...bigintNumericColumn('gsBonusGained', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('gsBonusAmount', DataTypes, { allowNull: false }),
       // Amount of bdv that was awarded a grown stalk bonus
-      ...bigintNumericColumn('gsBonusBdv', DataTypes, { allowNull: false })
+      ...bigintNumericColumn('gsBonusBdv', DataTypes, { allowNull: false }),
+      // Amount of grown stalk penalty applied during this execution. Cannot currently occur
+      ...bigintNumericColumn('gsPenaltyAmount', DataTypes, { allowNull: false }),
+      // Amount of bdv that was penalized. Cannot currently occur
+      ...bigintNumericColumn('gsPenaltyBdv', DataTypes, { allowNull: false })
     },
     {
       tableName: TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.env,
