@@ -137,13 +137,13 @@ class TractorConvertUpV0Service extends Blueprint {
     // Need to check the following fields/conditions
     // The view function results can be passed in?
     // minConvertBonusCapacity;
-    // minGrownStalkPerBdvBonus;
+    // grownStalkPerBdvBonusBid;
     // minPriceToConvertUp;
     // maxPriceToConvertUp;
     // remainingCapacity = beanstalk.getConvertStalkPerBdvBonusAndRemainingCapacity()[1];
     // require(remainingCapacity >= cup.minConvertBonusCapacity);
     // bonusStalkPerBdv = beanstalk.getConvertStalkPerBdvBonusAndRemainingCapacity()[0];
-    // require(bonusStalkPerBdv >= cup.minGrownStalkPerBdvBonus);
+    // require(bonusStalkPerBdv >= cup.grownStalkPerBdvBonusBid);
     // currentPrice = beanstalkPrice.price(ReservesType.INSTANTANEOUS_RESERVES).price;
     // require(currentPrice >= cup.minPriceToConvertUp);
     // require(currentPrice <= cup.maxPriceToConvertUp);

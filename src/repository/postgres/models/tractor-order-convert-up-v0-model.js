@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false
       },
-      ...bigintNumericColumn('bdvLeftToConvert', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('beansLeftToConvert', DataTypes, { allowNull: false }),
       orderComplete: {
         type: DataTypes.BOOLEAN,
         allowNull: false
@@ -30,13 +30,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         allowNull: false
       },
-      ...bigintNumericColumn('totalConvertBdv', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('minConvertBdvPerExecution', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('maxConvertBdvPerExecution', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('totalBeanAmountToConvert', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('minBeansConvertPerExecution', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('maxBeansConvertPerExecution', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('minTimeBetweenConverts', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('minConvertBonusCapacity', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('maxGrownStalkPerBdv', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('minGrownStalkPerBdvBonus', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('grownStalkPerBdvBonusBid', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('maxPriceToConvertUp', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('minPriceToConvertUp', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('maxGrownStalkPerBdvPenalty', DataTypes, { allowNull: false }),

@@ -6,18 +6,18 @@ class ConvertUpV0OrderDto {
     if (type === 'data') {
       this.blueprintHash = d.blueprintHash;
       this.lastExecutedTimestamp = new Date(0);
-      this.bdvLeftToConvert = d.convertUpParams.totalConvertBdv;
+      this.beansLeftToConvert = d.convertUpParams.totalBeanAmountToConvert;
       this.orderComplete = false;
       this.amountFunded = 0n;
       this.cascadeAmountFunded = 0n;
       this.sourceTokenIndices = Array.from(d.convertUpParams.sourceTokenIndices);
-      this.totalConvertBdv = d.convertUpParams.totalConvertBdv;
-      this.minConvertBdvPerExecution = d.convertUpParams.minConvertBdvPerExecution;
-      this.maxConvertBdvPerExecution = d.convertUpParams.maxConvertBdvPerExecution;
+      this.totalBeanAmountToConvert = d.convertUpParams.totalBeanAmountToConvert;
+      this.minBeansConvertPerExecution = d.convertUpParams.minBeansConvertPerExecution;
+      this.maxBeansConvertPerExecution = d.convertUpParams.maxBeansConvertPerExecution;
       this.minTimeBetweenConverts = d.convertUpParams.minTimeBetweenConverts;
       this.minConvertBonusCapacity = d.convertUpParams.minConvertBonusCapacity;
       this.maxGrownStalkPerBdv = d.convertUpParams.maxGrownStalkPerBdv;
-      this.minGrownStalkPerBdvBonus = d.convertUpParams.minGrownStalkPerBdvBonus;
+      this.grownStalkPerBdvBonusBid = d.convertUpParams.grownStalkPerBdvBonusBid;
       this.maxPriceToConvertUp = d.convertUpParams.maxPriceToConvertUp;
       this.minPriceToConvertUp = d.convertUpParams.minPriceToConvertUp;
       this.maxGrownStalkPerBdvPenalty = d.convertUpParams.maxGrownStalkPerBdvPenalty;
@@ -26,18 +26,18 @@ class ConvertUpV0OrderDto {
     } else if (type === 'db') {
       this.blueprintHash = d.blueprintHash;
       this.lastExecutedTimestamp = new Date(d.lastExecutedTimestamp * 1000);
-      this.bdvLeftToConvert = d.bdvLeftToConvert;
+      this.beansLeftToConvert = d.beansLeftToConvert;
       this.orderComplete = d.orderComplete;
       this.amountFunded = d.amountFunded;
       this.cascadeAmountFunded = d.cascadeAmountFunded;
       this.sourceTokenIndices = d.sourceTokenIndices.split(',');
-      this.totalConvertBdv = d.totalConvertBdv;
-      this.minConvertBdvPerExecution = d.minConvertBdvPerExecution;
-      this.maxConvertBdvPerExecution = d.maxConvertBdvPerExecution;
+      this.totalBeanAmountToConvert = d.totalBeanAmountToConvert;
+      this.minBeansConvertPerExecution = d.minBeansConvertPerExecution;
+      this.maxBeansConvertPerExecution = d.maxBeansConvertPerExecution;
       this.minTimeBetweenConverts = d.minTimeBetweenConverts;
       this.minConvertBonusCapacity = d.minConvertBonusCapacity;
       this.maxGrownStalkPerBdv = d.maxGrownStalkPerBdv;
-      this.minGrownStalkPerBdvBonus = d.minGrownStalkPerBdvBonus;
+      this.grownStalkPerBdvBonusBid = d.grownStalkPerBdvBonusBid;
       this.maxPriceToConvertUp = d.maxPriceToConvertUp;
       this.minPriceToConvertUp = d.minPriceToConvertUp;
       this.maxGrownStalkPerBdvPenalty = d.maxGrownStalkPerBdvPenalty;
@@ -57,8 +57,8 @@ class ConvertUpV0OrderDto {
   async updateFieldsUponExecution(executionEvents) {
     // There can be potentially multiple Convert events (for different tokens)
     const convertEvts = executionEvents.filter((e) => e.name === 'Convert');
-    this.bdvLeftToConvert =
-      this.bdvLeftToConvert - convertEvts.reduce((acc, next) => acc + BigInt(next.args.toAmount), 0n);
+    this.beansLeftToConvert =
+      this.beansLeftToConvert - convertEvts.reduce((acc, next) => acc + BigInt(next.args.toAmount), 0n);
     this.lastExecutedTimestamp = new Date((await C().RPC.getBlock(convertEvts[0].rawLog.blockNumber)).timestamp * 1000);
     this.orderComplete = !!executionEvents.find((e) => e.name === 'ConvertUpOrderComplete');
     if (this.orderComplete) {
