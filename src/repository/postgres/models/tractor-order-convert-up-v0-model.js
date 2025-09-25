@@ -39,6 +39,7 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('grownStalkPerBdvBonusBid', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('maxPriceToConvertUp', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('minPriceToConvertUp', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('seedDifference', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('maxGrownStalkPerBdvPenalty', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('slippageRatio', DataTypes, { allowNull: false }),
       lowStalkDeposits: {

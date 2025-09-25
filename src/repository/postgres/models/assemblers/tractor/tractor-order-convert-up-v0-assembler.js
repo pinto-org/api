@@ -19,6 +19,7 @@ class ConvertUpV0OrderAssembler {
       grownStalkPerBdvBonusBid: orderDto.grownStalkPerBdvBonusBid,
       maxPriceToConvertUp: orderDto.maxPriceToConvertUp,
       minPriceToConvertUp: orderDto.minPriceToConvertUp,
+      seedDifference: orderDto.seedDifference,
       maxGrownStalkPerBdvPenalty: orderDto.maxGrownStalkPerBdvPenalty,
       slippageRatio: orderDto.slippageRatio,
       lowStalkDeposits: orderDto.lowStalkDeposits

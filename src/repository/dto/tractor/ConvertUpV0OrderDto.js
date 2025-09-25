@@ -17,6 +17,7 @@ class ConvertUpV0OrderDto {
       this.minTimeBetweenConverts = d.convertUpParams.minTimeBetweenConverts;
       this.minConvertBonusCapacity = d.convertUpParams.minConvertBonusCapacity;
       this.maxGrownStalkPerBdv = d.convertUpParams.maxGrownStalkPerBdv;
+      this.seedDifference = d.convertUpParams.seedDifference;
       this.grownStalkPerBdvBonusBid = d.convertUpParams.grownStalkPerBdvBonusBid;
       this.maxPriceToConvertUp = d.convertUpParams.maxPriceToConvertUp;
       this.minPriceToConvertUp = d.convertUpParams.minPriceToConvertUp;
@@ -37,6 +38,7 @@ class ConvertUpV0OrderDto {
       this.minTimeBetweenConverts = d.minTimeBetweenConverts;
       this.minConvertBonusCapacity = d.minConvertBonusCapacity;
       this.maxGrownStalkPerBdv = d.maxGrownStalkPerBdv;
+      this.seedDifference = d.seedDifference;
       this.grownStalkPerBdvBonusBid = d.grownStalkPerBdvBonusBid;
       this.maxPriceToConvertUp = d.maxPriceToConvertUp;
       this.minPriceToConvertUp = d.minPriceToConvertUp;

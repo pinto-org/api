@@ -21,7 +21,9 @@ describe('Tractor Blueprint Decoding', () => {
 
     test('Successfully decodes matching event', () => {
       const requisitionBlueprintData = SOW_V0_BLUEPRINT;
-      expect(TractorSowV0Service.decodeBlueprintData(requisitionBlueprintData)).toBeDefined();
+      const decoded = TractorSowV0Service.decodeBlueprintData(requisitionBlueprintData);
+      expect(decoded).toBeDefined();
+      expect(decoded).not.toBeNull();
     });
   });
 
@@ -37,7 +39,9 @@ describe('Tractor Blueprint Decoding', () => {
 
     test('Successfully decodes matching event', () => {
       const requisitionBlueprintData = CONVERT_UP_V0_BLUEPRINT;
-      expect(TractorConvertUpV0Service.decodeBlueprintData(requisitionBlueprintData)).toBeDefined();
+      const decoded = TractorConvertUpV0Service.decodeBlueprintData(requisitionBlueprintData);
+      expect(decoded).toBeDefined();
+      expect(decoded).not.toBeNull();
     });
   });
 });

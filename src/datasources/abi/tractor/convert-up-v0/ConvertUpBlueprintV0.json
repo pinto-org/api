@@ -192,6 +192,11 @@
               },
               {
                 "internalType": "int256",
+                "name": "seedDifference",
+                "type": "int256"
+              },
+              {
+                "internalType": "int256",
                 "name": "maxGrownStalkPerBdvPenalty",
                 "type": "int256"
               },
