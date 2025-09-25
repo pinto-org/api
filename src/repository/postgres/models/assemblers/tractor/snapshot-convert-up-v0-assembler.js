@@ -6,16 +6,17 @@ class SnapshotConvertUpV0Assembler {
       id: snapshotDto.id,
       snapshotTimestamp: snapshotDto.snapshotTimestamp,
       snapshotBlock: snapshotDto.snapshotBlock,
-      season: snapshotDto.season
-      // totalPintoSown: snapshotDto.totalPintoSown,
-      // totalPodsMinted: snapshotDto.totalPodsMinted,
-      // totalCascadeFundedBelowTemp: snapshotDto.totalCascadeFundedBelowTemp,
-      // totalCascadeFundedAnyTemp: snapshotDto.totalCascadeFundedAnyTemp,
-      // maxSowThisSeason: snapshotDto.maxSowThisSeason,
-      // totalTipsPaid: snapshotDto.totalTipsPaid,
-      // currentMaxTip: snapshotDto.currentMaxTip,
-      // totalExecutions: snapshotDto.totalExecutions,
-      // uniquePublishers: snapshotDto.uniquePublishers
+      season: snapshotDto.season,
+      totalBeansConverted: snapshotDto.totalBeansConverted,
+      totalGsBonusStalk: snapshotDto.totalGsBonusStalk,
+      totalGsBonusBdv: snapshotDto.totalGsBonusBdv,
+      totalGsPenaltyStalk: snapshotDto.totalGsPenaltyStalk,
+      totalGsPenaltyBdv: snapshotDto.totalGsPenaltyBdv,
+      totalCascadeFunded: snapshotDto.totalCascadeFunded,
+      totalTipsPaid: snapshotDto.totalTipsPaid,
+      currentMaxTip: snapshotDto.currentMaxTip,
+      totalExecutions: snapshotDto.totalExecutions,
+      uniquePublishers: snapshotDto.uniquePublishers
     };
   }
 

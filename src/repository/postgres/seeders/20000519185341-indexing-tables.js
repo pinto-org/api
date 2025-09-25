@@ -595,8 +595,10 @@ module.exports = {
           allowNull: false
         },
         ...bigintNumericColumn('totalBeansConverted', Sequelize, { allowNull: false }),
-        ...bigintNumericColumn('totalGsBonusApplied', Sequelize, { allowNull: false }),
-        ...bigintNumericColumn('totalGsPenaltyApplied', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('totalGsBonusStalk', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('totalGsBonusBdv', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('totalGsPenaltyStalk', Sequelize, { allowNull: false }),
+        ...bigintNumericColumn('totalGsPenaltyBdv', Sequelize, { allowNull: false }),
         ...bigintNumericColumn('totalCascadeFunded', Sequelize, { allowNull: false }),
         ...bigintNumericColumn('totalTipsPaid', Sequelize, { allowNull: false }),
         ...bigintNumericColumn('currentMaxTip', Sequelize, { allowNull: false }),

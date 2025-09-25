@@ -29,10 +29,14 @@ module.exports = (sequelize, DataTypes) => {
       },
       // Cumulative beans converted up to across all executions
       ...bigintNumericColumn('totalBeansConverted', DataTypes, { allowNull: false }),
-      // Cumulative grown stalk bonus applied across all executions
-      ...bigintNumericColumn('totalGsBonusApplied', DataTypes, { allowNull: false }),
-      // Cumulative grown stalk penalty applied across all executions
-      ...bigintNumericColumn('totalGsPenaltyApplied', DataTypes, { allowNull: false }),
+      // Cumulative grown stalk bonus (stalk amount) applied across all executions
+      ...bigintNumericColumn('totalGsBonusStalk', DataTypes, { allowNull: false }),
+      // Cumulative grown stalk bonus (bdv amount) applied across all executions
+      ...bigintNumericColumn('totalGsBonusBdv', DataTypes, { allowNull: false }),
+      // Cumulative grown stalk penalty (stalk amount) applied across all executions
+      ...bigintNumericColumn('totalGsPenaltyStalk', DataTypes, { allowNull: false }),
+      // Cumulative grown stalk penalty (bdv amount) applied across all executions
+      ...bigintNumericColumn('totalGsPenaltyBdv', DataTypes, { allowNull: false }),
 
       // Unclear how to measure an amount of queued/executable orders per season, since there are multiple unrelated conditions that
       // change independently as those orders execute (price, bonus capacity). Would be possible to queue based
