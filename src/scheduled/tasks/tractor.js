@@ -28,19 +28,25 @@ const SNAPSHOT_SERVICES = [SnapshotSowV0Service, SnapshotConvertUpV0Service];
 class TractorTask {
   // Returns true if the task can be called again immediately
   static async update() {
-    const [meta, snapshotPlan] = await Promise.all([
-      AppMetaService.getTractorMeta(),
-      // Mapping of snapshot block to the corresponding service(s) that need to run at that block
-      (async () => {
-        const retval = {};
-        const blocks = await Promise.all(SNAPSHOT_SERVICES.map((s) => s.nextSnapshotBlock()));
-        for (let i = 0; i < blocks.length; i++) {
-          (retval[blocks[i]] ??= []).push(SNAPSHOT_SERVICES[i]);
-        }
-        return retval;
-      })()
-    ]);
-    let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS, {
+    const meta = await AppMetaService.getTractorMeta();
+    if (!meta.lastUpdate) {
+      Log.info(`Skipping task; has not been initialized yet.`);
+      return false;
+    }
+
+    // Determine which blocks to take any snapshots at
+    const sunrise = await FilterLogs.getBeanstalkEvents(['Sunrise'], {
+      fromBlock: meta.lastUpdate + 1,
+      toBlock: meta.lastUpdate + MAX_BLOCKS
+    });
+    sunrise.sort((a, b) => a.rawLog.blockNumber - b.rawLog.blockNumber);
+    const snapshotPlan = {};
+    for (const service of SNAPSHOT_SERVICES) {
+      const block = service.nextSnapshotBlock(meta.lastUpdate, sunrise[0]?.rawLog.blockNumber);
+      (snapshotPlan[block] ??= []).push(service);
+    }
+
+    let { lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS, {
       maxReturnBlock: Math.min(...Object.keys(snapshotPlan).map(Number)),
       // In the case of a pause, need to continue processing PublishRequisition/CancelBlueprint, which don't depend on any diamond
       // onchain function. Tractor would never emit.
@@ -54,8 +60,8 @@ class TractorTask {
       updateBlock = latestBlock;
     }
 
-    if (!isInitialized || lastUpdate === updateBlock) {
-      Log.info(`Skipping task, has not been initialized yet or last update is the same as the suggested update block.`);
+    if (lastUpdate === updateBlock) {
+      Log.info(`Skipping task; last update is the same as the suggested update block.`);
       return false;
     }
     Log.info(`Updating tractor for block range [${lastUpdate}, ${updateBlock}]`);

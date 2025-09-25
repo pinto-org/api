@@ -19,16 +19,18 @@ describe('TractorTask', () => {
 
   test('Does nothing if uninitialized', async () => {
     jest.spyOn(AppMetaService, 'getTractorMeta').mockResolvedValue({
-      lastUpdate: 10
+      lastUpdate: null
     });
-    jest.spyOn(SnapshotSowV0Service, 'nextSnapshotBlock').mockResolvedValue(4000);
-    jest.spyOn(TaskRangeUtil, 'getUpdateInfo').mockResolvedValue({ isInitialized: false });
     const filterLogSpy = jest.spyOn(FilterLogs, 'getBeanstalkEvents');
+    const snapshotSpy = jest.spyOn(SnapshotSowV0Service, 'nextSnapshotBlock');
+    const taskRangeSpy = jest.spyOn(TaskRangeUtil, 'getUpdateInfo');
 
     const retval = await TractorTask.update();
 
     expect(retval).toBe(false);
     expect(filterLogSpy).not.toHaveBeenCalled();
+    expect(snapshotSpy).not.toHaveBeenCalled();
+    expect(taskRangeSpy).not.toHaveBeenCalled();
   });
 
   describe('Initialized', () => {
@@ -36,7 +38,7 @@ describe('TractorTask', () => {
       jest.spyOn(AppMetaService, 'getTractorMeta').mockResolvedValue({
         lastUpdate: 10
       });
-      jest.spyOn(SnapshotSowV0Service, 'nextSnapshotBlock').mockResolvedValue(4000);
+      jest.spyOn(SnapshotSowV0Service, 'nextSnapshotBlock').mockReturnValue(4000);
       jest.spyOn(TaskRangeUtil, 'getUpdateInfo').mockResolvedValue({
         isInitialized: true,
         lastUpdate: 2000,
@@ -44,12 +46,15 @@ describe('TractorTask', () => {
         isCaughtUp: false,
         meta: null
       });
-      jest.spyOn(FilterLogs, 'getBeanstalkEvents').mockResolvedValue([
-        { name: 'PublishRequisition', value: 1 },
-        { name: 'CancelBlueprint', value: 2 },
-        { name: 'Tractor', value: 3 },
-        { name: 'Tractor', value: 4 }
-      ]);
+      jest
+        .spyOn(FilterLogs, 'getBeanstalkEvents')
+        .mockResolvedValueOnce([{ name: 'Sunrise', rawLog: { blockNumber: 1000 } }])
+        .mockResolvedValueOnce([
+          { name: 'PublishRequisition', value: 1 },
+          { name: 'CancelBlueprint', value: 2 },
+          { name: 'Tractor', value: 3 },
+          { name: 'Tractor', value: 4 }
+        ]);
       jest.spyOn(SnapshotSowV0Service, 'takeSnapshot').mockImplementation(() => {});
     });
 

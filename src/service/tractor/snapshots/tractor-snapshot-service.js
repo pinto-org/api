@@ -1,7 +1,5 @@
-const { C } = require('../../../constants/runtime-constants');
 const { Sequelize } = require('../../../repository/postgres/models');
 const AsyncContext = require('../../../utils/async/context');
-const ChainUtil = require('../../../utils/chain');
 const AppMetaService = require('../../meta-service');
 
 class TractorSnapshotService {
@@ -14,15 +12,14 @@ class TractorSnapshotService {
   /**
    * Returns the block number of when the next snapshot should be taken
    */
-  static async nextSnapshotBlock() {
-    const latestSnapshot = await this.snapshotRepository.latestSnapshot();
-    if (latestSnapshot) {
-      const dto = this.snapshotAssembler.fromModel(latestSnapshot);
-      // This could cause there to be multiple snapshots per season (and a missing season)
-      // Could find the next Sunrise event occurring after snapshotBlock?
-      return dto.snapshotBlock + ChainUtil.blocksPerInterval(C().CHAIN, 1000 * 60 * 60);
+  static nextSnapshotBlock(tractorLastUpdate, nextSunriseBlock) {
+    if (tractorLastUpdate < this.initialSnapshotBlock) {
+      // This snapshot has not been initialized yet, ignore the sunrise block
+      return this.initialSnapshotBlock;
+    } else {
+      // If no sunrise was detected, caller can advance as much as desired
+      return nextSunriseBlock ?? Number.MAX_SAFE_INTEGER;
     }
-    return this.initialSnapshotBlock;
   }
 
   /**
