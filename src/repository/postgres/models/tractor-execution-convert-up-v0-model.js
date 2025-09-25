@@ -40,11 +40,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       // Amount of grown stalk bonus awarded to this execution
-      ...bigintNumericColumn('gsBonusAmount', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('gsBonusStalk', DataTypes, { allowNull: false }),
       // Amount of bdv that was awarded a grown stalk bonus
       ...bigintNumericColumn('gsBonusBdv', DataTypes, { allowNull: false }),
       // Amount of grown stalk penalty applied during this execution. Cannot currently occur
-      ...bigintNumericColumn('gsPenaltyAmount', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('gsPenaltyStalk', DataTypes, { allowNull: false }),
       // Amount of bdv that was penalized. Cannot currently occur
       ...bigintNumericColumn('gsPenaltyBdv', DataTypes, { allowNull: false })
     },

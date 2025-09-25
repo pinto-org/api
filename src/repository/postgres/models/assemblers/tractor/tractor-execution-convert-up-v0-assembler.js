@@ -14,9 +14,9 @@ class ConvertUpV0ExecutionAssembler {
       beansConverted: executionDto.beansConverted,
       beanPriceBefore: executionDto.beanPriceBefore,
       beanPriceAfter: executionDto.beanPriceAfter,
-      gsBonusAmount: executionDto.gsBonusAmount,
+      gsBonusStalk: executionDto.gsBonusStalk,
       gsBonusBdv: executionDto.gsBonusBdv,
-      gsPenaltyAmount: executionDto.gsPenaltyAmount,
+      gsPenaltyStalk: executionDto.gsPenaltyStalk,
       gsPenaltyBdv: executionDto.gsPenaltyBdv
     };
   }

@@ -28,9 +28,9 @@ class ConvertUpV0ExecutionDto {
       this.beansConverted = convertEvts.reduce((acc, next) => acc + BigInt(next.args.toAmount), 0n);
       // beanPriceBefore, beanPriceAfter set async
       const convertUpBonusEvts = innerEvents.filter((e) => e.name === 'ConvertUpBonus');
-      this.gsBonusAmount = convertUpBonusEvts.reduce((acc, next) => acc + BigInt(next.args.grownStalkGained), 0n);
+      this.gsBonusStalk = convertUpBonusEvts.reduce((acc, next) => acc + BigInt(next.args.grownStalkGained), 0n);
       this.gsBonusBdv = convertUpBonusEvts.reduce((acc, next) => acc + BigInt(next.args.bdvCapacityUsed), 0n);
-      this.gsPenaltyAmount = 0n;
+      this.gsPenaltyStalk = 0n;
       this.gsPenaltyBdv = 0n;
     } else if (type === 'db') {
       this.id = d.id;
@@ -44,9 +44,9 @@ class ConvertUpV0ExecutionDto {
       this.beansConverted = d.beansConverted;
       this.beanPriceBefore = d.beanPriceBefore;
       this.beanPriceAfter = d.beanPriceAfter;
-      this.gsBonusAmount = d.gsBonusAmount;
+      this.gsBonusStalk = d.gsBonusStalk;
       this.gsBonusBdv = d.gsBonusBdv;
-      this.gsPenaltyAmount = d.gsPenaltyAmount;
+      this.gsPenaltyStalk = d.gsPenaltyStalk;
       this.gsPenaltyBdv = d.gsPenaltyBdv;
     }
   }

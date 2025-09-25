@@ -52,9 +52,9 @@ module.exports = {
         type: Sequelize.FLOAT,
         allowNull: false
       },
-      ...bigintNumericColumn('gsBonusAmount', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('gsBonusStalk', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('gsBonusBdv', Sequelize, { allowNull: false }),
-      ...bigintNumericColumn('gsPenaltyAmount', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('gsPenaltyStalk', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('gsPenaltyBdv', Sequelize, { allowNull: false }),
       ...timestamps(Sequelize)
     });

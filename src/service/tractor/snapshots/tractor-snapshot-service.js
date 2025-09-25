@@ -18,6 +18,8 @@ class TractorSnapshotService {
     const latestSnapshot = await this.snapshotRepository.latestSnapshot();
     if (latestSnapshot) {
       const dto = this.snapshotAssembler.fromModel(latestSnapshot);
+      // This could cause there to be multiple snapshots per season (and a missing season)
+      // Could find the next Sunrise event occurring after snapshotBlock?
       return dto.snapshotBlock + ChainUtil.blocksPerInterval(C().CHAIN, 1000 * 60 * 60);
     }
     return this.initialSnapshotBlock;

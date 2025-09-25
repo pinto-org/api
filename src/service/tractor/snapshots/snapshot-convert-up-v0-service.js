@@ -27,9 +27,9 @@ class SnapshotConvertUpV0Service extends TractorSnapshotService {
       // There should perhaps also be a sum_cascade_below_line_length
       `SELECT
         (SELECT COALESCE(SUM("beansConverted"), 0) FROM ${econv}) AS sum_beans,
-        (SELECT COALESCE(SUM("gsBonusAmount"), 0) FROM ${econv}) AS sum_gs_bonus_stalk,
+        (SELECT COALESCE(SUM("gsBonusStalk"), 0) FROM ${econv}) AS sum_gs_bonus_stalk,
         (SELECT COALESCE(SUM("gsBonusBdv"), 0) FROM ${econv}) AS sum_gs_bonus_bdv,
-        (SELECT COALESCE(SUM("gsPenaltyAmount"), 0) FROM ${econv}) AS sum_gs_penalty_stalk,
+        (SELECT COALESCE(SUM("gsPenaltyStalk"), 0) FROM ${econv}) AS sum_gs_penalty_stalk,
         (SELECT COALESCE(SUM("gsPenaltyBdv"), 0) FROM ${econv}) AS sum_gs_penalty_bdv,
         (SELECT COALESCE(SUM(oconv."cascadeAmountFunded"), 0) FROM ${o} o, ${oconv} oconv WHERE o."blueprintHash" = oconv."blueprintHash" AND NOT o.cancelled AND NOT oconv."orderComplete") AS sum_cascade_total,
         (SELECT COALESCE(SUM(o."beanTip"), 0) FROM ${o} o JOIN ${e} e ON o."blueprintHash" = e."blueprintHash" WHERE o."orderType" = 'CONVERT_UP_V0') AS sum_paid_tips,

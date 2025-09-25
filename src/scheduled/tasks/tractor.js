@@ -22,7 +22,6 @@ const MAX_BLOCKS = 10000;
 const SNAPSHOT_SERVICES = [SnapshotSowV0Service, SnapshotConvertUpV0Service];
 
 // NEXT STEPS
-// snapshot methodology for converting
 // executions with multiple converts at once
 // test endpoints (orders + executions)
 
