@@ -12,6 +12,7 @@ const Interfaces = require('../../../datasources/contracts/interfaces');
 const ConvertUpV0OrderDto = require('../../../repository/dto/tractor/ConvertUpV0OrderDto');
 const Concurrent = require('../../../utils/async/concurrent');
 const BlockUtil = require('../../../utils/block');
+const BeanstalkPrice = require('../../../datasources/contracts/upgradeable/beanstalk-price');
 
 class TractorConvertUpV0Service extends Blueprint {
   static orderType = TractorOrderType.CONVERT_UP_V0;
@@ -21,8 +22,18 @@ class TractorConvertUpV0Service extends Blueprint {
   static executionAssembler = ConvertUpV0ExecutionAssembler;
   static executionDto = ConvertUpV0ExecutionDto;
 
+  /**
+   * Determine how many pinto can be converted in each order, accounting for cascading order execution.
+   * One publisher may have multiple orders that could be executed during the same season
+   */
   static async periodicUpdate(TractorService_getOrders, blockNumber) {
-    // This will check all entities and try to update amountFunded/cascade amounts
+    const [{ price: currentPrice }, [bonusStalkPerBdv, maxSeasonalCapacity]] = await Promise.all([
+      BeanstalkPrice.make({ block: BlockUtil.pauseGuard(blockNumber) }).priceReservesCurrent(),
+      Contracts.getBeanstalk().getConvertStalkPerBdvBonusAndMaximumCapacity({
+        blockTag: BlockUtil.pauseGuard(blockNumber)
+      })
+    ]);
+
     const orders = (
       await TractorService_getOrders({
         orderType: TractorOrderType.CONVERT_UP_V0,
@@ -33,13 +44,22 @@ class TractorConvertUpV0Service extends Blueprint {
         // Skip/publisher sort isnt necessary unless there are many open orders.
         limit: 25000
       })
-    ).orders.sort((a, b) => {
-      // TODO:
-      // Sort first by what can be executed now, then by blueprint hash to keep deterministic.
-      //
-      // Sort by temperature, and hash to keep deterministic
-      // const tempDiff = a.blueprintData.temperature - b.blueprintData.temperature;
-      // return tempDiff !== 0 ? tempDiff : a.blueprintHash.localeCompare(b.blueprintHash);
+    ).orders;
+
+    // In the future this may be an actual property on Order, currently setting it will have no effect on db
+    for (const o of orders) {
+      o.canExecuteThisSeason = this._orderCanExecuteThisSeason(o.blueprintData, {
+        currentPrice,
+        bonusStalkPerBdv,
+        maxSeasonalCapacity
+      });
+    }
+
+    orders.sort((a, b) => {
+      if (a.canExecuteThisSeason === b.canExecuteThisSeason) {
+        return a.blueprintHash.localeCompare(b.blueprintHash);
+      }
+      return a.canExecuteThisSeason ? -1 : 1;
     });
 
     // Can process in parallel by publisher
@@ -56,11 +76,6 @@ class TractorConvertUpV0Service extends Blueprint {
       availableBeans: [],
       totalAvailableBeans: 0n
     };
-
-    const [bonusStalkPerBdv, maxSeasonalCapacity] =
-      await Contracts.getBeanstalk().getConvertStalkPerBdvBonusAndMaximumCapacity({
-        blockTag: BlockUtil.pauseGuard(blockNumber)
-      });
 
     const TAG = Concurrent.tag(`periodicUpdate-${this.orderType}`);
     for (const publisher in ordersByPublisher) {
@@ -135,10 +150,6 @@ class TractorConvertUpV0Service extends Blueprint {
 
     // Update sowing order data
     await this.updateOrders(orders.map((o) => o.blueprintData));
-
-    // Consider how to solve the problem of pulling the "wrong source tokens" from an earlier order
-    // and thus having fewer funds to to execute a future order. This is not currently handled for sowing.
-    // Withdrawal plan always goes in order of the token indices
   }
 
   static async tryAddRequisition(orderDto, blueprintData) {
@@ -192,22 +203,13 @@ class TractorConvertUpV0Service extends Blueprint {
     }
   }
 
-  // Should check whether it can execute this season according to what is the seasonal max value for convert capacity
-  // getConvertStalkPerBdvBonusAndMaximumCapacity gives this value for the current season
-  static _orderCanExecuteNow(blueprintOrderDto) {
-    // Need to check the following fields/conditions
-    // The view function results can be passed in?
-    // minConvertBonusCapacity;
-    // grownStalkPerBdvBonusBid;
-    // minPriceToConvertUp;
-    // maxPriceToConvertUp;
-    // remainingCapacity = beanstalk.getConvertStalkPerBdvBonusAndRemainingCapacity()[1];
-    // require(remainingCapacity >= cup.minConvertBonusCapacity);
-    // bonusStalkPerBdv = beanstalk.getConvertStalkPerBdvBonusAndRemainingCapacity()[0];
-    // require(bonusStalkPerBdv >= cup.grownStalkPerBdvBonusBid);
-    // currentPrice = beanstalkPrice.price(ReservesType.INSTANTANEOUS_RESERVES).price;
-    // require(currentPrice >= cup.minPriceToConvertUp);
-    // require(currentPrice <= cup.maxPriceToConvertUp);
+  static _orderCanExecuteThisSeason(blueprintOrderDto, { currentPrice, bonusStalkPerBdv, maxSeasonalCapacity }) {
+    return (
+      maxSeasonalCapacity >= blueprintOrderDto.minConvertBonusCapacity &&
+      bonusStalkPerBdv >= blueprintOrderDto.grownStalkPerBdvBonusBid &&
+      currentPrice >= blueprintOrderDto.minPriceToConvertUp &&
+      currentPrice <= blueprintOrderDto.maxPriceToConvertUp
+    );
   }
 
   static validateOrderParams(blueprintParams) {

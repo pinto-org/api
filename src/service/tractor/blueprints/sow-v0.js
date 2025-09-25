@@ -26,7 +26,6 @@ class TractorSowV0Service extends Blueprint {
    * One publisher may have multiple orders that could be executed during the same season
    */
   static async periodicUpdate(TractorService_getOrders, blockNumber) {
-    // This will check all entities and try to update amountFunded/cascade amounts
     const orders = (
       await TractorService_getOrders({
         orderType: TractorOrderType.SOW_V0,
