@@ -57,8 +57,8 @@ class SowV0OrderDto {
     }
   }
 
-  canExecuteThisSeason({ temperature, podlineLength }) {
-    return temperature >= this.minTemp && podlineLength <= this.maxPodlineLength;
+  canExecuteThisSeason({ maxTemperature, podlineLength }) {
+    return maxTemperature >= this.minTemp && podlineLength <= this.maxPodlineLength;
   }
 }
 

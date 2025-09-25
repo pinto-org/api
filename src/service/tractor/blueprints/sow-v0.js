@@ -28,7 +28,7 @@ class TractorSowV0Service extends Blueprint {
   static async periodicUpdate(TractorService_getOrders, TractorService_updateOrders, blockNumber) {
     const blockTag = BlockUtil.pauseGuard(blockNumber);
 
-    const [season, temperature, podlineLength] = await Promise.all([
+    const [season, maxTemperature, podlineLength] = await Promise.all([
       (async () => Number(await Contracts.getBeanstalk().season({ blockTag })))(),
       (async () => BigInt(await Contracts.getBeanstalk().maxTemperature({ blockTag })))(),
       (async () => BigInt(await Contracts.getBeanstalk().totalUnharvestable(0, { blockTag })))()
@@ -49,7 +49,10 @@ class TractorSowV0Service extends Blueprint {
     // Evaluate whether the order can be executed
     const ordersToUpdate = [];
     for (const o of orders) {
-      if (o.lastExecutableSeason !== season && o.blueprintData.canExecuteThisSeason({ temperature, podlineLength })) {
+      if (
+        o.lastExecutableSeason !== season &&
+        o.blueprintData.canExecuteThisSeason({ maxTemperature, podlineLength })
+      ) {
         o.lastExecutableSeason = season;
         ordersToUpdate.push(o);
       }
