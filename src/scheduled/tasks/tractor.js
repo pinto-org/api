@@ -7,6 +7,7 @@ const TractorExecutionDto = require('../../repository/dto/tractor/TractorExecuti
 const TractorOrderDto = require('../../repository/dto/tractor/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
 const PriceService = require('../../service/price-service');
+const SnapshotConvertUpV0Service = require('../../service/tractor/snapshots/snapshot-convert-up-v0-service');
 const SnapshotSowV0Service = require('../../service/tractor/snapshots/snapshot-sow-v0-service');
 const TractorService = require('../../service/tractor/tractor-service');
 const Concurrent = require('../../utils/async/concurrent');
@@ -18,22 +19,30 @@ const TaskRangeUtil = require('../util/task-range');
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 10000;
 
+const SNAPSHOT_SERVICES = [SnapshotSowV0Service, SnapshotConvertUpV0Service];
+
 // NEXT STEPS
-// generalize snapshots
-// periodic update
+// snapshot methodology for converting
 // executions with multiple converts at once
 // test endpoints (orders + executions)
 
 class TractorTask {
   // Returns true if the task can be called again immediately
   static async update() {
-    const [meta, snapshotBlock] = await Promise.all([
+    const [meta, snapshotPlan] = await Promise.all([
       AppMetaService.getTractorMeta(),
-      // TODO: is it necessary to have multiple snapshot block methods for the different order types?
-      SnapshotSowV0Service.nextSnapshotBlock()
+      // Mapping of snapshot block to the corresponding service(s) that need to run at that block
+      (async () => {
+        const retval = {};
+        const blocks = await Promise.all(SNAPSHOT_SERVICES.map((s) => s.nextSnapshotBlock()));
+        for (let i = 0; i < blocks.length; i++) {
+          (retval[blocks[i]] ??= []).push(SNAPSHOT_SERVICES[i]);
+        }
+        return retval;
+      })()
     ]);
     let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS, {
-      maxReturnBlock: snapshotBlock,
+      maxReturnBlock: Math.min(...Object.keys(snapshotPlan).map(Number)),
       // In the case of a pause, need to continue processing PublishRequisition/CancelBlueprint, which don't depend on any diamond
       // onchain function. Tractor would never emit.
       // The snapshot will however avoid calling view functions with blocks during the pause.
@@ -72,9 +81,9 @@ class TractorTask {
         })
       );
 
-      if (updateBlock >= snapshotBlock) {
-        // This needs to be generalized and account for differing block numbers
-        await SnapshotSowV0Service.takeSnapshot(updateBlock);
+      // Take the snaphshots scheduled for this block
+      for (const snapshotService of snapshotPlan[updateBlock] ?? []) {
+        await snapshotService.takeSnapshot(updateBlock);
       }
 
       await AppMetaService.setLastTractorUpdate(updateBlock);
