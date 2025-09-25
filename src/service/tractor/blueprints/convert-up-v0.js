@@ -27,11 +27,11 @@ class TractorConvertUpV0Service extends Blueprint {
    * One publisher may have multiple orders that could be executed during the same season
    */
   static async periodicUpdate(TractorService_getOrders, blockNumber) {
+    const blockTag = BlockUtil.pauseGuard(blockNumber);
+
     const [{ price: currentPrice }, [bonusStalkPerBdv, maxSeasonalCapacity]] = await Promise.all([
-      BeanstalkPrice.make({ block: BlockUtil.pauseGuard(blockNumber) }).priceReservesCurrent(),
-      Contracts.getBeanstalk().getConvertStalkPerBdvBonusAndMaximumCapacity({
-        blockTag: BlockUtil.pauseGuard(blockNumber)
-      })
+      BeanstalkPrice.make({ block: blockTag }).priceReservesCurrent(),
+      Contracts.getBeanstalk().getConvertStalkPerBdvBonusAndMaximumCapacity({ blockTag })
     ]);
 
     const orders = (
@@ -46,20 +46,19 @@ class TractorConvertUpV0Service extends Blueprint {
       })
     ).orders;
 
-    // In the future this may be an actual property on Order, currently setting it will have no effect on db
+    // Evaluate whether the order can be executed
     for (const o of orders) {
-      o.canExecuteThisSeason = this._orderCanExecuteThisSeason(o.blueprintData, {
-        currentPrice,
-        bonusStalkPerBdv,
-        maxSeasonalCapacity
-      });
-    }
-
-    orders.sort((a, b) => {
-      if (a.canExecuteThisSeason === b.canExecuteThisSeason) {
-        return a.blueprintHash.localeCompare(b.blueprintHash);
+      if (o.blueprintData.canExecuteThisSeason({ currentPrice, bonusStalkPerBdv, maxSeasonalCapacity })) {
+        o.lastExecutableSeason = season;
       }
-      return a.canExecuteThisSeason ? -1 : 1;
+    }
+    // TODO: save executable season values to db
+
+    // Sort orders that can be executed first
+    orders.sort((a, b) => {
+      const aVal = a.lastExecutableSeason || 0;
+      const bVal = b.lastExecutableSeason || 0;
+      return bVal - aVal || a.blueprintHash.localeCompare(b.blueprintHash);
     });
 
     // Can process in parallel by publisher
@@ -103,7 +102,7 @@ class TractorConvertUpV0Service extends Blueprint {
               order.beansLeftToConvert,
               filterParams,
               emptyPlan,
-              { blockTag: BlockUtil.pauseGuard(blockNumber) }
+              { blockTag }
             );
             order.amountFunded = BigInt(soloPlan.totalAvailableBeans);
           } catch (e) {
@@ -121,9 +120,7 @@ class TractorConvertUpV0Service extends Blueprint {
                 combinedExistingPlan = await siloHelpers.combineWithdrawalPlans(
                   { target: 'SuperContract', skipTransform: true },
                   existingPlans,
-                  {
-                    blockTag: BlockUtil.pauseGuard(blockNumber)
-                  }
+                  { blockTag }
                 );
               } catch (e) {}
             }
@@ -135,7 +132,7 @@ class TractorConvertUpV0Service extends Blueprint {
                 order.beansLeftToConvert,
                 filterParams,
                 combinedExistingPlan ?? emptyPlan,
-                { blockTag: BlockUtil.pauseGuard(blockNumber) }
+                { blockTag }
               );
               existingPlans.push(cascadePlan);
               order.cascadeAmountFunded = BigInt(cascadePlan.totalAvailableBeans);
@@ -201,15 +198,6 @@ class TractorConvertUpV0Service extends Blueprint {
         return Interfaces.safeParseTxn(iConvertUpV0, pipeCall.callData);
       }
     }
-  }
-
-  static _orderCanExecuteThisSeason(blueprintOrderDto, { currentPrice, bonusStalkPerBdv, maxSeasonalCapacity }) {
-    return (
-      maxSeasonalCapacity >= blueprintOrderDto.minConvertBonusCapacity &&
-      bonusStalkPerBdv >= blueprintOrderDto.grownStalkPerBdvBonusBid &&
-      currentPrice >= blueprintOrderDto.minPriceToConvertUp &&
-      currentPrice <= blueprintOrderDto.maxPriceToConvertUp
-    );
   }
 
   static validateOrderParams(blueprintParams) {

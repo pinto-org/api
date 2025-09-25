@@ -57,10 +57,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false
+      },
+      // Latest season that this order was executable at some point during
+      lastExecutableSeason: {
+        type: DataTypes.INTEGER,
+        allowNull: true
       }
-      // TODO: add a field to indicate whether the order can be executed this season
-      // Or is it better to add a last executable season number? If an order is executable during this season,
-      // and then later during the season it isnt, the boolean should remain true.
     },
     {
       tableName: TRACTOR_ORDER_TABLE.env,

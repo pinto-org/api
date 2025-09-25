@@ -69,6 +69,15 @@ class ConvertUpV0OrderDto {
       this.cascadeAmountFunded = 0n;
     }
   }
+
+  canExecuteThisSeason({ currentPrice, bonusStalkPerBdv, maxSeasonalCapacity }) {
+    return (
+      maxSeasonalCapacity >= this.minConvertBonusCapacity &&
+      bonusStalkPerBdv >= this.grownStalkPerBdvBonusBid &&
+      currentPrice >= this.minPriceToConvertUp &&
+      currentPrice <= this.maxPriceToConvertUp
+    );
+  }
 }
 
 module.exports = ConvertUpV0OrderDto;

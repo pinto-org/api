@@ -26,6 +26,14 @@ class TractorSowV0Service extends Blueprint {
    * One publisher may have multiple orders that could be executed during the same season
    */
   static async periodicUpdate(TractorService_getOrders, blockNumber) {
+    const blockTag = BlockUtil.pauseGuard(blockNumber);
+
+    const [season, temperature, podlineLength] = await Promise.all([
+      (async () => Number(await Contracts.getBeanstalk().season({ blockTag })))(),
+      (async () => BigInt(await Contracts.getBeanstalk().maxTemperature({ blockTag })))(),
+      (async () => BigInt(await Contracts.getBeanstalk().totalUnharvestable(0, { blockTag })))()
+    ]);
+
     const orders = (
       await TractorService_getOrders({
         orderType: TractorOrderType.SOW_V0,
@@ -36,13 +44,25 @@ class TractorSowV0Service extends Blueprint {
         // Skip/publisher sort isnt necessary unless there are many open orders.
         limit: 25000
       })
-    ).orders.sort((a, b) => {
-      // Sort by temperature, and hash to keep deterministic.
-      // Least restrictive temperature considered first so an accurate max sow per season can be calculated.
-      // Ideally this will also consider the maxPodlineLength/sort all currently executable orders first,
-      // though thats not currently included in the snapshotting logic.
-      const tempDiff = Number(a.blueprintData.minTemp - b.blueprintData.minTemp);
-      return tempDiff !== 0 ? tempDiff : a.blueprintHash.localeCompare(b.blueprintHash);
+    ).orders;
+
+    // Evaluate whether the order can be executed
+    for (const o of orders) {
+      if (o.blueprintData.canExecuteThisSeason({ temperature, podlineLength })) {
+        o.lastExecutableSeason = season;
+      }
+    }
+    // TODO: save executable season values to db
+
+    // Sort orders that can be executed first
+    orders.sort((a, b) => {
+      const aVal = a.lastExecutableSeason || 0;
+      const bVal = b.lastExecutableSeason || 0;
+      return (
+        bVal - aVal ||
+        Number(a.blueprintData.minTemp - b.blueprintData.minTemp) ||
+        a.blueprintHash.localeCompare(b.blueprintHash)
+      );
     });
 
     // Can process in parallel by publisher
@@ -75,7 +95,7 @@ class TractorSowV0Service extends Blueprint {
               order.totalAmountToSow - order.pintoSownCounter,
               order.maxGrownStalkPerBdv,
               emptyPlan,
-              { blockTag: BlockUtil.pauseGuard(blockNumber) }
+              { blockTag }
             );
             order.amountFunded = BigInt(soloPlan.totalAvailableBeans);
           } catch (e) {
@@ -93,9 +113,7 @@ class TractorSowV0Service extends Blueprint {
                 combinedExistingPlan = await tractorHelpers.combineWithdrawalPlans(
                   { target: 'SuperContract', skipTransform: true },
                   existingPlans,
-                  {
-                    blockTag: BlockUtil.pauseGuard(blockNumber)
-                  }
+                  { blockTag }
                 );
               } catch (e) {}
             }
@@ -107,7 +125,7 @@ class TractorSowV0Service extends Blueprint {
                 order.totalAmountToSow - order.pintoSownCounter,
                 order.maxGrownStalkPerBdv,
                 combinedExistingPlan ?? emptyPlan,
-                { blockTag: BlockUtil.pauseGuard(blockNumber) }
+                { blockTag }
               );
               existingPlans.push(cascadePlan);
               order.cascadeAmountFunded = BigInt(cascadePlan.totalAvailableBeans);

@@ -56,6 +56,10 @@ class SowV0OrderDto {
       this.cascadeAmountFunded = 0n;
     }
   }
+
+  canExecuteThisSeason({ temperature, podlineLength }) {
+    return temperature >= this.minTemp && podlineLength <= this.maxPodlineLength;
+  }
 }
 
 module.exports = SowV0OrderDto;
