@@ -13,6 +13,7 @@ class SnapshotConvertUpV0Assembler {
       totalGsPenaltyStalk: snapshotDto.totalGsPenaltyStalk,
       totalGsPenaltyBdv: snapshotDto.totalGsPenaltyBdv,
       totalCascadeFunded: snapshotDto.totalCascadeFunded,
+      totalCascadeFundedExecutable: snapshotDto.totalCascadeFundedExecutable,
       totalTipsPaid: snapshotDto.totalTipsPaid,
       currentMaxTip: snapshotDto.currentMaxTip,
       totalExecutions: snapshotDto.totalExecutions,

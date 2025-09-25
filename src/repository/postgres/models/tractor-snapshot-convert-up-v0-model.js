@@ -32,17 +32,10 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('totalGsPenaltyStalk', DataTypes, { allowNull: false }),
       // Cumulative grown stalk penalty (bdv amount) applied across all executions
       ...bigintNumericColumn('totalGsPenaltyBdv', DataTypes, { allowNull: false }),
-
-      // Unclear how to measure an amount of queued/executable orders per season, since there are multiple unrelated conditions that
-      // change independently as those orders execute (price, bonus capacity). Would be possible to queue based
-      // on the stalk bonus and assume a constant price.
-
       // For orders that are funded for execution under any conditions
       ...bigintNumericColumn('totalCascadeFunded', DataTypes, { allowNull: false }),
-      // This field can be reintroduced if we also track on the order level what orders can be executed each season
-      // The same can be done for the sowing blueprint.
-      // // For orders that are funded for execution under current conditions
-      // ...bigintNumericColumn('totalCascadeFundedExecutable', DataTypes, { allowNull: false }),
+      // For orders that are funded for execution under current conditions
+      ...bigintNumericColumn('totalCascadeFundedExecutable', DataTypes, { allowNull: false }),
       // Cumulative operator rewards
       ...bigintNumericColumn('totalTipsPaid', DataTypes, { allowNull: false }),
       // The current max tip across all orders of this type

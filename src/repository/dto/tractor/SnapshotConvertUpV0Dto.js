@@ -11,6 +11,7 @@ class SnapshotConvertUpV0Dto {
       this.totalGsPenaltyStalk = BigInt(snapshotData.sum_gs_penalty_stalk);
       this.totalGsPenaltyBdv = BigInt(snapshotData.sum_gs_penalty_bdv);
       this.totalCascadeFunded = BigInt(snapshotData.sum_cascade_total);
+      this.totalCascadeFundedExecutable = BigInt(snapshotData.sum_cascade_executable);
       this.totalTipsPaid = BigInt(snapshotData.sum_paid_tips);
       this.currentMaxTip = BigInt(snapshotData.max_bean_tip);
       this.totalExecutions = snapshotData.count_executions;
@@ -26,6 +27,7 @@ class SnapshotConvertUpV0Dto {
       this.totalGsPenaltyStalk = d.totalGsPenaltyStalk;
       this.totalGsPenaltyBdv = d.totalGsPenaltyBdv;
       this.totalCascadeFunded = d.totalCascadeFunded;
+      this.totalCascadeFundedExecutable = d.totalCascadeFundedExecutable;
       this.totalTipsPaid = d.totalTipsPaid;
       this.currentMaxTip = d.currentMaxTip;
       this.totalExecutions = d.totalExecutions;

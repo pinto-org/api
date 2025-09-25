@@ -36,6 +36,7 @@ class SnapshotConvertUpV0Service extends TractorSnapshotService {
         (SELECT COALESCE(SUM("gsPenaltyStalk"), 0) FROM ${econv}) AS sum_gs_penalty_stalk,
         (SELECT COALESCE(SUM("gsPenaltyBdv"), 0) FROM ${econv}) AS sum_gs_penalty_bdv,
         (SELECT COALESCE(SUM(oconv."cascadeAmountFunded"), 0) FROM ${o} o, ${oconv} oconv WHERE o."blueprintHash" = oconv."blueprintHash" AND NOT o.cancelled AND NOT oconv."orderComplete") AS sum_cascade_total,
+        (SELECT COALESCE(SUM(oconv."cascadeAmountFunded"), 0) FROM ${o} o, ${oconv} oconv WHERE o."blueprintHash" = oconv."blueprintHash" AND NOT o.cancelled AND NOT oconv."orderComplete" AND o."lastExecutableSeason" = ${season}) AS sum_cascade_executable,
         (SELECT COALESCE(SUM(o."beanTip"), 0) FROM ${o} o JOIN ${e} e ON o."blueprintHash" = e."blueprintHash" WHERE o."orderType" = 'CONVERT_UP_V0') AS sum_paid_tips,
         (SELECT COALESCE(MAX(o."beanTip"), 0) FROM ${o} o, ${oconv} oconv WHERE o."blueprintHash" = oconv."blueprintHash" AND NOT o.cancelled AND NOT oconv."orderComplete" AND oconv."amountFunded" > 0 AND o."lastExecutableSeason" = ${season}) AS max_bean_tip,
         (SELECT COUNT(*) FROM ${econv}) AS count_executions,

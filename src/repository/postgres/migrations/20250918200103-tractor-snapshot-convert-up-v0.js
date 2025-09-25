@@ -30,6 +30,7 @@ module.exports = {
       ...bigintNumericColumn('totalGsPenaltyStalk', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('totalGsPenaltyBdv', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('totalCascadeFunded', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('totalCascadeFundedExecutable', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('totalTipsPaid', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('currentMaxTip', Sequelize, { allowNull: false }),
       totalExecutions: {
