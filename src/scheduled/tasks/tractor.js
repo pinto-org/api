@@ -18,6 +18,11 @@ const TaskRangeUtil = require('../util/task-range');
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 10000;
 
+// NEXT STEPS
+// generalize snapshots
+// periodic update
+// executions with multiple converts at once
+
 class TractorTask {
   // Returns true if the task can be called again immediately
   static async update() {
@@ -36,7 +41,7 @@ class TractorTask {
 
     if (EnvUtil.getDeploymentEnv() === 'local' && !!EnvUtil.getCustomRpcUrl(C().CHAIN)) {
       const latestBlock = (await C().RPC.getBlock()).number;
-      lastUpdate = Math.max(lastUpdate, latestBlock - 10); // Small buffer is preferred to not collide with any actual activity
+      lastUpdate = Math.max(lastUpdate, latestBlock - 50); // Small buffer is preferred to not collide with any actual activity
       updateBlock = latestBlock;
     }
 
