@@ -26,10 +26,11 @@ class TractorConvertUpV0Service extends Blueprint {
    * Determine how many pinto can be converted in each order, accounting for cascading order execution.
    * One publisher may have multiple orders that could be executed during the same season
    */
-  static async periodicUpdate(TractorService_getOrders, blockNumber) {
+  static async periodicUpdate(TractorService_getOrders, TractorService_updateOrders, blockNumber) {
     const blockTag = BlockUtil.pauseGuard(blockNumber);
 
-    const [{ price: currentPrice }, [bonusStalkPerBdv, maxSeasonalCapacity]] = await Promise.all([
+    const [season, { price: currentPrice }, [bonusStalkPerBdv, maxSeasonalCapacity]] = await Promise.all([
+      (async () => Number(await Contracts.getBeanstalk().season({ blockTag })))(),
       BeanstalkPrice.make({ block: blockTag }).priceReservesCurrent(),
       Contracts.getBeanstalk().getConvertStalkPerBdvBonusAndMaximumCapacity({ blockTag })
     ]);
@@ -47,12 +48,17 @@ class TractorConvertUpV0Service extends Blueprint {
     ).orders;
 
     // Evaluate whether the order can be executed
+    const ordersToUpdate = [];
     for (const o of orders) {
-      if (o.blueprintData.canExecuteThisSeason({ currentPrice, bonusStalkPerBdv, maxSeasonalCapacity })) {
+      if (
+        o.lastExecutableSeason !== season &&
+        o.blueprintData.canExecuteThisSeason({ currentPrice, bonusStalkPerBdv, maxSeasonalCapacity })
+      ) {
         o.lastExecutableSeason = season;
+        ordersToUpdate.push(o);
       }
     }
-    // TODO: save executable season values to db
+    await TractorService_updateOrders(ordersToUpdate);
 
     // Sort orders that can be executed first
     orders.sort((a, b) => {

@@ -305,6 +305,10 @@ module.exports = {
           allowNull: false,
           defaultValue: false
         },
+        lastExecutableSeason: {
+          type: Sequelize.INTEGER,
+          allowNull: true
+        },
         ...timestamps(Sequelize)
       });
       await queryInterface.addIndex(TRACTOR_ORDER_TABLE.indexing, ['orderType']);

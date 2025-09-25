@@ -1,11 +1,6 @@
 const { TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
-// TODO: when taking the snapshots, regarding the max seasonal amount, it will be important
-// to check against what the max grown stalk reward will be for the season. This is probably
-// also the case more generally when considering how much of an order is funded.
-// Should each order track a boolean indicating whether it can be executed this season?
-
 module.exports = (sequelize, DataTypes) => {
   const TractorSnapshotConvertUpV0 = sequelize.define(
     'TractorSnapshotConvertUpV0',

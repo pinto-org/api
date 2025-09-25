@@ -25,7 +25,7 @@ class TractorSowV0Service extends Blueprint {
    * Determine how many pinto can be sown into each order, accounting for cascading order execution.
    * One publisher may have multiple orders that could be executed during the same season
    */
-  static async periodicUpdate(TractorService_getOrders, blockNumber) {
+  static async periodicUpdate(TractorService_getOrders, TractorService_updateOrders, blockNumber) {
     const blockTag = BlockUtil.pauseGuard(blockNumber);
 
     const [season, temperature, podlineLength] = await Promise.all([
@@ -47,12 +47,14 @@ class TractorSowV0Service extends Blueprint {
     ).orders;
 
     // Evaluate whether the order can be executed
+    const ordersToUpdate = [];
     for (const o of orders) {
-      if (o.blueprintData.canExecuteThisSeason({ temperature, podlineLength })) {
+      if (o.lastExecutableSeason !== season && o.blueprintData.canExecuteThisSeason({ temperature, podlineLength })) {
         o.lastExecutableSeason = season;
+        ordersToUpdate.push(o);
       }
     }
-    // TODO: save executable season values to db
+    await TractorService_updateOrders(ordersToUpdate);
 
     // Sort orders that can be executed first
     orders.sort((a, b) => {

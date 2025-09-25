@@ -81,8 +81,12 @@ class TractorTask {
       // Run periodicUpdate on specialized blueprint modules
       await Promise.all(
         Object.values(TractorConstants.knownBlueprints()).map((b) => {
-          // Pass in the getOrders method to avoid circular dependency
-          return b.periodicUpdate(TractorService.getOrders.bind(TractorService), updateBlock);
+          // Pass in the method to avoid circular dependency
+          return b.periodicUpdate(
+            TractorService.getOrders.bind(TractorService),
+            TractorService.updateOrders.bind(TractorService),
+            updateBlock
+          );
         })
       );
 
