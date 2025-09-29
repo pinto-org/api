@@ -32,7 +32,7 @@ const contracts = {
   STABLE2: ['0xBA51055a97b40d7f41f3F64b57469b5D45B67c87', null, wellFunctionAbi],
   SOW_V0: ['0xbb0a41927895F8ca2b4ECCc659ba158735fCF28B', null, sowBlueprintV0Abi],
   SOW_V0_TRACTOR_HELPERS: ['0x2808b14d287F8CA77eb25B16575aF187d5A05119', null, tractorHelpersAbi],
-  // TODO: correct addresses for these
+  // TODO: verify final addresses
   CONVERT_UP_V0: ['0x53B7cF2a4A18062aFF4fA71Bb300F6eA2d3702E2', null, convertUpBlueprintV0Abi],
   CONVERT_UP_V0_TRACTOR_HELPERS: ['0xE72E16b32FD9Ce560f11db8e5d6A045E6D655e5F', null, convertUpTractorHelpersAbi],
   CONVERT_UP_V0_SILO_HELPERS: ['0xe02919865F7ea6F342F09538BE801ee4a14884CD', null, convertUpSiloHelpersAbi]

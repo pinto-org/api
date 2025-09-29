@@ -101,7 +101,7 @@ class EnvUtil {
   }
 
   static isLocalRpc(chain) {
-    return this.getDeploymentEnv() === 'local' && !!this.getCustomRpcUrl(chain);
+    return this.getDeploymentEnv().includes('local') && !!this.getCustomRpcUrl(chain);
   }
 }
 

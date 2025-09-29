@@ -21,10 +21,6 @@ const MAX_BLOCKS = 10000;
 
 const SNAPSHOT_SERVICES = [SnapshotSowV0Service, SnapshotConvertUpV0Service];
 
-// NEXT STEPS
-// executions with multiple converts at once
-// test endpoints (orders + executions)
-
 class TractorTask {
   // Returns true if the task can be called again immediately
   static async update() {

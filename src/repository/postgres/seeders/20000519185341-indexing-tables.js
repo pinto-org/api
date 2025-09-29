@@ -478,7 +478,7 @@ module.exports = {
         ...timestamps(Sequelize)
       });
     }
-    // TODO: might need to update these if schema changes
+
     if (!existingTables.includes(TRACTOR_ORDER_CONVERT_UP_V0_TABLE.indexing)) {
       await queryInterface.createTable(TRACTOR_ORDER_CONVERT_UP_V0_TABLE.indexing, {
         blueprintHash: {

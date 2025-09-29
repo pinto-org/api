@@ -16,7 +16,7 @@ class SubgraphClients {
       const client = this._getClient(url);
       const response = await client.request(query);
 
-      // if (EnvUtil.getDeploymentEnv() === 'local') {
+      // if (EnvUtil.getDeploymentEnv().includes('local')) {
       //   // Use this to assist in mocking. Should be commented in/out as needed.
       //   await fs.promises.writeFile(
       //     `${__dirname}/../../test/mock-responses/subgraph/silo-apy/gaugeApyInputs_${callNumber++}.json`,
