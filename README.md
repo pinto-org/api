@@ -23,17 +23,18 @@ To run everything inside of Docker:
 
 To run the databse inside Docker and the API on the host machine (faster for testing locally as it doesn't build an image)
 
-1. Run `npm install`
+1. Run `npm i`
 2. Run `cp .env.example .env`, and supply the appropriate values in the created `.env` file.
 3. Start the postgres container with `npm run docker:db`.
-4. To run the application, `npm start`
-5. The database can be stopped with `npm run docker:stop`.
 
 After starting the database, you need to run the sequelize migrations/seeders to initialize the database state. Run the following commands:
 
 1. `export NODE_ENV="local"`
 2. `npm run migrate`
-2. `npm run seed`
+3. `npm run seed`
+
+- To run the application, `npm start`
+- The database can be stopped with `npm run docker:stop`.
 
 ## Advanced
 
