@@ -54,7 +54,7 @@ class TractorTask {
       skipPausedRange: false
     });
 
-    if (EnvUtil.getDeploymentEnv() === 'local' && !!EnvUtil.getCustomRpcUrl(C().CHAIN)) {
+    if (EnvUtil.getDevTractor().useRecentBlock && EnvUtil.isLocalRpc(C().CHAIN)) {
       const latestBlock = (await C().RPC.getBlock()).number;
       lastUpdate = Math.max(lastUpdate, latestBlock - 50); // Small buffer is preferred to not collide with any actual activity
       updateBlock = latestBlock;

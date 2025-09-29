@@ -19,6 +19,10 @@ const SG_BEANSTALK = process.env.SG_BEANSTALK?.split(',').filter((s) => s.trim()
 const SG_BEAN = process.env.SG_BEAN?.split(',').filter((s) => s.trim().length > 0);
 const SG_BASIN = process.env.SG_BASIN?.split(',').filter((s) => s.trim().length > 0);
 
+const DEV_TRACTOR_SEEDER = process.env.DEV_TRACTOR_SEEDER === 'true';
+const DEV_TRACTOR_RECENT = process.env.DEV_TRACTOR_RECENT === 'true';
+const DEV_TRACTOR_SEEDER_START = parseInt(process.env.DEV_TRACTOR_SEEDER_START ?? '0');
+
 // Validation
 if (!ENABLED_CHAINS || ENABLED_CHAINS.length === 0) {
   throw new Error('Invalid environment configured: no chains were enabled.');
@@ -86,6 +90,18 @@ class EnvUtil {
       BEAN: SG_BEAN[chainIndex],
       BASIN: SG_BASIN[chainIndex]
     };
+  }
+
+  static getDevTractor() {
+    return {
+      seeder: DEV_TRACTOR_SEEDER,
+      seedBlock: DEV_TRACTOR_SEEDER_START,
+      useRecentBlock: DEV_TRACTOR_RECENT
+    };
+  }
+
+  static isLocalRpc(chain) {
+    return this.getDeploymentEnv() === 'local' && !!this.getCustomRpcUrl(chain);
   }
 }
 

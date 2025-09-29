@@ -13,12 +13,13 @@ const SharedRepository = require('../../../repository/postgres/queries/shared-re
 const TractorSnapshotRepository = require('../../../repository/postgres/queries/tractor-snapshot-repository');
 const AsyncContext = require('../../../utils/async/context');
 const BlockUtil = require('../../../utils/block');
+const EnvUtil = require('../../../utils/env');
 const TractorSnapshotService = require('./tractor-snapshot-service');
 
 class SnapshotSowV0Service extends TractorSnapshotService {
   static snapshotRepository = new TractorSnapshotRepository(sequelize.models.TractorSnapshotSowV0);
   static snapshotAssembler = SnapshotSowV0Assembler;
-  static initialSnapshotBlock = 29115727;
+  static initialSnapshotBlock = EnvUtil.getDevTractor().seedBlock ?? 29115727;
 
   static async takeSnapshot(snapshotBlock) {
     const blockTimestamp = new Date((await C().RPC.getBlock(snapshotBlock)).timestamp * 1000);
