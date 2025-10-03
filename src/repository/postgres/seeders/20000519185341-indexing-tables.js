@@ -509,6 +509,10 @@ module.exports = {
         ...bigintNumericColumn('totalBeanAmountToConvert', Sequelize, { allowNull: false }),
         ...bigintNumericColumn('minBeansConvertPerExecution', Sequelize, { allowNull: false }),
         ...bigintNumericColumn('maxBeansConvertPerExecution', Sequelize, { allowNull: false }),
+        capAmountToBonusCapacity: {
+          type: Sequelize.BOOLEAN,
+          allowNull: false
+        },
         ...bigintNumericColumn('minTimeBetweenConverts', Sequelize, { allowNull: false }),
         ...bigintNumericColumn('minConvertBonusCapacity', Sequelize, { allowNull: false }),
         ...bigintNumericColumn('maxGrownStalkPerBdv', Sequelize, { allowNull: false }),

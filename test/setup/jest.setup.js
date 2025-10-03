@@ -13,7 +13,9 @@ jest.mock('../../src/utils/env', () => {
       BEANSTALK: 'a',
       BEAN: 'b',
       BASIN: 'c'
-    }))
+    })),
+    getDevTractor: jest.fn().mockReturnValue({}),
+    isLocalRpc: jest.fn().mockReturnValue(false)
   };
 });
 // Disable alchemy config. Mock entire module so the static block does not execute

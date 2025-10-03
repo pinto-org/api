@@ -25,7 +25,7 @@ class SowV0OrderDto {
       this.orderComplete = d.orderComplete;
       this.amountFunded = d.amountFunded;
       this.cascadeAmountFunded = d.cascadeAmountFunded;
-      this.sourceTokenIndices = d.sourceTokenIndices.split(',');
+      this.sourceTokenIndices = d.sourceTokenIndices.split(',').map(Number);
       this.totalAmountToSow = d.totalAmountToSow;
       this.minAmountToSowPerSeason = d.minAmountToSowPerSeason;
       this.maxAmountToSowPerSeason = d.maxAmountToSowPerSeason;

@@ -33,6 +33,10 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('totalBeanAmountToConvert', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('minBeansConvertPerExecution', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('maxBeansConvertPerExecution', DataTypes, { allowNull: false }),
+      capAmountToBonusCapacity: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+      },
       ...bigintNumericColumn('minTimeBetweenConverts', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('minConvertBonusCapacity', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('maxGrownStalkPerBdv', DataTypes, { allowNull: false }),

@@ -14,6 +14,7 @@ class ConvertUpV0OrderDto {
       this.totalBeanAmountToConvert = d.convertUpParams.totalBeanAmountToConvert;
       this.minBeansConvertPerExecution = d.convertUpParams.minBeansConvertPerExecution;
       this.maxBeansConvertPerExecution = d.convertUpParams.maxBeansConvertPerExecution;
+      this.capAmountToBonusCapacity = d.convertUpParams.capAmountToBonusCapacity;
       this.minTimeBetweenConverts = d.convertUpParams.minTimeBetweenConverts;
       this.minConvertBonusCapacity = d.convertUpParams.minConvertBonusCapacity;
       this.maxGrownStalkPerBdv = d.convertUpParams.maxGrownStalkPerBdv;
@@ -31,10 +32,11 @@ class ConvertUpV0OrderDto {
       this.orderComplete = d.orderComplete;
       this.amountFunded = d.amountFunded;
       this.cascadeAmountFunded = d.cascadeAmountFunded;
-      this.sourceTokenIndices = d.sourceTokenIndices.split(',');
+      this.sourceTokenIndices = d.sourceTokenIndices.split(',').map(Number);
       this.totalBeanAmountToConvert = d.totalBeanAmountToConvert;
       this.minBeansConvertPerExecution = d.minBeansConvertPerExecution;
       this.maxBeansConvertPerExecution = d.maxBeansConvertPerExecution;
+      this.capAmountToBonusCapacity = d.capAmountToBonusCapacity;
       this.minTimeBetweenConverts = d.minTimeBetweenConverts;
       this.minConvertBonusCapacity = d.minConvertBonusCapacity;
       this.maxGrownStalkPerBdv = d.maxGrownStalkPerBdv;

@@ -13,6 +13,7 @@ class ConvertUpV0OrderAssembler {
       totalBeanAmountToConvert: orderDto.totalBeanAmountToConvert,
       minBeansConvertPerExecution: orderDto.minBeansConvertPerExecution,
       maxBeansConvertPerExecution: orderDto.maxBeansConvertPerExecution,
+      capAmountToBonusCapacity: orderDto.capAmountToBonusCapacity,
       minTimeBetweenConverts: orderDto.minTimeBetweenConverts,
       minConvertBonusCapacity: orderDto.minConvertBonusCapacity,
       maxGrownStalkPerBdv: orderDto.maxGrownStalkPerBdv,
