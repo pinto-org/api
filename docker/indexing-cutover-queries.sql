@@ -30,7 +30,7 @@ commit;
 -- Column names need to be explicit if new properties are added (since the order will differ between the env)
 begin;
 truncate table tractor_snapshot_sow_v0, tractor_execution_sow_v0, tractor_order_sow_v0, tractor_execution, tractor_order;
-insert into tractor_order ("blueprintHash", "orderType", "publisher", "data", "operatorPasteInstrs", "maxNonce", "startTime", "endTime", "signature", "publishedTimestamp", "publishedBlock", "beanTip", "cancelled", "createdAt", "updatedAt") select "blueprintHash", "orderType"::text::public."enum_tractor_order_orderType", "publisher", "data", "operatorPasteInstrs", "maxNonce", "startTime", "endTime", "signature", "publishedTimestamp", "publishedBlock", "beanTip", "cancelled", "createdAt", "updatedAt" from indexing_tractor_order;
+insert into tractor_order ("blueprintHash", "orderType", "publisher", "data", "operatorPasteInstrs", "maxNonce", "startTime", "endTime", "signature", "publishedTimestamp", "publishedBlock", "beanTip", "cancelled", "lastExecutableSeason", "createdAt", "updatedAt") select "blueprintHash", "orderType"::text::public."enum_tractor_order_orderType", "publisher", "data", "operatorPasteInstrs", "maxNonce", "startTime", "endTime", "signature", "publishedTimestamp", "publishedBlock", "beanTip", "cancelled", "lastExecutableSeason", "createdAt", "updatedAt" from indexing_tractor_order;
 insert into tractor_execution select * from indexing_tractor_execution;
 insert into tractor_order_sow_v0 select * from indexing_tractor_order_sow_v0;
 insert into tractor_order_convert_up_v0 select * from indexing_tractor_order_convert_up_v0;
