@@ -7,6 +7,7 @@ const GRAPH_API_KEY = process.env.GRAPH_API_KEY;
 
 const ENABLED_CHAINS = process.env.ENABLED_CHAINS?.split(',').filter((s) => s.trim().length > 0);
 const ENABLED_CRON_JOBS = process.env.ENABLED_CRON_JOBS?.split(',').filter((s) => s.trim().length > 0);
+const INDEXING_STOP_BLOCK = parseInt(process.env.INDEXING_STOP_BLOCK ?? '0') || Infinity;
 
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -69,6 +70,10 @@ class EnvUtil {
 
   static getEnabledCronJobs() {
     return ENABLED_CRON_JOBS;
+  }
+
+  static getIndexingStopBlock() {
+    return INDEXING_STOP_BLOCK;
   }
 
   static getDeploymentEnv() {

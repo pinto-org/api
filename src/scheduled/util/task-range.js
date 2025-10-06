@@ -45,6 +45,9 @@ class TaskRangeUtil {
       }
     }
 
+    // Cap the indexer progression if configured (indexing environment may want to stop at a specific block)
+    updateBlock = Math.min(updateBlock, EnvUtil.getIndexingStopBlock());
+
     return {
       isInitialized: true,
       lastUpdate,

@@ -6,6 +6,7 @@ jest.mock('../../src/utils/env', () => {
     getAlchemyKey: jest.fn(),
     getEnabledChains: jest.fn(),
     getEnabledCronJobs: jest.fn(),
+    getIndexingStopBlock: jest.fn().mockReturnValue(Number.MAX_SAFE_INTEGER),
     getDeploymentEnv: jest.fn(),
     getDiscordWebhooks: jest.fn(),
     getDiscordPrefix: jest.fn(),
