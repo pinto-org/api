@@ -10,6 +10,7 @@ module.exports = {
       console.log(`Skipping seeder: chain 'base' is not enabled.`);
       return;
     }
+    const START_BLOCK = 29114231;
 
     const existingMeta = await queryInterface.sequelize.query(
       `SELECT * FROM "${API_META_TABLE.env}" WHERE chain = :chain`,
@@ -22,13 +23,17 @@ module.exports = {
       await queryInterface.bulkInsert(API_META_TABLE.env, [
         {
           chain: 'base',
-          lastTractorUpdate: 29114231,
+          lastTractorUpdate: START_BLOCK,
           createdAt: new Date(),
           updatedAt: new Date()
         }
       ]);
     } else {
-      await queryInterface.bulkUpdate(API_META_TABLE.env, { lastTractorUpdate: 29114231 }, { lastTractorUpdate: null });
+      await queryInterface.bulkUpdate(
+        API_META_TABLE.env,
+        { lastTractorUpdate: START_BLOCK },
+        { lastTractorUpdate: null, chain: 'base' }
+      );
     }
   },
 
