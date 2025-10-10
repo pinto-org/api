@@ -1,10 +1,16 @@
 const SiloService = require('../../../service/silo-service');
 const YieldService = require('../../../service/yield-service');
 const Concurrent = require('../../../utils/async/concurrent');
+const EnvUtil = require('../../../utils/env');
 const Log = require('../../../utils/logging');
 
 class ApySeeder {
   static async run() {
+    if (EnvUtil.getDeploymentEnv() === 'indexing') {
+      // Avoid unnecessary work in the indexing env
+      return;
+    }
+
     // Find all missing seasons
     let missingSeasons = await YieldService.findMissingSeasons();
     if (missingSeasons.length > 0) {

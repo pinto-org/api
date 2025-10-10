@@ -42,6 +42,16 @@ update "ApiMeta" set "lastTractorUpdate" = (select "lastTractorUpdate" from "ind
 commit;
 
 
+-- Misc cleanup
+begin;
+drop table if exists indexing_deposit;
+drop table if exists indexing_season;
+drop table if exists indexing_yield;
+drop type if exists "enum_indexing_yield_initType";
+drop table if exists indexing_token;
+commit;
+
+
 -- Deposit cleanup
 begin;
 drop table if exists indexing_deposit;
@@ -75,5 +85,7 @@ drop table if exists indexing_tractor_order_sow_v0;
 drop table if exists indexing_tractor_order_convert_up_v0;
 drop table if exists indexing_tractor_execution;
 drop table if exists indexing_tractor_order;
+drop type if exists "enum_indexing_tractor_order_orderType";
+drop type if exists "enum_indexing_tractor_order_convert_up_v0_lowStalkDeposits"
 update "indexing_ApiMeta" set "lastTractorUpdate" = null;
 commit;
