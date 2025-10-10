@@ -33,14 +33,6 @@ class TractorConvertUpV0Service extends Blueprint {
     siloUpdateAccounts,
     forceUpdateAll
   ) {
-    const blockTag = BlockUtil.pauseGuard(blockNumber);
-
-    const [season, { price: currentPrice }, [bonusStalkPerBdv, maxSeasonalCapacity]] = await Promise.all([
-      (async () => Number(await Contracts.getBeanstalk().season({ blockTag })))(),
-      BeanstalkPrice.make({ block: blockTag }).priceReservesCurrent(),
-      Contracts.getBeanstalk().getConvertStalkPerBdvBonusAndMaximumCapacity({ blockTag })
-    ]);
-
     let orders = (
       await TractorService_getOrders({
         orderType: TractorOrderType.CONVERT_UP_V0,
@@ -52,6 +44,18 @@ class TractorConvertUpV0Service extends Blueprint {
         limit: 25000
       })
     ).orders;
+
+    if (orders.length === 0) {
+      // Nothing to update
+      return;
+    }
+
+    const blockTag = BlockUtil.pauseGuard(blockNumber);
+    const [season, { price: currentPrice }, [bonusStalkPerBdv, maxSeasonalCapacity]] = await Promise.all([
+      (async () => Number(await Contracts.getBeanstalk().season({ blockTag })))(),
+      BeanstalkPrice.make({ block: blockTag }).priceReservesCurrent(),
+      Contracts.getBeanstalk().getConvertStalkPerBdvBonusAndMaximumCapacity({ blockTag })
+    ]);
 
     // Evaluate whether the order can be executed
     const ordersToUpdate = [];
@@ -68,7 +72,7 @@ class TractorConvertUpV0Service extends Blueprint {
 
     if (!forceUpdateAll) {
       // Only update orders with recent silo activity
-      orders = orders.filter((o) => siloUpdateAccounts.has(o.publisher));
+      orders = orders.filter((o) => siloUpdateAccounts.has(o.publisher.toLowerCase()));
     }
 
     // Sort orders that can be executed first
