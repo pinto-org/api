@@ -1,6 +1,7 @@
 const TractorConstants = require('../../src/constants/tractor');
 const AlchemyUtil = require('../../src/datasources/alchemy');
 const Contracts = require('../../src/datasources/contracts/contracts');
+const DepositEvents = require('../../src/datasources/events/deposit-events');
 const FilterLogs = require('../../src/datasources/events/filter-logs');
 const TractorExecutionDto = require('../../src/repository/dto/tractor/TractorExecutionDto');
 const TractorOrderDto = require('../../src/repository/dto/tractor/TractorOrderDto');
@@ -55,6 +56,7 @@ describe('TractorTask', () => {
           { name: 'Tractor', value: 3 },
           { name: 'Tractor', value: 4 }
         ]);
+      jest.spyOn(DepositEvents, 'getSiloDepositEvents').mockResolvedValue([{ account: '0xabcd' }]);
       jest.spyOn(SnapshotSowV0Service, 'takeSnapshot').mockImplementation(() => {});
     });
 
@@ -87,7 +89,42 @@ describe('TractorTask', () => {
 
       await TractorTask.update();
 
-      expect(blueprintSpy.periodicUpdate).toHaveBeenCalledWith(expect.any(Function), expect.any(Function), 4000);
+      expect(blueprintSpy.periodicUpdate).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.any(Function),
+        4000,
+        new Set(['0xabcd']),
+        false
+      );
+    });
+
+    test('Periodic update is forceful when coincides with the sunrise block', async () => {
+      jest.spyOn(TaskRangeUtil, 'getUpdateInfo').mockResolvedValue({
+        isInitialized: true,
+        lastUpdate: 500,
+        updateBlock: 1000,
+        isCaughtUp: false,
+        meta: null
+      });
+      jest.spyOn(DepositEvents, 'getSiloDepositEvents').mockResolvedValue([{ account: '0xabcd' }]);
+      const blueprintSpy = {
+        periodicUpdate: jest.fn().mockImplementation(() => {})
+      };
+      jest.spyOn(TractorConstants, 'knownBlueprints').mockReturnValue({ a: blueprintSpy });
+      jest.spyOn(TractorTask, 'handlePublishRequsition').mockImplementation(() => {});
+      jest.spyOn(TractorTask, 'handleCancelBlueprint').mockImplementation(() => {});
+      jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
+      jest.spyOn(AppMetaService, 'setLastTractorUpdate').mockImplementation(() => {});
+
+      await TractorTask.update();
+
+      expect(blueprintSpy.periodicUpdate).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.any(Function),
+        1000,
+        new Set(['0xabcd']),
+        true
+      );
     });
   });
 
