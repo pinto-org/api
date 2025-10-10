@@ -26,7 +26,13 @@ class TractorConvertUpV0Service extends Blueprint {
    * Determine how many pinto can be converted in each order, accounting for cascading order execution.
    * One publisher may have multiple orders that could be executed during the same season
    */
-  static async periodicUpdate(TractorService_getOrders, TractorService_updateOrders, blockNumber) {
+  static async periodicUpdate(
+    TractorService_getOrders,
+    TractorService_updateOrders,
+    blockNumber,
+    siloUpdateAccounts,
+    forceUpdateAll
+  ) {
     const blockTag = BlockUtil.pauseGuard(blockNumber);
 
     const [season, { price: currentPrice }, [bonusStalkPerBdv, maxSeasonalCapacity]] = await Promise.all([
@@ -35,7 +41,7 @@ class TractorConvertUpV0Service extends Blueprint {
       Contracts.getBeanstalk().getConvertStalkPerBdvBonusAndMaximumCapacity({ blockTag })
     ]);
 
-    const orders = (
+    let orders = (
       await TractorService_getOrders({
         orderType: TractorOrderType.CONVERT_UP_V0,
         cancelled: false,
@@ -59,6 +65,11 @@ class TractorConvertUpV0Service extends Blueprint {
       }
     }
     await TractorService_updateOrders(ordersToUpdate);
+
+    if (!forceUpdateAll) {
+      // Only update orders with recent silo activity
+      orders = orders.filter((o) => siloUpdateAccounts.has(o.publisher));
+    }
 
     // Sort orders that can be executed first
     orders.sort((a, b) => {

@@ -25,7 +25,13 @@ class TractorSowV0Service extends Blueprint {
    * Determine how many pinto can be sown into each order, accounting for cascading order execution.
    * One publisher may have multiple orders that could be executed during the same season
    */
-  static async periodicUpdate(TractorService_getOrders, TractorService_updateOrders, blockNumber) {
+  static async periodicUpdate(
+    TractorService_getOrders,
+    TractorService_updateOrders,
+    blockNumber,
+    siloUpdateAccounts,
+    forceUpdateAll
+  ) {
     const blockTag = BlockUtil.pauseGuard(blockNumber);
 
     const [season, maxTemperature, podlineLength] = await Promise.all([
@@ -34,7 +40,7 @@ class TractorSowV0Service extends Blueprint {
       (async () => BigInt(await Contracts.getBeanstalk().totalUnharvestable(0, { blockTag })))()
     ]);
 
-    const orders = (
+    let orders = (
       await TractorService_getOrders({
         orderType: TractorOrderType.SOW_V0,
         cancelled: false,
@@ -58,6 +64,11 @@ class TractorSowV0Service extends Blueprint {
       }
     }
     await TractorService_updateOrders(ordersToUpdate);
+
+    if (!forceUpdateAll) {
+      // Only update orders with recent silo activity
+      orders = orders.filter((o) => siloUpdateAccounts.has(o.publisher));
+    }
 
     // Sort orders that can be executed first
     orders.sort((a, b) => {

@@ -1,6 +1,7 @@
 const { C } = require('../../constants/runtime-constants');
 const TractorConstants = require('../../constants/tractor');
 const Contracts = require('../../datasources/contracts/contracts');
+const DepositEvents = require('../../datasources/events/deposit-events');
 const FilterLogs = require('../../datasources/events/filter-logs');
 const { logIndex } = require('../../datasources/rpc-discrepancies');
 const TractorExecutionDto = require('../../repository/dto/tractor/TractorExecutionDto');
@@ -36,9 +37,10 @@ class TractorTask {
       toBlock: meta.lastUpdate + MAX_BLOCKS
     });
     sunrise.sort((a, b) => a.rawLog.blockNumber - b.rawLog.blockNumber);
+    const nextSunriseBlock = sunrise[0]?.rawLog.blockNumber;
     const snapshotPlan = {};
     for (const service of SNAPSHOT_SERVICES) {
-      const block = service.nextSnapshotBlock(meta.lastUpdate, sunrise[0]?.rawLog.blockNumber);
+      const block = service.nextSnapshotBlock(meta.lastUpdate, nextSunriseBlock);
       (snapshotPlan[block] ??= []).push(service);
     }
 
@@ -68,6 +70,10 @@ class TractorTask {
       toBlock: updateBlock
     });
 
+    // Identify accounts that moved silo funds since the last update. This can narrow which accounts need a periodicUpdate.
+    const depositEvents = await DepositEvents.getSiloDepositEvents(lastUpdate + 1, updateBlock);
+    const siloUpdateAccounts = new Set(depositEvents.map((e) => e.account));
+
     // Event processing can occur in parallel, but ensure all requisitions are created first
     await AsyncContext.sequelizeTransaction(async () => {
       await this.processEventsConcurrently(events, 'PublishRequisition', this.handlePublishRequsition.bind(this));
@@ -81,7 +87,9 @@ class TractorTask {
           return b.periodicUpdate(
             TractorService.getOrders.bind(TractorService),
             TractorService.updateOrders.bind(TractorService),
-            updateBlock
+            updateBlock,
+            siloUpdateAccounts,
+            updateBlock === nextSunriseBlock
           );
         })
       );

@@ -6,7 +6,7 @@ class TractorSnapshotService {
   static snapshotRepository;
   static snapshotAssembler;
   // This should be set according to the block of the first order of each type.
-  // It should be the block of the top of the following hour.
+  // It should be the block of the top of the following hour, and in practice correspond to a sunrise.
   static initialSnapshotBlock;
 
   /**
