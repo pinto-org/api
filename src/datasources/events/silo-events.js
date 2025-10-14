@@ -7,7 +7,7 @@ const FilterLogs = require('./filter-logs');
 
 const DEPOSIT_EVENTS = ['AddDeposit', 'RemoveDeposit', 'RemoveDeposits'];
 
-class DepositEvents {
+class SiloEvents {
   // Returns a summary of add/remove deposit events
   static async getSiloDepositEvents(fromBlock, toBlock = 'latest') {
     const events = await FilterLogs.getBeanstalkEvents(DEPOSIT_EVENTS, { fromBlock, toBlock });
@@ -99,79 +99,17 @@ class DepositEvents {
       }
     }
   }
-
-  // Sums the net deposit/withdrawal for each token in these events, and identifies transfers.
-  // A Transfer is identified as the same token being negative and positive for different accounts.
-  // Partial transfers are reflected via the transferPct field.
-  // i.e. -1000 pinto/+600 pinto, this is a 400 withdrawal and 600 transfer
-  static netDeposits(addRemoveEvents) {
-    const collapsed = this.collapseDepositEvents(addRemoveEvents);
-    const net = {};
-    for (const e of collapsed) {
-      (net[e.token] ??= {})[e.account] ??= {
-        amount: 0n,
-        bdv: 0n,
-        transferPct: 0
-      };
-      net[e.token][e.account].amount += BigInt(e.type) * e.amount;
-      net[e.token][e.account].bdv += BigInt(e.type) * e.bdv;
-    }
-
-    // Traverse withdrawals/deposits and assign transferPct
-    for (const token in net) {
-      const p = C().DECIMALS[token];
-      const netWithdrawal = Object.values(net[token]).filter((e) => e.amount < 0n);
-      const netDeposit = Object.values(net[token]).filter((e) => e.amount > 0n);
-      for (let w = 0, d = 0; w < netWithdrawal.length && d < netDeposit.length; ) {
-        const withdrawer = netWithdrawal[w];
-        const depositor = netDeposit[d];
-
-        const transferredW = bigintFloatMultiplier(BigInt_abs(withdrawer.amount), p, withdrawer.transferPct);
-        const transferredD = bigintFloatMultiplier(depositor.amount, p, depositor.transferPct);
-        const remainingW = BigInt_abs(withdrawer.amount) - transferredW;
-        const remainingD = depositor.amount - transferredD;
-
-        if (remainingW === remainingD) {
-          withdrawer.transferPct = 1;
-          depositor.transferPct = 1;
-          ++w;
-          ++d;
-        } else if (remainingW > remainingD) {
-          withdrawer.transferPct = bigintPercent(transferredW + remainingD, BigInt_abs(withdrawer.amount), p);
-          depositor.transferPct = 1;
-          ++d;
-        } else {
-          withdrawer.transferPct = 1;
-          depositor.transferPct = bigintPercent(transferredD + remainingW, depositor.amount, p);
-          ++w;
-        }
-      }
-    }
-
-    // Remove entries that ended up as zero
-    for (const token in net) {
-      for (const account in net[token]) {
-        if (net[token][account].amount === 0n) {
-          delete net[token][account];
-        }
-      }
-      if (Object.keys(net[token]).length === 0) {
-        delete net[token];
-      }
-    }
-    return net;
-  }
 }
-module.exports = DepositEvents;
+module.exports = SiloEvents;
 
 if (require.main === module) {
   (async () => {
     await AlchemyUtil.ready('base');
-    // const logs = await DepositEvents.getSiloDepositEvents(264547404);
+    // const logs = await SiloEvents.getSiloDepositEvents(264547404);
     // console.log(logs.filter((l) => l.name === 'AddDeposit')[0]);
     // console.log(logs.filter((l) => l.name === 'RemoveDeposit')[0]);
     // console.log(logs.filter((l) => l.name === 'RemoveDeposits')[0].args.stems);
-    // console.log(await DepositEvents.getSiloDepositEvents(264547404));
-    console.log(await DepositEvents.getStalkBalanceChangedEvents(25600457, 25602057));
+    // console.log(await SiloEvents.getSiloDepositEvents(264547404));
+    console.log(await SiloEvents.getStalkBalanceChangedEvents(25600457, 25602057));
   })();
 }

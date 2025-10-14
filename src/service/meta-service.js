@@ -38,6 +38,9 @@ class AppMetaService {
     await MetaRepository.update(C().CHAIN, { lastTractorUpdate: lastUpdate });
   }
 
+  /**
+   * @deprecated Use the combined Inflow task instead
+   */
   static async getSiloInflowMeta() {
     const meta = await MetaRepository.get(C().CHAIN);
     return {
@@ -45,10 +48,16 @@ class AppMetaService {
     };
   }
 
+  /**
+   * @deprecated Use the combined Inflow task instead
+   */
   static async setLastSiloInflowUpdate(lastUpdate) {
     await MetaRepository.update(C().CHAIN, { lastSiloInflowUpdate: lastUpdate });
   }
 
+  /**
+   * @deprecated Use the combined Inflow task instead
+   */
   static async getFieldInflowMeta() {
     const meta = await MetaRepository.get(C().CHAIN);
     return {
@@ -56,8 +65,22 @@ class AppMetaService {
     };
   }
 
+  /**
+   * @deprecated Use the combined Inflow task instead
+   */
   static async setLastFieldInflowUpdate(lastUpdate) {
     await MetaRepository.update(C().CHAIN, { lastFieldInflowUpdate: lastUpdate });
+  }
+
+  static async getInflowMeta() {
+    const meta = await MetaRepository.get(C().CHAIN);
+    return {
+      lastUpdate: meta?.lastInflowUpdate ? meta.lastInflowUpdate : null
+    };
+  }
+
+  static async setLastInflowUpdate(lastUpdate) {
+    await MetaRepository.update(C().CHAIN, { lastInflowUpdate: lastUpdate });
   }
 }
 

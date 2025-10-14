@@ -1,5 +1,5 @@
 const { C } = require('../../constants/runtime-constants');
-const DepositEvents = require('../../datasources/events/deposit-events');
+const SiloEvents = require('../../datasources/events/silo-events');
 const DepositDto = require('../../repository/dto/DepositDto');
 const DepositService = require('../../service/deposit-service');
 const AsyncContext = require('../../utils/async/context');
@@ -98,7 +98,7 @@ class DepositsTask {
 
   // Updates mow stems for all deposits associated with users who have potentially mown.
   static async updateMowStems(fromBlock, toBlock, tokenInfos) {
-    const stalkChangeEvents = await DepositEvents.getStalkBalanceChangedEvents(fromBlock, toBlock);
+    const stalkChangeEvents = await SiloEvents.getStalkBalanceChangedEvents(fromBlock, toBlock);
     // Determine what assets each account has deposited and has possibly just mown
     const accountsCriteria = Array.from(new Set(stalkChangeEvents.map((e) => e.account))).map((account) => ({
       account
@@ -137,7 +137,7 @@ class DepositsTask {
 
   // Gets the set of net deposit activity over this range in token amounts
   static async getNetChange(fromBlock, toBlock) {
-    const newEvents = await DepositEvents.getSiloDepositEvents(fromBlock, toBlock);
+    const newEvents = await SiloEvents.getSiloDepositEvents(fromBlock, toBlock);
     const netActivity = {};
     for (const event of newEvents) {
       const key = `${event.account}|${event.token}|${event.stem}`;

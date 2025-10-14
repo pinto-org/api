@@ -1,5 +1,6 @@
 const { C } = require('../../src/constants/runtime-constants');
 const SiloInflowsTask = require('../../src/scheduled/tasks/silo-inflows');
+const SiloInflowsUtil = require('../../src/scheduled/util/silo-inflows');
 const { mockPintoConstants } = require('../util/mock-constants');
 
 describe('Silo inflows task', () => {
@@ -9,11 +10,11 @@ describe('Silo inflows task', () => {
 
   describe('Dto construction', () => {
     beforeEach(() => {
-      jest.spyOn(SiloInflowsTask, 'assignInflowBdvAndUsd').mockImplementation(() => {});
+      jest.spyOn(SiloInflowsUtil, 'assignInflowBdvAndUsd').mockImplementation(() => {});
     });
 
     test('No transfers', async () => {
-      const result = await SiloInflowsTask.inflowsFromNetDeposits(
+      const result = await SiloInflowsUtil.inflowsFromNetDeposits(
         {
           [C().BEAN]: {
             abc: {
@@ -38,7 +39,7 @@ describe('Silo inflows task', () => {
     });
 
     test('Full transfer', async () => {
-      const result = await SiloInflowsTask.inflowsFromNetDeposits(
+      const result = await SiloInflowsUtil.inflowsFromNetDeposits(
         {
           [C().PINTOWETH]: {
             abc: {
@@ -61,7 +62,7 @@ describe('Silo inflows task', () => {
     });
 
     test('Partial transfer', async () => {
-      const result = await SiloInflowsTask.inflowsFromNetDeposits(
+      const result = await SiloInflowsUtil.inflowsFromNetDeposits(
         {
           [C().PINTOWETH]: {
             abc: {

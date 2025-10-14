@@ -14,6 +14,9 @@ const TaskRangeUtil = require('../util/task-range');
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 10000;
 
+/**
+ * @deprecated Use the combined Inflow task instead
+ */
 class FieldInflowsTask {
   // Returns true if the task can be called again immediately
   static async update() {
