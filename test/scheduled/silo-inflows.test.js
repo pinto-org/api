@@ -1,5 +1,4 @@
 const { C } = require('../../src/constants/runtime-constants');
-const SiloInflowsTask = require('../../src/scheduled/tasks/silo-inflows');
 const SiloInflowsUtil = require('../../src/scheduled/util/silo-inflows');
 const { mockPintoConstants } = require('../util/mock-constants');
 

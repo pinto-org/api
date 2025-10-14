@@ -1,13 +1,10 @@
 class FieldInflowsUtil {
   // Sums the net of field activity (in bdv) per account
-  static netInflows(fieldEvents) {
+  static netBdvInflows(fieldEvents) {
     const net = {};
     const add = (account, bdv) => {
       account = account.toLowerCase();
-      net[account] ??= {
-        bdv: 0n
-      };
-      net[account].bdv += bdv;
+      net[account] = (net[account] ?? 0n) + bdv;
     };
     for (const e of fieldEvents) {
       if (['Sow', 'Harvest'].includes(e.name)) {
@@ -23,6 +20,9 @@ class FieldInflowsUtil {
     return net;
   }
 
+  // TODO: consider that this methodology wants to be refactored such that a harvest/sow already negate each other
+  // and dont generate two inflow entries on field.
+  // This step will also be expanded to consider negations by corresponding silo activity
   static async inflowsFromEvent(e) {
     const beanPrice = (await PriceService.getBeanPrice({ blockNumber: e.rawLog.blockNumber })).usdPrice;
     if (['Sow', 'Harvest'].includes(e.name)) {

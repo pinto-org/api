@@ -46,14 +46,21 @@ class InflowsTask {
         const converts = txnEvents.filter((e) => e.name === 'Convert');
         const plants = txnEvents.filter((e) => e.name === 'Plant');
         const addRemoves = txnEvents.filter((e) => e.name.includes('Deposit'));
+        const claimPlenties = txnEvents.filter((e) => e.name === 'ClaimPlenty');
+        const fieldEvents = txnEvents.filter((e) => FIELD_EVENTS.has(e.name));
 
         // Ignore add/removal matching convert or pick
         SiloEvents.removeConvertRelatedEvents(addRemoves, converts);
         SiloEvents.removePlantRelatedEvents(addRemoves, plants);
 
-        // Determine net of add/remove
-        const netSilo = SiloInflowsUtil.netDeposits(addRemoves); // This might not be exactly whats needed because it doesnt have claimplenty
-        const netField = FieldInflowsUtil.netInflows(fieldEvents);
+        // Attaches bdv/bean price to the plenty events
+        await SiloInflowsUtil.assignClaimPlentyBdvs(claimPlenties, txnEvents[0].rawLog.blockNumber);
+
+        const netDeposits = SiloInflowsUtil.netDeposits(addRemoves);
+        const netSilo = SiloInflowsUtil.netBdvInflows(netDeposits, claimPlenties);
+        const netField = FieldInflowsUtil.netBdvInflows(fieldEvents);
+
+        // Generate inflow dtos in consideration of potential negations on the other side
 
         // inflowDtos.push(...(await this.inflowsFromEvent(e)));
       });
