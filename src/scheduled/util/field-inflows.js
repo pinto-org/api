@@ -1,5 +1,5 @@
 class FieldInflowsUtil {
-  // Sums the net of field activity (in bdv) per account
+  // Calculates the net bdv inflow for each account
   static netBdvInflows(fieldEvents) {
     const net = {};
     const add = (account, bdv) => {

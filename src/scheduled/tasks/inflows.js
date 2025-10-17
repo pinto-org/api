@@ -33,6 +33,7 @@ class InflowsTask {
       fromBlock: lastUpdate + 1,
       toBlock: updateBlock
     });
+    // TODO: Sort by log index?
 
     await EventsUtils.attachTimestamps(events);
     const byTxn = await EventsUtils.groupByTransaction(events);
@@ -61,6 +62,8 @@ class InflowsTask {
         const netField = FieldInflowsUtil.netBdvInflows(fieldEvents);
 
         // Generate inflow dtos in consideration of potential negations on the other side
+        // How will these amounts be represented on the dtos?
+        // add new netBdv and netUsd value that will usually be equal, but can be reduced if there isnt net activity.
 
         // inflowDtos.push(...(await this.inflowsFromEvent(e)));
       });
