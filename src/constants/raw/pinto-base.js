@@ -32,10 +32,9 @@ const contracts = {
   STABLE2: ['0xBA51055a97b40d7f41f3F64b57469b5D45B67c87', null, wellFunctionAbi],
   SOW_V0: ['0xbb0a41927895F8ca2b4ECCc659ba158735fCF28B', null, sowBlueprintV0Abi],
   SOW_V0_TRACTOR_HELPERS: ['0x2808b14d287F8CA77eb25B16575aF187d5A05119', null, tractorHelpersAbi],
-  // TODO: verify final addresses
-  CONVERT_UP_V0: ['0x53B7cF2a4A18062aFF4fA71Bb300F6eA2d3702E2', null, convertUpBlueprintV0Abi],
-  CONVERT_UP_V0_TRACTOR_HELPERS: ['0xE72E16b32FD9Ce560f11db8e5d6A045E6D655e5F', null, convertUpTractorHelpersAbi],
-  CONVERT_UP_V0_SILO_HELPERS: ['0xe02919865F7ea6F342F09538BE801ee4a14884CD', null, convertUpSiloHelpersAbi]
+  CONVERT_UP_V0: ['0xDe3005B12f55C3a6AD940652A11F913E6d7956FB', null, convertUpBlueprintV0Abi],
+  CONVERT_UP_V0_TRACTOR_HELPERS: ['0xBCa2F299602c2a43850c8b2FD19D5275D0F388b6', null, convertUpTractorHelpersAbi],
+  CONVERT_UP_V0_SILO_HELPERS: ['0xE145082A7C5EDd1767f8148A6c29a17488d1eb31', null, convertUpSiloHelpersAbi]
 };
 
 // Extract values from the above contracts
