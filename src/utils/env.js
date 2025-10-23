@@ -100,7 +100,7 @@ class EnvUtil {
   static getDevTractor() {
     return {
       seeder: DEV_TRACTOR_SEEDER,
-      seedBlock: DEV_TRACTOR_SEEDER_START,
+      seedBlock: DEV_TRACTOR_SEEDER_START || null,
       useRecentBlock: DEV_TRACTOR_RECENT
     };
   }

@@ -1,5 +1,7 @@
 'use strict';
 
+const { TOKEN_TABLE } = require('../../../constants/tables');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
