@@ -1,6 +1,7 @@
 const TractorConstants = require('../../src/constants/tractor');
 const AlchemyUtil = require('../../src/datasources/alchemy');
 const Contracts = require('../../src/datasources/contracts/contracts');
+const DepositEvents = require('../../src/datasources/events/deposit-events');
 const FilterLogs = require('../../src/datasources/events/filter-logs');
 const TractorExecutionDto = require('../../src/repository/dto/tractor/TractorExecutionDto');
 const TractorOrderDto = require('../../src/repository/dto/tractor/TractorOrderDto');
@@ -9,7 +10,7 @@ const TaskRangeUtil = require('../../src/scheduled/util/task-range');
 const AppMetaService = require('../../src/service/meta-service');
 const PriceService = require('../../src/service/price-service');
 const TractorSowV0Service = require('../../src/service/tractor/blueprints/sow-v0');
-const SnapshotSowV0Service = require('../../src/service/tractor/snapshot-sow-v0-service');
+const SnapshotSowV0Service = require('../../src/service/tractor/snapshots/snapshot-sow-v0-service');
 const TractorService = require('../../src/service/tractor/tractor-service');
 
 describe('TractorTask', () => {
@@ -19,16 +20,18 @@ describe('TractorTask', () => {
 
   test('Does nothing if uninitialized', async () => {
     jest.spyOn(AppMetaService, 'getTractorMeta').mockResolvedValue({
-      lastUpdate: 10
+      lastUpdate: null
     });
-    jest.spyOn(SnapshotSowV0Service, 'nextSnapshotBlock').mockResolvedValue(4000);
-    jest.spyOn(TaskRangeUtil, 'getUpdateInfo').mockResolvedValue({ isInitialized: false });
     const filterLogSpy = jest.spyOn(FilterLogs, 'getBeanstalkEvents');
+    const snapshotSpy = jest.spyOn(SnapshotSowV0Service, 'nextSnapshotBlock');
+    const taskRangeSpy = jest.spyOn(TaskRangeUtil, 'getUpdateInfo');
 
     const retval = await TractorTask.update();
 
     expect(retval).toBe(false);
     expect(filterLogSpy).not.toHaveBeenCalled();
+    expect(snapshotSpy).not.toHaveBeenCalled();
+    expect(taskRangeSpy).not.toHaveBeenCalled();
   });
 
   describe('Initialized', () => {
@@ -36,7 +39,7 @@ describe('TractorTask', () => {
       jest.spyOn(AppMetaService, 'getTractorMeta').mockResolvedValue({
         lastUpdate: 10
       });
-      jest.spyOn(SnapshotSowV0Service, 'nextSnapshotBlock').mockResolvedValue(4000);
+      jest.spyOn(SnapshotSowV0Service, 'nextSnapshotBlock').mockReturnValue(4000);
       jest.spyOn(TaskRangeUtil, 'getUpdateInfo').mockResolvedValue({
         isInitialized: true,
         lastUpdate: 2000,
@@ -44,12 +47,16 @@ describe('TractorTask', () => {
         isCaughtUp: false,
         meta: null
       });
-      jest.spyOn(FilterLogs, 'getBeanstalkEvents').mockResolvedValue([
-        { name: 'PublishRequisition', value: 1 },
-        { name: 'CancelBlueprint', value: 2 },
-        { name: 'Tractor', value: 3 },
-        { name: 'Tractor', value: 4 }
-      ]);
+      jest
+        .spyOn(FilterLogs, 'getBeanstalkEvents')
+        .mockResolvedValueOnce([{ name: 'Sunrise', rawLog: { blockNumber: 1000 } }])
+        .mockResolvedValueOnce([
+          { name: 'PublishRequisition', value: 1 },
+          { name: 'CancelBlueprint', value: 2 },
+          { name: 'Tractor', value: 3 },
+          { name: 'Tractor', value: 4 }
+        ]);
+      jest.spyOn(DepositEvents, 'getSiloDepositEvents').mockResolvedValue([{ account: '0xabcd' }]);
       jest.spyOn(SnapshotSowV0Service, 'takeSnapshot').mockImplementation(() => {});
     });
 
@@ -82,7 +89,42 @@ describe('TractorTask', () => {
 
       await TractorTask.update();
 
-      expect(blueprintSpy.periodicUpdate).toHaveBeenCalledWith(expect.any(Function), 4000);
+      expect(blueprintSpy.periodicUpdate).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.any(Function),
+        4000,
+        new Set(['0xabcd']),
+        false
+      );
+    });
+
+    test('Periodic update is forceful when coincides with the sunrise block', async () => {
+      jest.spyOn(TaskRangeUtil, 'getUpdateInfo').mockResolvedValue({
+        isInitialized: true,
+        lastUpdate: 500,
+        updateBlock: 1000,
+        isCaughtUp: false,
+        meta: null
+      });
+      jest.spyOn(DepositEvents, 'getSiloDepositEvents').mockResolvedValue([{ account: '0xabcd' }]);
+      const blueprintSpy = {
+        periodicUpdate: jest.fn().mockImplementation(() => {})
+      };
+      jest.spyOn(TractorConstants, 'knownBlueprints').mockReturnValue({ a: blueprintSpy });
+      jest.spyOn(TractorTask, 'handlePublishRequsition').mockImplementation(() => {});
+      jest.spyOn(TractorTask, 'handleCancelBlueprint').mockImplementation(() => {});
+      jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
+      jest.spyOn(AppMetaService, 'setLastTractorUpdate').mockImplementation(() => {});
+
+      await TractorTask.update();
+
+      expect(blueprintSpy.periodicUpdate).toHaveBeenCalledWith(
+        expect.any(Function),
+        expect.any(Function),
+        1000,
+        new Set(['0xabcd']),
+        true
+      );
     });
   });
 
@@ -165,7 +207,9 @@ describe('TractorTask', () => {
     });
 
     test('Known blueprint', async () => {
-      jest.spyOn(TractorService, 'getOrders').mockResolvedValue({ orders: [{ orderType: 'SOW_V0' }] });
+      jest
+        .spyOn(TractorService, 'getOrders')
+        .mockResolvedValue({ orders: [{ orderType: 'SOW_V0', blueprintData: 'blueprintData' }] });
       const sowExeSpy = jest.spyOn(TractorSowV0Service, 'orderExecuted').mockResolvedValue(1.25);
       const insertedDto = {};
       executionDbSpy = jest

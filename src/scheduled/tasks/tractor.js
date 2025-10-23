@@ -1,13 +1,15 @@
 const { C } = require('../../constants/runtime-constants');
 const TractorConstants = require('../../constants/tractor');
 const Contracts = require('../../datasources/contracts/contracts');
+const DepositEvents = require('../../datasources/events/deposit-events');
 const FilterLogs = require('../../datasources/events/filter-logs');
 const { logIndex } = require('../../datasources/rpc-discrepancies');
 const TractorExecutionDto = require('../../repository/dto/tractor/TractorExecutionDto');
 const TractorOrderDto = require('../../repository/dto/tractor/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
 const PriceService = require('../../service/price-service');
-const SnapshotSowV0Service = require('../../service/tractor/snapshot-sow-v0-service');
+const SnapshotConvertUpV0Service = require('../../service/tractor/snapshots/snapshot-convert-up-v0-service');
+const SnapshotSowV0Service = require('../../service/tractor/snapshots/snapshot-sow-v0-service');
 const TractorService = require('../../service/tractor/tractor-service');
 const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
@@ -18,29 +20,46 @@ const TaskRangeUtil = require('../util/task-range');
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 10000;
 
+const SNAPSHOT_SERVICES = [SnapshotSowV0Service, SnapshotConvertUpV0Service];
+
 class TractorTask {
   // Returns true if the task can be called again immediately
   static async update() {
-    const [meta, snapshotBlock] = await Promise.all([
-      AppMetaService.getTractorMeta(),
-      SnapshotSowV0Service.nextSnapshotBlock()
-    ]);
-    let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS, {
-      maxReturnBlock: snapshotBlock,
+    const meta = await AppMetaService.getTractorMeta();
+    if (!meta.lastUpdate) {
+      Log.info(`Skipping task; has not been initialized yet.`);
+      return false;
+    }
+
+    // Determine which blocks to take any snapshots at
+    const sunrise = await FilterLogs.getBeanstalkEvents(['Sunrise'], {
+      fromBlock: meta.lastUpdate + 1,
+      toBlock: meta.lastUpdate + MAX_BLOCKS
+    });
+    sunrise.sort((a, b) => a.rawLog.blockNumber - b.rawLog.blockNumber);
+    const nextSunriseBlock = sunrise[0]?.rawLog.blockNumber;
+    const snapshotPlan = {};
+    for (const service of SNAPSHOT_SERVICES) {
+      const block = service.nextSnapshotBlock(meta.lastUpdate, nextSunriseBlock);
+      (snapshotPlan[block] ??= []).push(service);
+    }
+
+    let { lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS, {
+      maxReturnBlock: Math.min(...Object.keys(snapshotPlan).map(Number)),
       // In the case of a pause, need to continue processing PublishRequisition/CancelBlueprint, which don't depend on any diamond
       // onchain function. Tractor would never emit.
       // The snapshot will however avoid calling view functions with blocks during the pause.
       skipPausedRange: false
     });
 
-    if (EnvUtil.getDeploymentEnv() === 'local' && !!EnvUtil.getCustomRpcUrl(C().CHAIN)) {
+    if (EnvUtil.getDevTractor().useRecentBlock && EnvUtil.isLocalRpc(C().CHAIN)) {
       const latestBlock = (await C().RPC.getBlock()).number;
-      lastUpdate = Math.max(lastUpdate, latestBlock - 10000);
+      lastUpdate = Math.max(lastUpdate, latestBlock - 50); // Small buffer is preferred to not collide with any actual activity
       updateBlock = latestBlock;
     }
 
-    if (!isInitialized || lastUpdate === updateBlock) {
-      Log.info(`Skipping task, has not been initialized yet or last update is the same as the suggested update block.`);
+    if (lastUpdate === updateBlock) {
+      Log.info(`Skipping task; last update is the same as the suggested update block.`);
       return false;
     }
     Log.info(`Updating tractor for block range [${lastUpdate}, ${updateBlock}]`);
@@ -51,6 +70,10 @@ class TractorTask {
       toBlock: updateBlock
     });
 
+    // Identify accounts that moved silo funds since the last update. This can narrow which accounts need a periodicUpdate.
+    const depositEvents = await DepositEvents.getSiloDepositEvents(lastUpdate + 1, updateBlock);
+    const siloUpdateAccounts = new Set(depositEvents.map((e) => e.account));
+
     // Event processing can occur in parallel, but ensure all requisitions are created first
     await AsyncContext.sequelizeTransaction(async () => {
       await this.processEventsConcurrently(events, 'PublishRequisition', this.handlePublishRequsition.bind(this));
@@ -60,13 +83,20 @@ class TractorTask {
       // Run periodicUpdate on specialized blueprint modules
       await Promise.all(
         Object.values(TractorConstants.knownBlueprints()).map((b) => {
-          // Pass in the getOrders method to avoid circular dependency
-          return b.periodicUpdate(TractorService.getOrders.bind(TractorService), updateBlock);
+          // Pass in the method to avoid circular dependency
+          return b.periodicUpdate(
+            TractorService.getOrders.bind(TractorService),
+            TractorService.updateOrders.bind(TractorService),
+            updateBlock,
+            siloUpdateAccounts,
+            updateBlock === nextSunriseBlock
+          );
         })
       );
 
-      if (updateBlock >= snapshotBlock) {
-        await SnapshotSowV0Service.takeSnapshot(updateBlock);
+      // Take the snaphshots scheduled for this block
+      for (const snapshotService of snapshotPlan[updateBlock] ?? []) {
+        await snapshotService.takeSnapshot(updateBlock);
       }
 
       await AppMetaService.setLastTractorUpdate(updateBlock);
@@ -104,8 +134,16 @@ class TractorTask {
       // Tractor event received for unpublished blueprint hash. Skip it
       return;
     }
+    // This should be refactored to not use the deprecated method; however in practice it is acceptable currently
+    // because though the Convert event signature changed, it was not during the lifetime of any existing Convert blueprint.
     const txnEvents = await FilterLogs.getTransactionEvents(
-      [Contracts.getBeanstalk(), Contracts.get(C().TRACTOR_HELPERS), Contracts.get(C().SOW_V0)],
+      [
+        Contracts.getBeanstalk(),
+        Contracts.get(C().SOW_V0),
+        Contracts.get(C().SOW_V0_TRACTOR_HELPERS),
+        Contracts.get(C().CONVERT_UP_V0),
+        Contracts.get(C().CONVERT_UP_V0_TRACTOR_HELPERS)
+      ],
       receipt
     );
 
@@ -137,7 +175,7 @@ class TractorTask {
       const innerEvents = txnEvents.filter(
         (e) => logIndex(e.rawLog) > logIndex(began.rawLog) && logIndex(e.rawLog) < logIndex(event.rawLog)
       );
-      const tipUsd = await blueprintTask.orderExecuted(order, inserted, innerEvents);
+      const tipUsd = await blueprintTask.orderExecuted(order.blueprintData, inserted, innerEvents);
       if (tipUsd) {
         inserted.tipUsd = tipUsd;
         await TractorService.updateExecutions([inserted]);

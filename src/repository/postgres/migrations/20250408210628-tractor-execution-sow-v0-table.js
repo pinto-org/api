@@ -35,7 +35,6 @@ module.exports = {
       ...bigintNumericColumn('beans', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('pods', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('placeInLine', Sequelize, { allowNull: false }),
-      // uint8[], in practice this list will be small so we store as comma separated string rather than ABI encoding
       usedTokenIndices: {
         type: Sequelize.TEXT,
         allowNull: false

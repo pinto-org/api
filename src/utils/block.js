@@ -2,12 +2,11 @@ const { C } = require('../constants/runtime-constants');
 const CommonSubgraphRepository = require('../repository/subgraph/common-subgraph');
 
 class BlockUtil {
-  // Returns the block data to use for the given options.
-  // Valid options are blockNumber and timestamp.
-  static async blockFromOptions(options) {
-    let blockTag = options.blockNumber ?? 'latest';
-    if (options.timestamp) {
-      return await BlockUtil.findBlockByTimestamp(options.timestamp);
+  // Returns the block data to use for the given options. Both are optional
+  static async blockFromOptions({ blockNumber, timestamp }) {
+    let blockTag = blockNumber ?? 'latest';
+    if (timestamp) {
+      return await BlockUtil.findBlockByTimestamp(timestamp);
     } else {
       return await C().RPC.getBlock(blockTag);
     }

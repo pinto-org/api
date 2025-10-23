@@ -1,4 +1,7 @@
 const SharedService = require('../../shared-service');
+const { fromBigInt } = require('../../../utils/number');
+const PriceService = require('../../price-service');
+const { C } = require('../../../constants/runtime-constants');
 
 // Base class for Tractor blueprint services
 class BlueprintService {
@@ -7,12 +10,19 @@ class BlueprintService {
   static orderAssembler;
   static executionModel;
   static executionAssembler;
+  static executionDto;
 
   /**
    * Performs periodic updates for the blueprint's entities
    * @abstract
    */
-  static async periodicUpdate(TractorService_getOrders, blockNumber) {
+  static async periodicUpdate(
+    TractorService_getOrders,
+    TractorService_updateOrders,
+    blockNumber,
+    siloUpdateAccounts,
+    forceUpdateAll
+  ) {
     throw new Error('periodicUpdate must be implemented by subclass');
   }
 
@@ -22,14 +32,6 @@ class BlueprintService {
    */
   static async tryAddRequisition(orderDto, blueprintData) {
     throw new Error('tryAddRequisition must be implemented by subclass');
-  }
-
-  /**
-   * Manages order updates after an execution. Returns amount of tip paid in usd, if any
-   * @abstract
-   */
-  static async orderExecuted(orderDto, executionDto, innerEvents) {
-    throw new Error('orderExecuted must be implemented by subclass');
   }
 
   /**
@@ -47,6 +49,9 @@ class BlueprintService {
   static decodeBlueprintData(blueprintData) {
     throw new Error('decodeBlueprintData must be implemented by subclass');
   }
+
+  // Future work is to put the params/validations in a general location such that blueprints can mix/match
+  // which ones they want to use. This would be helpful if we have many different blueprints.
 
   /**
    * Validates blueprint-specific order parameters
@@ -78,6 +83,30 @@ class BlueprintService {
    */
   static executionRequestParams(blueprintParams) {
     throw new Error('executionRequestParams must be implemented by subclass');
+  }
+
+  /**
+   * Manages order updates after an execution. Returns amount of tip paid in usd, if any
+   */
+  static async orderExecuted(blueprintOrderDto, baseExecutionDto, innerEvents) {
+    // Update current order entity state
+    await blueprintOrderDto.updateFieldsUponExecution(innerEvents);
+    await this.updateOrders([blueprintOrderDto]);
+
+    // Insert execution entity
+    const blueprintExecutionDto = await this.executionDto.fromExecutionContext({
+      baseExecutionDto,
+      innerEvents
+    });
+    await this.updateExecutions([blueprintExecutionDto]);
+
+    // Return amount of tip paid in usd
+    const operatorReward = innerEvents.find((e) => e.name === 'OperatorReward');
+    if (operatorReward.args.token.toLowerCase() === C().BEAN) {
+      const beanPrice = await PriceService.getBeanPrice({ blockNumber: operatorReward.rawLog.blockNumber });
+      const tipUsd = fromBigInt(BigInt(operatorReward.args.amount), 6) * beanPrice.usdPrice;
+      return tipUsd;
+    }
   }
 
   /**

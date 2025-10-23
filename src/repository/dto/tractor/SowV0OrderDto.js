@@ -25,7 +25,7 @@ class SowV0OrderDto {
       this.orderComplete = d.orderComplete;
       this.amountFunded = d.amountFunded;
       this.cascadeAmountFunded = d.cascadeAmountFunded;
-      this.sourceTokenIndices = d.sourceTokenIndices.split(',');
+      this.sourceTokenIndices = d.sourceTokenIndices.split(',').map(Number);
       this.totalAmountToSow = d.totalAmountToSow;
       this.minAmountToSowPerSeason = d.minAmountToSowPerSeason;
       this.maxAmountToSowPerSeason = d.maxAmountToSowPerSeason;
@@ -55,6 +55,10 @@ class SowV0OrderDto {
       this.amountFunded = 0n;
       this.cascadeAmountFunded = 0n;
     }
+  }
+
+  canExecuteThisSeason({ maxTemperature, podlineLength }) {
+    return maxTemperature >= this.minTemp && podlineLength <= this.maxPodlineLength;
   }
 }
 

@@ -1,11 +1,12 @@
 const TractorConstants = require('../constants/tractor');
 const InputError = require('../error/input-error');
 const { TractorOrderType } = require('../repository/postgres/models/types/types');
-const SnapshotSowV0Service = require('../service/tractor/snapshot-sow-v0-service');
+const SnapshotSowV0Service = require('../service/tractor/snapshots/snapshot-sow-v0-service');
 const TractorService = require('../service/tractor/tractor-service');
 
 const Router = require('koa-router');
 const RestParsingUtil = require('../utils/rest-parsing');
+const SnapshotConvertUpV0Service = require('../service/tractor/snapshots/snapshot-convert-up-v0-service');
 const router = new Router({
   prefix: '/tractor'
 });
@@ -119,6 +120,8 @@ router.post('/snapshots', async (ctx) => {
   let method;
   if (body.orderType === 'SOW_V0') {
     method = SnapshotSowV0Service.getSnapshots.bind(SnapshotSowV0Service);
+  } else if (body.orderType === 'CONVERT_UP_V0') {
+    method = SnapshotConvertUpV0Service.getSnapshots.bind(SnapshotConvertUpV0Service);
   }
 
   /** @type {import('../../types/types').TractorSnapshotsResult} */

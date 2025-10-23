@@ -1,28 +1,29 @@
-const { C } = require('../../../constants/runtime-constants');
-const Contracts = require('../../../datasources/contracts/contracts');
-const Interfaces = require('../../../datasources/contracts/interfaces');
-const InputError = require('../../../error/input-error');
-const SowV0ExecutionDto = require('../../../repository/dto/tractor/SowV0ExecutionDto');
-const SowV0OrderDto = require('../../../repository/dto/tractor/SowV0OrderDto');
+const { TractorOrderType, stalkModeToInt } = require('../../../repository/postgres/models/types/types');
+const Blueprint = require('./blueprint');
 const { sequelize, Sequelize } = require('../../../repository/postgres/models');
-const SowV0ExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-sow-v0-assembler');
-const SowV0OrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-sow-v0-assembler');
-const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
+const ConvertUpV0ExecutionDto = require('../../../repository/dto/tractor/ConvertUpV0ExecutionDto');
+const ConvertUpV0OrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-convert-up-v0-assembler');
+const ConvertUpV0ExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-convert-up-v0-assembler');
+const BlueprintConstants = require('./blueprint-constants');
+const InputError = require('../../../error/input-error');
+const Contracts = require('../../../datasources/contracts/contracts');
+const { C } = require('../../../constants/runtime-constants');
+const Interfaces = require('../../../datasources/contracts/interfaces');
+const ConvertUpV0OrderDto = require('../../../repository/dto/tractor/ConvertUpV0OrderDto');
 const Concurrent = require('../../../utils/async/concurrent');
 const BlockUtil = require('../../../utils/block');
-const Blueprint = require('./blueprint');
-const BlueprintConstants = require('./blueprint-constants');
+const BeanstalkPrice = require('../../../datasources/contracts/upgradeable/beanstalk-price');
 
-class TractorSowV0Service extends Blueprint {
-  static orderType = TractorOrderType.SOW_V0;
-  static orderModel = sequelize.models.TractorOrderSowV0;
-  static orderAssembler = SowV0OrderAssembler;
-  static executionModel = sequelize.models.TractorExecutionSowV0;
-  static executionAssembler = SowV0ExecutionAssembler;
-  static executionDto = SowV0ExecutionDto;
+class TractorConvertUpV0Service extends Blueprint {
+  static orderType = TractorOrderType.CONVERT_UP_V0;
+  static orderModel = sequelize.models.TractorOrderConvertUpV0;
+  static orderAssembler = ConvertUpV0OrderAssembler;
+  static executionModel = sequelize.models.TractorExecutionConvertUpV0;
+  static executionAssembler = ConvertUpV0ExecutionAssembler;
+  static executionDto = ConvertUpV0ExecutionDto;
 
   /**
-   * Determine how many pinto can be sown into each order, accounting for cascading order execution.
+   * Determine how many pinto can be converted in each order, accounting for cascading order execution.
    * One publisher may have multiple orders that could be executed during the same season
    */
   static async periodicUpdate(
@@ -34,7 +35,7 @@ class TractorSowV0Service extends Blueprint {
   ) {
     let orders = (
       await TractorService_getOrders({
-        orderType: TractorOrderType.SOW_V0,
+        orderType: TractorOrderType.CONVERT_UP_V0,
         cancelled: false,
         blueprintParams: {
           orderComplete: false
@@ -50,10 +51,10 @@ class TractorSowV0Service extends Blueprint {
     }
 
     const blockTag = BlockUtil.pauseGuard(blockNumber);
-    const [season, maxTemperature, podlineLength] = await Promise.all([
+    const [season, { price: currentPrice }, [bonusStalkPerBdv, maxSeasonalCapacity]] = await Promise.all([
       (async () => Number(await Contracts.getBeanstalk().season({ blockTag })))(),
-      (async () => BigInt(await Contracts.getBeanstalk().maxTemperature({ blockTag })))(),
-      (async () => BigInt(await Contracts.getBeanstalk().totalUnharvestable(0, { blockTag })))()
+      BeanstalkPrice.make({ block: blockTag }).priceReservesCurrent(),
+      Contracts.getBeanstalk().getConvertStalkPerBdvBonusAndMaximumCapacity({ blockTag })
     ]);
 
     // Evaluate whether the order can be executed
@@ -61,7 +62,7 @@ class TractorSowV0Service extends Blueprint {
     for (const o of orders) {
       if (
         o.lastExecutableSeason !== season &&
-        o.blueprintData.canExecuteThisSeason({ maxTemperature, podlineLength })
+        o.blueprintData.canExecuteThisSeason({ currentPrice, bonusStalkPerBdv, maxSeasonalCapacity })
       ) {
         o.lastExecutableSeason = season;
         ordersToUpdate.push(o);
@@ -78,20 +79,17 @@ class TractorSowV0Service extends Blueprint {
     orders.sort((a, b) => {
       const aVal = a.lastExecutableSeason || 0;
       const bVal = b.lastExecutableSeason || 0;
-      return (
-        bVal - aVal ||
-        Number(a.blueprintData.minTemp - b.blueprintData.minTemp) ||
-        a.blueprintHash.localeCompare(b.blueprintHash)
-      );
+      return bVal - aVal || a.blueprintHash.localeCompare(b.blueprintHash);
     });
 
     // Can process in parallel by publisher
-    const sowOrdersByPublisher = orders.reduce((acc, next) => {
+    const ordersByPublisher = orders.reduce((acc, next) => {
       (acc[next.publisher] ??= []).push(next.blueprintData);
       return acc;
     }, {});
 
-    const tractorHelpers = Contracts.get(C().SOW_V0_TRACTOR_HELPERS);
+    const tractorHelpers = Contracts.get(C().CONVERT_UP_V0_TRACTOR_HELPERS);
+    const siloHelpers = Contracts.get(C().CONVERT_UP_V0_SILO_HELPERS);
     const emptyPlan = {
       sourceTokens: [],
       stems: [],
@@ -101,19 +99,30 @@ class TractorSowV0Service extends Blueprint {
     };
 
     const TAG = Concurrent.tag(`periodicUpdate-${this.orderType}`);
-    for (const publisher in sowOrdersByPublisher) {
+    for (const publisher in ordersByPublisher) {
       const existingPlans = [];
-      const publisherHasMultiple = sowOrdersByPublisher[publisher].length > 1;
+      const publisherHasMultiple = ordersByPublisher[publisher].length > 1;
       await Concurrent.run(TAG, 20, async () => {
-        for (const order of sowOrdersByPublisher[publisher]) {
+        for (const order of ordersByPublisher[publisher]) {
+          const filterParams = [
+            order.maxGrownStalkPerBdv, // maxGrownStalkPerBdv
+            -(2n ** 95n), // minStem
+            true, // excludeGerminatingDeposits
+            true, // excludeBean
+            stalkModeToInt(order.lowStalkDeposits), // lowStalkDeposits
+            bonusStalkPerBdv, // lowGrownStalkPerBdv
+            2n ** 95n - 1n, // maxStem
+            order.seedDifference // seedDifference
+          ];
+
           // Gets withdraw plans for this order. Onchain call throws if the amount is zero
           try {
-            const soloPlan = await tractorHelpers.getWithdrawalPlanExcludingPlan(
+            const soloPlan = await siloHelpers.getWithdrawalPlanExcludingPlan(
               { target: 'SuperContract', skipTransform: true, skipRetry: (e) => e.reason === 'No beans available' },
               publisher,
               order.sourceTokenIndices,
-              order.totalAmountToSow - order.pintoSownCounter,
-              order.maxGrownStalkPerBdv,
+              order.beansLeftToConvert,
+              filterParams,
               emptyPlan,
               { blockTag }
             );
@@ -138,12 +147,12 @@ class TractorSowV0Service extends Blueprint {
               } catch (e) {}
             }
             try {
-              const cascadePlan = await tractorHelpers.getWithdrawalPlanExcludingPlan(
+              const cascadePlan = await siloHelpers.getWithdrawalPlanExcludingPlan(
                 { target: 'SuperContract', skipTransform: true, skipRetry: (e) => e.reason === 'No beans available' },
                 publisher,
                 order.sourceTokenIndices,
-                order.totalAmountToSow - order.pintoSownCounter,
-                order.maxGrownStalkPerBdv,
+                order.beansLeftToConvert,
+                filterParams,
                 combinedExistingPlan ?? emptyPlan,
                 { blockTag }
               );
@@ -164,35 +173,34 @@ class TractorSowV0Service extends Blueprint {
 
   static async tryAddRequisition(orderDto, blueprintData) {
     // Decode data
-    const sowV0Call = this.decodeBlueprintData(blueprintData);
-    if (!sowV0Call) {
+    const convertUpV0Call = this.decodeBlueprintData(blueprintData);
+    if (!convertUpV0Call) {
       return;
     }
 
-    const dto = SowV0OrderDto.fromBlueprintCalldata({
+    const dto = ConvertUpV0OrderDto.fromBlueprintCalldata({
       blueprintHash: orderDto.blueprintHash,
-      sowParams: sowV0Call.args.params.sowParams
+      convertUpParams: convertUpV0Call.args.params.convertUpParams
     });
 
     // Insert entity
     await this.updateOrders([dto]);
 
     // Return amount of tip offered
-    return sowV0Call.args.params.opParams.operatorTipAmount;
+    return convertUpV0Call.args.params.opParams.operatorTipAmount;
   }
 
   static async orderCancelled(orderDto) {
     // Reset funding amounts
-    const sowOrder = await this.getOrder(orderDto.blueprintHash);
-    sowOrder.amountFunded = 0n;
-    sowOrder.cascadeAmountFunded = 0n;
-    await this.updateOrders([sowOrder]);
+    const convertOrder = await this.getOrder(orderDto.blueprintHash);
+    convertOrder.amountFunded = 0n;
+    convertOrder.cascadeAmountFunded = 0n;
+    await this.updateOrders([convertOrder]);
   }
 
-  // If possible, decodes blueprint data into the sowBlueprintv0 call
   static decodeBlueprintData(blueprintData) {
     const iBeanstalk = Interfaces.getBeanstalk();
-    const iSowV0 = Interfaces.get(C().SOW_V0);
+    const iConvertUpV0 = Interfaces.get(C().CONVERT_UP_V0);
 
     const advFarm = Interfaces.safeParseTxn(iBeanstalk, blueprintData);
     if (!advFarm || advFarm.name !== 'advancedFarm') {
@@ -206,10 +214,10 @@ class TractorSowV0Service extends Blueprint {
       }
 
       for (const pipeCall of advFarmCall.args.pipes) {
-        if (pipeCall.target.toLowerCase() !== C().SOW_V0) {
+        if (pipeCall.target.toLowerCase() !== C().CONVERT_UP_V0) {
           return;
         }
-        return Interfaces.safeParseTxn(iSowV0, pipeCall.callData);
+        return Interfaces.safeParseTxn(iConvertUpV0, pipeCall.callData);
       }
     }
   }
@@ -251,4 +259,4 @@ class TractorSowV0Service extends Blueprint {
     return where;
   }
 }
-module.exports = TractorSowV0Service;
+module.exports = TractorConvertUpV0Service;

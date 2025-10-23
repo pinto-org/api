@@ -7,6 +7,7 @@ const GRAPH_API_KEY = process.env.GRAPH_API_KEY;
 
 const ENABLED_CHAINS = process.env.ENABLED_CHAINS?.split(',').filter((s) => s.trim().length > 0);
 const ENABLED_CRON_JOBS = process.env.ENABLED_CRON_JOBS?.split(',').filter((s) => s.trim().length > 0);
+const INDEXING_STOP_BLOCK = parseInt(process.env.INDEXING_STOP_BLOCK ?? '0') || Infinity;
 
 const NODE_ENV = process.env.NODE_ENV;
 
@@ -18,6 +19,10 @@ const DISCORD_NOTIFICATION_PREFIX = process.env.DISCORD_NOTIFICATION_PREFIX ?? '
 const SG_BEANSTALK = process.env.SG_BEANSTALK?.split(',').filter((s) => s.trim().length > 0);
 const SG_BEAN = process.env.SG_BEAN?.split(',').filter((s) => s.trim().length > 0);
 const SG_BASIN = process.env.SG_BASIN?.split(',').filter((s) => s.trim().length > 0);
+
+const DEV_TRACTOR_SEEDER = process.env.DEV_TRACTOR_SEEDER === 'true';
+const DEV_TRACTOR_RECENT = process.env.DEV_TRACTOR_RECENT === 'true';
+const DEV_TRACTOR_SEEDER_START = parseInt(process.env.DEV_TRACTOR_SEEDER_START ?? '0');
 
 // Validation
 if (!ENABLED_CHAINS || ENABLED_CHAINS.length === 0) {
@@ -67,6 +72,10 @@ class EnvUtil {
     return ENABLED_CRON_JOBS;
   }
 
+  static getIndexingStopBlock() {
+    return INDEXING_STOP_BLOCK;
+  }
+
   static getDeploymentEnv() {
     return NODE_ENV;
   }
@@ -86,6 +95,18 @@ class EnvUtil {
       BEAN: SG_BEAN[chainIndex],
       BASIN: SG_BASIN[chainIndex]
     };
+  }
+
+  static getDevTractor() {
+    return {
+      seeder: DEV_TRACTOR_SEEDER,
+      seedBlock: DEV_TRACTOR_SEEDER_START,
+      useRecentBlock: DEV_TRACTOR_RECENT
+    };
+  }
+
+  static isLocalRpc(chain) {
+    return this.getDeploymentEnv().includes('local') && !!this.getCustomRpcUrl(chain);
   }
 }
 

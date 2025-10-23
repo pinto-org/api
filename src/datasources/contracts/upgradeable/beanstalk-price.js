@@ -48,6 +48,10 @@ class BeanstalkPrice {
     return await this.contract['price()']({ target: 'SuperContract', ...options });
   }
 
+  async priceReservesCurrent(options = {}) {
+    return await this.contract['price(uint8)']({ target: 'SuperContract', ...options }, 0);
+  }
+
   async poolPrice(poolAddress) {
     return await this.contract['poolPrice(address)'](poolAddress);
   }

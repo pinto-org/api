@@ -6,6 +6,7 @@ jest.mock('../../src/utils/env', () => {
     getAlchemyKey: jest.fn(),
     getEnabledChains: jest.fn(),
     getEnabledCronJobs: jest.fn(),
+    getIndexingStopBlock: jest.fn().mockReturnValue(Number.MAX_SAFE_INTEGER),
     getDeploymentEnv: jest.fn(),
     getDiscordWebhooks: jest.fn(),
     getDiscordPrefix: jest.fn(),
@@ -13,7 +14,9 @@ jest.mock('../../src/utils/env', () => {
       BEANSTALK: 'a',
       BEAN: 'b',
       BASIN: 'c'
-    }))
+    })),
+    getDevTractor: jest.fn().mockReturnValue({}),
+    isLocalRpc: jest.fn().mockReturnValue(false)
   };
 });
 // Disable alchemy config. Mock entire module so the static block does not execute

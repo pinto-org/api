@@ -20,9 +20,12 @@ const SILO_INFLOW_SNAPSHOT_TABLE = envNamed('silo_inflow_snapshot');
 const TOKEN_TABLE = envNamed('token');
 const TRACTOR_EXECUTION_TABLE = envNamed('tractor_execution');
 const TRACTOR_EXECUTION_SOW_V0_TABLE = envNamed('tractor_execution_sow_v0');
+const TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE = envNamed('tractor_execution_convert_up_v0');
 const TRACTOR_ORDER_TABLE = envNamed('tractor_order');
 const TRACTOR_ORDER_SOW_V0_TABLE = envNamed('tractor_order_sow_v0');
+const TRACTOR_ORDER_CONVERT_UP_V0_TABLE = envNamed('tractor_order_convert_up_v0');
 const TRACTOR_SNAPSHOT_SOW_V0_TABLE = envNamed('tractor_snapshot_sow_v0');
+const TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE = envNamed('tractor_snapshot_convert_up_v0');
 const YIELD_TABLE = envNamed('yield');
 
 module.exports = {
@@ -36,8 +39,11 @@ module.exports = {
   TOKEN_TABLE,
   TRACTOR_EXECUTION_TABLE,
   TRACTOR_EXECUTION_SOW_V0_TABLE,
+  TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE,
   TRACTOR_ORDER_TABLE,
   TRACTOR_ORDER_SOW_V0_TABLE,
+  TRACTOR_ORDER_CONVERT_UP_V0_TABLE,
   TRACTOR_SNAPSHOT_SOW_V0_TABLE,
+  TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE,
   YIELD_TABLE
 };

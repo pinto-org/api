@@ -57,6 +57,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false
+      },
+      // Latest season that this order was executable at some point during
+      lastExecutableSeason: {
+        type: DataTypes.INTEGER,
+        allowNull: true
       }
     },
     {

@@ -1,5 +1,6 @@
 const { C } = require('../../constants/runtime-constants');
 const ChainUtil = require('../../utils/chain');
+const EnvUtil = require('../../utils/env');
 
 class TaskRangeUtil {
   // meta: has a `lastUpdate` property
@@ -15,9 +16,11 @@ class TaskRangeUtil {
     let isCaughtUp = true;
 
     // Determine range of blocks to update on
-    const currentBlock = (await C().RPC.getBlock()).number;
-    // Buffer to avoid issues with a chain reorg
-    let updateBlock = currentBlock - ChainUtil.blocksPerInterval(C().CHAIN, 10000);
+    let updateBlock = (await C().RPC.getBlock()).number;
+    // Buffer to avoid issues with a chain reorg on non-local rpc
+    if (!EnvUtil.isLocalRpc(C().CHAIN)) {
+      updateBlock -= ChainUtil.blocksPerInterval(C().CHAIN, 10000);
+    }
     if (updateBlock - lastUpdate > maxBlocksAtOnce) {
       updateBlock = lastUpdate + maxBlocksAtOnce;
       isCaughtUp = false;
@@ -41,6 +44,9 @@ class TaskRangeUtil {
         }
       }
     }
+
+    // Cap the indexer progression if configured (indexing environment may want to stop at a specific block)
+    updateBlock = Math.min(updateBlock, EnvUtil.getIndexingStopBlock());
 
     return {
       isInitialized: true,

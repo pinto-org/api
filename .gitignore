@@ -5,5 +5,6 @@ npm-debug.log
 .DS_Store
 docker/.data
 docker/.env
+docker/.env.indexing
 
 _private
