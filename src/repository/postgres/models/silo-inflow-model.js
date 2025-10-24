@@ -36,6 +36,16 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         allowNull: false
       },
+      ...bigintNumericColumn('accountFieldNegationBdv', DataTypes, { allowNull: false }),
+      accountFieldNegationUsd: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      ...bigintNumericColumn('protocolFieldNegationBdv', DataTypes, { allowNull: false }),
+      protocolFieldNegationUsd: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
       block: {
         type: DataTypes.INTEGER,
         allowNull: false

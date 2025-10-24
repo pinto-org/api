@@ -8,6 +8,10 @@ class FieldInflowAssembler {
       beans: fieldInflowDto.beans,
       usd: fieldInflowDto.usd,
       isMarket: fieldInflowDto.isMarket,
+      accountSiloNegationBdv: fieldInflowDto.accountSiloNegationBdv,
+      accountSiloNegationUsd: fieldInflowDto.accountSiloNegationUsd,
+      protocolSiloNegationBdv: fieldInflowDto.protocolSiloNegationBdv,
+      protocolSiloNegationUsd: fieldInflowDto.protocolSiloNegationUsd,
       block: fieldInflowDto.block,
       timestamp: fieldInflowDto.timestamp,
       txnHash: fieldInflowDto.txnHash

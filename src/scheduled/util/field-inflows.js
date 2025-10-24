@@ -5,6 +5,7 @@ class FieldInflowsUtil {
     const add = (account, bdv) => {
       account = account.toLowerCase();
       net[account] = (net[account] ?? 0n) + bdv;
+      net.protocol = (net.protocol ?? 0n) + bdv;
     };
     for (const e of fieldEvents) {
       if (['Sow', 'Harvest'].includes(e.name)) {

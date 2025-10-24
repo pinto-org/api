@@ -10,9 +10,11 @@ const TaskRangeUtil = require('../util/task-range');
 const FieldInflowsUtil = require('../util/field-inflows');
 const SiloInflowsUtil = require('../util/silo-inflows');
 const SiloEvents = require('../../datasources/events/silo-events');
+const SiloInflowService = require('../../service/inflow/silo-inflow-service');
+const SiloInflowSnapshotService = require('../../service/inflow/silo-inflow-snapshot-service');
 
 // Maximum number of blocks to process in one invocation
-const MAX_BLOCKS = 10000;
+const MAX_BLOCKS = 2000;
 
 const FIELD_EVENTS = new Set(['Sow', 'Harvest', 'PodListingFilled', 'PodOrderFilled']);
 const SILO_EVENTS = new Set(['AddDeposit', 'RemoveDeposit', 'RemoveDeposits', 'Plant', 'Convert', 'ClaimPlenty']);
@@ -38,7 +40,8 @@ class InflowsTask {
     await EventsUtils.attachTimestamps(events);
     const byTxn = await EventsUtils.groupByTransaction(events);
 
-    const inflowDtos = [];
+    const siloInflowDtos = [];
+    const fieldInflowDtos = [];
 
     const TAG = Concurrent.tag('inflows');
     for (const txnHash in byTxn) {
@@ -57,15 +60,24 @@ class InflowsTask {
         // Attaches bdv/bean price to the plenty events
         await SiloInflowsUtil.assignClaimPlentyBdvs(claimPlenties, txnEvents[0].rawLog.blockNumber);
 
+        // Need bdv price somewhere here?
+
         const netDeposits = SiloInflowsUtil.netDeposits(addRemoves);
         const netSilo = SiloInflowsUtil.netBdvInflows(netDeposits, claimPlenties);
         const netField = FieldInflowsUtil.netBdvInflows(fieldEvents);
 
         // Generate inflow dtos in consideration of potential negations on the other side
-        // How will these amounts be represented on the dtos?
+        // there can be no protocol net flow but still a user net flow
         // add new netBdv and netUsd value that will usually be equal, but can be reduced if there isnt net activity.
 
-        // inflowDtos.push(...(await this.inflowsFromEvent(e)));
+        const txnMeta = {
+          block: txnEvents[0].rawLog.blockNumber,
+          timestamp: txnEvents[0].extra.timestamp,
+          txnHash
+        };
+
+        siloInflowDtos.push(...(await SiloInflowsUtil.inflowsFromNetDeposits(netDeposits, netField, txnMeta)));
+        siloInflowDtos.push(...(await SiloInflowsUtil.inflowsFromClaimPlenties(claimPlenties, netField, txnMeta)));
       });
     }
 
@@ -73,9 +85,11 @@ class InflowsTask {
 
     // Save new entities
     await AsyncContext.sequelizeTransaction(async () => {
-      await FieldInflowService.insertInflows(inflowDtos);
+      await SiloInflowService.insertInflows(siloInflowDtos);
+      await FieldInflowService.insertInflows(fieldInflowDtos);
+      await SiloInflowSnapshotService.takeMissingSnapshots(updateBlock);
       await FieldInflowSnapshotService.takeMissingSnapshots(updateBlock);
-      await AppMetaService.setLastFieldInflowUpdate(updateBlock);
+      await AppMetaService.setLastInflowUpdate(updateBlock);
     });
 
     return !isCaughtUp;

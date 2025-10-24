@@ -90,18 +90,20 @@ class SiloInflowsUtil {
     for (const token in netDeposits) {
       for (const account in netDeposits[token]) {
         net[account] = (net[account] ?? 0n) + netDeposits[token][account].bdv;
+        net.protocol = (net.protocol ?? 0n) + netDeposits[token][account].bdv;
       }
     }
 
     for (const e of claimPlenties) {
       const account = e.args.account.toLowerCase();
-      net[account] = (net[account] ?? 0n) + e._pseudoBdv;
+      net[account] = (net[account] ?? 0n) - e._pseudoBdv;
+      net.protocol = (net.protocol ?? 0n) - e._pseudoBdv;
     }
     return net;
   }
 
   // Construct new silo inflow dtos from net deposits in this transaction
-  static async inflowsFromNetDeposits(netDeposits, { block, timestamp, txnHash }) {
+  static async inflowsFromNetDeposits(netDeposits, netFieldBdvInflows, { block, timestamp, txnHash }) {
     const dtos = [];
     for (const token in netDeposits) {
       const p = C().DECIMALS[token];
@@ -147,13 +149,13 @@ class SiloInflowsUtil {
     }
 
     // Assign all bdvs and usd values
-    await this.assignInflowBdvAndUsd(dtos, block);
+    await this.assignInflowBdvAndUsd(dtos, netFieldBdvInflows, block);
 
     return dtos;
   }
 
   // Uses bdv batching view function to get many/all bdvs at once for this transaction
-  static async assignInflowBdvAndUsd(dtos, block) {
+  static async assignInflowBdvAndUsd(dtos, netFieldBdvInflows, block) {
     const bdvsCalldata = {
       tokens: [],
       amounts: []
@@ -169,11 +171,11 @@ class SiloInflowsUtil {
     ]);
 
     for (let i = 0; i < dtos.length; ++i) {
-      dtos[i].assignInstValues(instBdvs[i] * signs[i], beanPrice.usdPrice);
+      dtos[i].assignInstValues(instBdvs[i] * signs[i], beanPrice.usdPrice, netFieldBdvInflows);
     }
   }
 
-  static async inflowsFromClaimPlenties(claimPlenties, { block, timestamp, txnHash }) {
+  static async inflowsFromClaimPlenties(claimPlenties, netFieldBdvInflows, { block, timestamp, txnHash }) {
     const dtos = [];
     for (let i = 0; i < claimPlenties.length; ++i) {
       const e = claimPlenties[i];
@@ -188,7 +190,7 @@ class SiloInflowsUtil {
         txnHash
       });
       const tokenAmount = fromBigInt(-BigInt(e.args.plenty), C().DECIMALS[e.args.token.toLowerCase()]);
-      dto.assignInstValues(toBigInt(e._pseudoBdv * tokenAmount, 6), e._beanPrice);
+      dto.assignInstValues(toBigInt(e._pseudoBdv * tokenAmount, 6), e._beanPrice, netFieldBdvInflows);
       dtos.push(dto);
     }
     return dtos;
