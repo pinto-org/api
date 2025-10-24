@@ -57,10 +57,10 @@ class InflowsTask {
         SiloEvents.removeConvertRelatedEvents(addRemoves, converts);
         SiloEvents.removePlantRelatedEvents(addRemoves, plants);
 
-        // Attaches bdv/bean price to the plenty events
-        await SiloInflowsUtil.assignClaimPlentyBdvs(claimPlenties, txnEvents[0].rawLog.blockNumber);
+        const beanPrice = (await PriceService.getBeanPrice({ blockNumber: txnEvents[0].rawLog.blockNumber })).usdPrice;
 
-        // Need bdv price somewhere here?
+        // Attaches bdv/bean price to the plenty events
+        await SiloInflowsUtil.assignClaimPlentyBdvs(claimPlenties, beanPrice, txnEvents[0].rawLog.blockNumber);
 
         const netDeposits = SiloInflowsUtil.netDeposits(addRemoves);
         const netSilo = SiloInflowsUtil.netBdvInflows(netDeposits, claimPlenties);
@@ -73,11 +73,13 @@ class InflowsTask {
         const txnMeta = {
           block: txnEvents[0].rawLog.blockNumber,
           timestamp: txnEvents[0].extra.timestamp,
-          txnHash
+          txnHash,
+          beanPrice
         };
 
         siloInflowDtos.push(...(await SiloInflowsUtil.inflowsFromNetDeposits(netDeposits, netField, txnMeta)));
         siloInflowDtos.push(...(await SiloInflowsUtil.inflowsFromClaimPlenties(claimPlenties, netField, txnMeta)));
+        fieldInflowDtos.push(...(await FieldInflowsUtil.inflowsFromFieldEvents(fieldEvents, netSilo, txnMeta)));
       });
     }
 

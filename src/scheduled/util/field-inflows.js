@@ -1,3 +1,5 @@
+const FieldInflowDto = require('../../repository/dto/inflow/FieldInflowDto');
+
 class FieldInflowsUtil {
   // Calculates the net bdv inflow for each account
   static netBdvInflows(fieldEvents) {
@@ -21,44 +23,47 @@ class FieldInflowsUtil {
     return net;
   }
 
-  // TODO: consider that this methodology wants to be refactored such that a harvest/sow already negate each other
-  // and dont generate two inflow entries on field.
-  // This step will also be expanded to consider negations by corresponding silo activity
-  static async inflowsFromEvent(e) {
-    const beanPrice = (await PriceService.getBeanPrice({ blockNumber: e.rawLog.blockNumber })).usdPrice;
-    if (['Sow', 'Harvest'].includes(e.name)) {
-      return [
-        await this.inflowFromInfo(
-          e,
-          e.args.account.toLowerCase(),
-          e.name === 'Sow' ? BigInt(e.args.beans) : -BigInt(e.args.beans),
-          beanPrice,
-          false
-        )
-      ];
-    } else if (e.name === 'PodListingFilled') {
-      return [
-        await this.inflowFromInfo(e, e.args.filler.toLowerCase(), BigInt(e.args.costInBeans), beanPrice, true),
-        await this.inflowFromInfo(e, e.args.lister.toLowerCase(), -BigInt(e.args.costInBeans), beanPrice, true)
-      ];
-    } else if (e.name === 'PodOrderFilled') {
-      return [
-        await this.inflowFromInfo(e, e.args.orderer.toLowerCase(), BigInt(e.args.costInBeans), beanPrice, true),
-        await this.inflowFromInfo(e, e.args.filler.toLowerCase(), -BigInt(e.args.costInBeans), beanPrice, true)
-      ];
-    }
-  }
+  static async inflowsFromFieldEvents(fieldEvents, netSiloBdvInflows, { block, timestamp, txnHash, beanPrice }) {
+    const sowHarvest = fieldEvents.filter((e) => ['Sow', 'Harvest'].includes(e.name));
+    const market = fieldEvents.filter((e) => ['PodListingFilled', 'PodOrderFilled'].includes(e.name));
 
-  static async inflowFromInfo(e, account, beans, beanPrice, isMarket) {
-    return FieldInflowDto.fromData({
-      account,
-      beans,
-      usd: fromBigInt(beans, 6) * beanPrice,
-      isMarket,
-      block: e.rawLog.blockNumber,
-      timestamp: e.extra.timestamp,
-      txnHash: e.rawLog.transactionHash
-    });
+    const netSowHarvest = {};
+    for (const e of sowHarvest) {
+      netSowHarvest[e.args.account.toLowerCase()] =
+        (netSowHarvest[e.args.account.toLowerCase()] ?? 0n) +
+        (e.name === 'Sow' ? BigInt(e.args.beans) : -BigInt(e.args.beans));
+    }
+
+    const netMarket = {};
+    for (const e of market) {
+      if (e.name === 'PodListingFilled') {
+        netMarket[e.args.filler.toLowerCase()] =
+          (netMarket[e.args.filler.toLowerCase()] ?? 0n) + BigInt(e.args.costInBeans);
+        netMarket[e.args.lister.toLowerCase()] =
+          (netMarket[e.args.lister.toLowerCase()] ?? 0n) - BigInt(e.args.costInBeans);
+      } else if (e.name === 'PodOrderFilled') {
+        netMarket[e.args.orderer.toLowerCase()] =
+          (netMarket[e.args.orderer.toLowerCase()] ?? 0n) + BigInt(e.args.costInBeans);
+        netMarket[e.args.filler.toLowerCase()] =
+          (netMarket[e.args.filler.toLowerCase()] ?? 0n) - BigInt(e.args.costInBeans);
+      }
+    }
+
+    const inputs = [];
+    for (const account in netSowHarvest) {
+      inputs.push({ account, beans: netSowHarvest[account], isMarket: false });
+    }
+    for (const account in netMarket) {
+      inputs.push({ account, beans: netSowHarvest[account], isMarket: true });
+    }
+
+    const dtos = [];
+    for (const { account, beans, isMarket } of inputs) {
+      dtos.push(
+        FieldInflowDto.fromData({ account, beans, beanPrice, isMarket, block, timestamp, txnHash }, netSiloBdvInflows)
+      );
+    }
+    return dtos;
   }
 }
 module.exports = FieldInflowsUtil;

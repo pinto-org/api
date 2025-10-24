@@ -70,17 +70,16 @@ class SiloInflowsUtil {
   }
 
   // Assigns a pseudo bdv to each claim plenty event (the claimed tokens aren't whitelisted and don't have a bdv)
-  static async assignClaimPlentyBdvs(claimPlenties, block) {
+  static async assignClaimPlentyBdvs(claimPlenties, beanPrice, block) {
     // Price the value and bdvs of all claimed tokens
     const tokens = claimPlenties.map((e) => e.args.token.toLowerCase());
-    const [beanPrice, ...tokenPrices] = (
-      await Promise.all([C().BEAN, ...tokens].map((t) => PriceService.getTokenPrice(t, { blockNumber: block })))
+    const tokenPrices = (
+      await Promise.all(tokens.map((t) => PriceService.getTokenPrice(t, { blockNumber: block })))
     ).map((p) => p.usdPrice);
     const pseudoBdvs = tokenPrices.map((p) => p / beanPrice);
 
     for (let i = 0; i < claimPlenties.length; ++i) {
       claimPlenties[i]._pseudoBdv = pseudoBdvs[i];
-      claimPlenties[i]._beanPrice = beanPrice;
     }
   }
 
@@ -103,7 +102,7 @@ class SiloInflowsUtil {
   }
 
   // Construct new silo inflow dtos from net deposits in this transaction
-  static async inflowsFromNetDeposits(netDeposits, netFieldBdvInflows, { block, timestamp, txnHash }) {
+  static async inflowsFromNetDeposits(netDeposits, netFieldBdvInflows, { block, timestamp, txnHash, beanPrice }) {
     const dtos = [];
     for (const token in netDeposits) {
       const p = C().DECIMALS[token];
@@ -149,13 +148,13 @@ class SiloInflowsUtil {
     }
 
     // Assign all bdvs and usd values
-    await this.assignInflowBdvAndUsd(dtos, netFieldBdvInflows, block);
+    await this.assignInflowBdvAndUsd(dtos, netFieldBdvInflows, beanPrice, block);
 
     return dtos;
   }
 
   // Uses bdv batching view function to get many/all bdvs at once for this transaction
-  static async assignInflowBdvAndUsd(dtos, netFieldBdvInflows, block) {
+  static async assignInflowBdvAndUsd(dtos, netFieldBdvInflows, beanPrice, block) {
     const bdvsCalldata = {
       tokens: [],
       amounts: []
@@ -165,17 +164,14 @@ class SiloInflowsUtil {
       bdvsCalldata.tokens.push(dto.token);
       bdvsCalldata.amounts.push(dto.amount * signs[signs.push(dto.amount > 0n ? 1n : -1n) - 1]);
     }
-    const [instBdvs, beanPrice] = await Promise.all([
-      SiloService.batchBdvs(bdvsCalldata, block),
-      PriceService.getBeanPrice({ blockNumber: block })
-    ]);
+    const instBdvs = await SiloService.batchBdvs(bdvsCalldata, block);
 
     for (let i = 0; i < dtos.length; ++i) {
       dtos[i].assignInstValues(instBdvs[i] * signs[i], beanPrice.usdPrice, netFieldBdvInflows);
     }
   }
 
-  static async inflowsFromClaimPlenties(claimPlenties, netFieldBdvInflows, { block, timestamp, txnHash }) {
+  static async inflowsFromClaimPlenties(claimPlenties, netFieldBdvInflows, { block, timestamp, txnHash, beanPrice }) {
     const dtos = [];
     for (let i = 0; i < claimPlenties.length; ++i) {
       const e = claimPlenties[i];
@@ -190,7 +186,7 @@ class SiloInflowsUtil {
         txnHash
       });
       const tokenAmount = fromBigInt(-BigInt(e.args.plenty), C().DECIMALS[e.args.token.toLowerCase()]);
-      dto.assignInstValues(toBigInt(e._pseudoBdv * tokenAmount, 6), e._beanPrice, netFieldBdvInflows);
+      dto.assignInstValues(toBigInt(e._pseudoBdv * tokenAmount, 6), beanPrice, netFieldBdvInflows);
       dtos.push(dto);
     }
     return dtos;
