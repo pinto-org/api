@@ -15,7 +15,7 @@ const TaskRangeUtil = require('../util/task-range');
 const SiloInflowSnapshotService = require('../../service/inflow/silo-inflow-snapshot-service');
 
 // Maximum number of blocks to process in one invocation
-const MAX_BLOCKS = 10000;
+const MAX_BLOCKS = 2000;
 
 /**
  * @deprecated Use the combined Inflow task instead

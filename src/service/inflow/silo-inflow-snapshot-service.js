@@ -23,7 +23,9 @@ class SiloInflowSnapshotService {
     }
     // Always need to include the previous season so deltas can be computed
     const prevSeason = missingSeasons[0] - 1;
-    missingSeasons.push(prevSeason);
+    if (prevSeason > 1) {
+      missingSeasons.push(prevSeason);
+    }
     const seasonsIn = missingSeasons.join(',');
 
     const [results] = await sequelize.query(
@@ -75,6 +77,14 @@ class SiloInflowSnapshotService {
       `,
       { transaction: AsyncContext.getOrUndef('transaction') }
     );
+
+    // This occurs when the seasons table is missing a requested season. This is not recoverable
+    // until the seasons table has that season added.
+    if (results.length !== missingSeasons.length) {
+      // Not strictly necessary to throw/block the rest of the task from progressing, however in practice
+      // the only output of the inflow task is this snapshot, so its preferable to let it fall behind/trigger error logs
+      throw new Error('Missing seasons detected when taking silo inflow snapshots');
+    }
 
     const models = [];
     for (const result of results) {
