@@ -57,7 +57,9 @@ class SiloInflowDto {
     } else if (this.bdv < 0n && accountFlow > 0n) {
       this.accountFieldNegationBdv = BigInt_min(accountFlow, BigInt_abs(this.bdv));
     }
-    netFieldBdvInflows[this.account] -= this.accountFieldNegationBdv;
+    if (netFieldBdvInflows[this.account]) {
+      netFieldBdvInflows[this.account] -= this.accountFieldNegationBdv;
+    }
 
     const protocolFlow = netFieldBdvInflows.protocol ?? 0n;
     if (this.bdv > 0n && protocolFlow < 0n) {
@@ -65,7 +67,9 @@ class SiloInflowDto {
     } else if (this.bdv < 0n && protocolFlow > 0n) {
       this.protocolFieldNegationBdv = BigInt_min(protocolFlow, BigInt_abs(this.bdv));
     }
-    netFieldBdvInflows.protocol -= this.protocolFieldNegationBdv;
+    if (netFieldBdvInflows.protocol) {
+      netFieldBdvInflows.protocol -= this.protocolFieldNegationBdv;
+    }
 
     this.accountFieldNegationUsd = bdvPrice * fromBigInt(this.accountFieldNegationBdv, 6);
     this.protocolFieldNegationUsd = bdvPrice * fromBigInt(this.protocolFieldNegationBdv, 6);

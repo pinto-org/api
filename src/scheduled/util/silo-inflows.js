@@ -167,7 +167,7 @@ class SiloInflowsUtil {
     const instBdvs = await SiloService.batchBdvs(bdvsCalldata, block);
 
     for (let i = 0; i < dtos.length; ++i) {
-      dtos[i].assignInstValues(instBdvs[i] * signs[i], beanPrice.usdPrice, netFieldBdvInflows);
+      dtos[i].assignInstValues(instBdvs[i] * signs[i], beanPrice, netFieldBdvInflows);
     }
   }
 

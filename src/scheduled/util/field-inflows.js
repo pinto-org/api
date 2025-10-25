@@ -54,7 +54,7 @@ class FieldInflowsUtil {
       inputs.push({ account, beans: netSowHarvest[account], isMarket: false });
     }
     for (const account in netMarket) {
-      inputs.push({ account, beans: netSowHarvest[account], isMarket: true });
+      inputs.push({ account, beans: netMarket[account], isMarket: true });
     }
 
     const dtos = [];

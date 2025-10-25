@@ -1,3 +1,6 @@
+const { BigInt_abs, BigInt_min } = require('../../../utils/bigint');
+const { fromBigInt } = require('../../../utils/number');
+
 class FieldInflowDto {
   constructor(type, data) {
     if (type === 'data') {
@@ -7,6 +10,8 @@ class FieldInflowDto {
       this.usd = beanPrice * fromBigInt(beans, 6);
       this.isMarket = isMarket;
       // Negation values assigned outside
+      this.accountSiloNegationBdv = 0n;
+      this.protocolSiloNegationBdv = 0n;
       this.block = block;
       this.timestamp = timestamp;
       this.txnHash = txnHash;
@@ -35,7 +40,9 @@ class FieldInflowDto {
     } else if (beans < 0n && accountFlow > 0n) {
       dto.accountSiloNegationBdv = BigInt_min(accountFlow, BigInt_abs(beans));
     }
-    netSiloBdvInflows[account] -= dto.accountSiloNegationBdv;
+    if (netSiloBdvInflows[account]) {
+      netSiloBdvInflows[account] -= dto.accountSiloNegationBdv;
+    }
 
     const protocolFlow = netSiloBdvInflows.protocol ?? 0n;
     if (beans > 0n && protocolFlow < 0n) {
@@ -43,7 +50,9 @@ class FieldInflowDto {
     } else if (beans < 0n && protocolFlow > 0n) {
       dto.protocolSiloNegationBdv = BigInt_min(protocolFlow, BigInt_abs(beans));
     }
-    netSiloBdvInflows.protocol -= dto.protocolSiloNegationBdv;
+    if (netSiloBdvInflows.protocol) {
+      netSiloBdvInflows.protocol -= dto.protocolSiloNegationBdv;
+    }
 
     dto.accountSiloNegationUsd = beanPrice * fromBigInt(dto.accountSiloNegationBdv, 6);
     dto.protocolSiloNegationUsd = beanPrice * fromBigInt(dto.protocolSiloNegationBdv, 6);
