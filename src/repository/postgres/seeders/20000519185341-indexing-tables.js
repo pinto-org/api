@@ -656,6 +656,16 @@ module.exports = {
           type: Sequelize.BOOLEAN,
           allowNull: false
         },
+        ...bigintNumericColumn('accountFieldNegationBdv', Sequelize, { allowNull: false }),
+        accountFieldNegationUsd: {
+          type: Sequelize.FLOAT,
+          allowNull: false
+        },
+        ...bigintNumericColumn('protocolFieldNegationBdv', Sequelize, { allowNull: false }),
+        protocolFieldNegationUsd: {
+          type: Sequelize.FLOAT,
+          allowNull: false
+        },
         block: {
           type: Sequelize.INTEGER,
           allowNull: false
@@ -753,6 +763,16 @@ module.exports = {
         },
         isMarket: {
           type: Sequelize.BOOLEAN,
+          allowNull: false
+        },
+        ...bigintNumericColumn('accountSiloNegationBdv', Sequelize, { allowNull: false }),
+        accountSiloNegationUsd: {
+          type: Sequelize.FLOAT,
+          allowNull: false
+        },
+        ...bigintNumericColumn('protocolSiloNegationBdv', Sequelize, { allowNull: false }),
+        protocolSiloNegationUsd: {
+          type: Sequelize.FLOAT,
           allowNull: false
         },
         block: {
