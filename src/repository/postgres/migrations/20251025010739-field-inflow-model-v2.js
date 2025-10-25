@@ -6,6 +6,9 @@ const { bigintNumericColumn, timestamps } = require('../util/sequelize-util');
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // Drop and recreate the table; reindexing is required upon this upgrade (meta progress also resets).
+    await queryInterface.dropTable(FIELD_INFLOW_TABLE.prod);
+
     await queryInterface.createTable(FIELD_INFLOW_TABLE.prod, {
       id: {
         type: Sequelize.INTEGER,
@@ -25,6 +28,18 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         allowNull: false
       },
+      /// These are the new columns
+      ...bigintNumericColumn('accountSiloNegationBdv', Sequelize, { allowNull: false }),
+      accountSiloNegationUsd: {
+        type: Sequelize.FLOAT,
+        allowNull: false
+      },
+      ...bigintNumericColumn('protocolSiloNegationBdv', Sequelize, { allowNull: false }),
+      protocolSiloNegationUsd: {
+        type: Sequelize.FLOAT,
+        allowNull: false
+      },
+      ///
       block: {
         type: Sequelize.INTEGER,
         allowNull: false

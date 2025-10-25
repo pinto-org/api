@@ -66,10 +66,6 @@ class InflowsTask {
         const netSilo = SiloInflowsUtil.netBdvInflows(netDeposits, claimPlenties);
         const netField = FieldInflowsUtil.netBdvInflows(fieldEvents);
 
-        // Generate inflow dtos in consideration of potential negations on the other side
-        // there can be no protocol net flow but still a user net flow
-        // add new netBdv and netUsd value that will usually be equal, but can be reduced if there isnt net activity.
-
         const txnMeta = {
           block: txnEvents[0].rawLog.blockNumber,
           timestamp: txnEvents[0].extra.timestamp,
@@ -77,6 +73,7 @@ class InflowsTask {
           beanPrice
         };
 
+        // Generate inflow dtos in consideration of potential negations on the other side
         siloInflowDtos.push(...(await SiloInflowsUtil.inflowsFromNetDeposits(netDeposits, netField, txnMeta)));
         siloInflowDtos.push(...(await SiloInflowsUtil.inflowsFromClaimPlenties(claimPlenties, netField, txnMeta)));
         fieldInflowDtos.push(...(await FieldInflowsUtil.inflowsFromFieldEvents(fieldEvents, netSilo, txnMeta)));
@@ -96,8 +93,5 @@ class InflowsTask {
 
     return !isCaughtUp;
   }
-
-  // Returns net inflow/outflow of both silo and field per account within this transaction
-  static async calcNetInflow(allTxnLogs) {}
 }
 module.exports = InflowsTask;
