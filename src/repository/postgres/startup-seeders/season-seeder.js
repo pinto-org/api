@@ -1,11 +1,11 @@
-const { ethers } = require('ethers');
-const FilterLogs = require('../../../datasources/events/filter-logs');
 const SeasonService = require('../../../service/season-service');
 const Concurrent = require('../../../utils/async/concurrent');
 const Log = require('../../../utils/logging');
 const retryable = require('../../../utils/async/retryable');
 
 class SeasonSeeder {
+  static __active = false;
+
   static async run() {
     // Find all missing seasons
     const missingSeasons = await SeasonService.findMissingSeasons();
@@ -14,7 +14,7 @@ class SeasonSeeder {
       Log.info(`Found ${missingSeasons.length} missing seasons`);
     }
 
-    // Identify all onchain season events
+    // Identify corresponding onchain season events
     const TAG = Concurrent.tag('seasonSeeder');
     for (const season of missingSeasons) {
       await Concurrent.run(TAG, 50, () =>

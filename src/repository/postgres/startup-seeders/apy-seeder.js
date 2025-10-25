@@ -5,6 +5,8 @@ const EnvUtil = require('../../../utils/env');
 const Log = require('../../../utils/logging');
 
 class ApySeeder {
+  static __active = false;
+
   static async run() {
     if (EnvUtil.getDeploymentEnv() === 'indexing') {
       // Avoid unnecessary work in the indexing env
@@ -17,7 +19,7 @@ class ApySeeder {
       await SiloService.updateWhitelistedTokenInfo();
     }
 
-    // Calculate and save all vapys for each season (this will take a long time)
+    // Calculate and save all vapys for each season (this will take a long time for many seasons)
     const TAG = Concurrent.tag('apySeeder');
     for (const season of missingSeasons) {
       await Concurrent.run(TAG, 5, async () => {
