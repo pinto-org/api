@@ -25,9 +25,15 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('cumulativeBdvNet', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('cumulativeBdvIn', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('cumulativeBdvOut', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeProtocolBdvNet', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeProtocolBdvIn', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeProtocolBdvOut', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('deltaBdvNet', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('deltaBdvIn', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('deltaBdvOut', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('deltaProtocolBdvNet', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('deltaProtocolBdvIn', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('deltaProtocolBdvOut', DataTypes, { allowNull: false }),
       cumulativeUsdNet: {
         type: DataTypes.FLOAT,
         allowNull: false
@@ -40,6 +46,18 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.FLOAT,
         allowNull: false
       },
+      cumulativeProtocolUsdNet: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      cumulativeProtocolUsdIn: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      cumulativeProtocolUsdOut: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
       deltaUsdNet: {
         type: DataTypes.FLOAT,
         allowNull: false
@@ -49,6 +67,18 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false
       },
       deltaUsdOut: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      deltaProtocolUsdNet: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      deltaProtocolUsdIn: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      deltaProtocolUsdOut: {
         type: DataTypes.FLOAT,
         allowNull: false
       }

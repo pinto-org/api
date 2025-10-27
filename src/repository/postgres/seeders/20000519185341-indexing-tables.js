@@ -706,9 +706,15 @@ module.exports = {
           ...bigintNumericColumn('cumulativeBdvNet', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('cumulativeBdvIn', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('cumulativeBdvOut', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBdvNet', DataTypes, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBdvIn', DataTypes, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBdvOut', DataTypes, { allowNull: false }),
           ...bigintNumericColumn('deltaBdvNet', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('deltaBdvIn', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('deltaBdvOut', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBdvNet', DataTypes, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBdvIn', DataTypes, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBdvOut', DataTypes, { allowNull: false }),
           cumulativeUsdNet: {
             type: Sequelize.FLOAT,
             allowNull: false
@@ -721,6 +727,18 @@ module.exports = {
             type: Sequelize.FLOAT,
             allowNull: false
           },
+          cumulativeProtocolUsdNet: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+          },
+          cumulativeProtocolUsdIn: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+          },
+          cumulativeProtocolUsdOut: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+          },
           deltaUsdNet: {
             type: Sequelize.FLOAT,
             allowNull: false
@@ -731,6 +749,18 @@ module.exports = {
           },
           deltaUsdOut: {
             type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdNet: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdIn: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdOut: {
+            type: DataTypes.FLOAT,
             allowNull: false
           },
           ...timestamps(Sequelize)
@@ -815,9 +845,15 @@ module.exports = {
           ...bigintNumericColumn('cumulativeBeansNet', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('cumulativeBeansIn', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('cumulativeBeansOut', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBeansNet', DataTypes, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBeansIn', DataTypes, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBeansOut', DataTypes, { allowNull: false }),
           ...bigintNumericColumn('deltaBeansNet', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('deltaBeansIn', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('deltaBeansOut', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBeansNet', DataTypes, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBeansIn', DataTypes, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBeansOut', DataTypes, { allowNull: false }),
           cumulativeUsdNet: {
             type: Sequelize.FLOAT,
             allowNull: false
@@ -830,6 +866,18 @@ module.exports = {
             type: Sequelize.FLOAT,
             allowNull: false
           },
+          cumulativeProtocolUsdNet: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+          },
+          cumulativeProtocolUsdIn: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+          },
+          cumulativeProtocolUsdOut: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+          },
           deltaUsdNet: {
             type: Sequelize.FLOAT,
             allowNull: false
@@ -840,6 +888,18 @@ module.exports = {
           },
           deltaUsdOut: {
             type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdNet: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdIn: {
+            type: DataTypes.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdOut: {
+            type: DataTypes.FLOAT,
             allowNull: false
           },
           ...timestamps(Sequelize)
