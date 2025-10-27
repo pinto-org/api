@@ -12,6 +12,7 @@ const SiloInflowsUtil = require('../util/silo-inflows');
 const SiloEvents = require('../../datasources/events/silo-events');
 const SiloInflowService = require('../../service/inflow/silo-inflow-service');
 const SiloInflowSnapshotService = require('../../service/inflow/silo-inflow-snapshot-service');
+const PriceService = require('../../service/price-service');
 
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 2000;
@@ -35,7 +36,7 @@ class InflowsTask {
       fromBlock: lastUpdate + 1,
       toBlock: updateBlock
     });
-    // TODO: Sort by log index?
+    events.sort((a, b) => a.rawLog.logIndex - b.rawLog.logIndex);
 
     await EventsUtils.attachTimestamps(events);
     const byTxn = await EventsUtils.groupByTransaction(events);
@@ -45,7 +46,7 @@ class InflowsTask {
 
     const TAG = Concurrent.tag('inflows');
     for (const txnHash in byTxn) {
-      await Concurrent.run(TAG, 25, async () => {
+      await Concurrent.run(TAG, 35, async () => {
         const txnEvents = byTxn[txnHash];
         const converts = txnEvents.filter((e) => e.name === 'Convert');
         const plants = txnEvents.filter((e) => e.name === 'Plant');
@@ -75,8 +76,8 @@ class InflowsTask {
 
         // Generate inflow dtos in consideration of potential negations on the other side
         siloInflowDtos.push(...(await SiloInflowsUtil.inflowsFromNetDeposits(netDeposits, netField, txnMeta)));
-        siloInflowDtos.push(...(await SiloInflowsUtil.inflowsFromClaimPlenties(claimPlenties, netField, txnMeta)));
-        fieldInflowDtos.push(...(await FieldInflowsUtil.inflowsFromFieldEvents(fieldEvents, netSilo, txnMeta)));
+        siloInflowDtos.push(...SiloInflowsUtil.inflowsFromClaimPlenties(claimPlenties, netField, txnMeta));
+        fieldInflowDtos.push(...FieldInflowsUtil.inflowsFromFieldEvents(fieldEvents, netSilo, txnMeta));
       });
     }
 

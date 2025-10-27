@@ -22,9 +22,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false
       },
+      // cumulative: the overall sum of beans/usd
+      // cumulativeProtocol: accounting for negations from opposite silo actions
       ...bigintNumericColumn('cumulativeBeansNet', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('cumulativeBeansIn', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('cumulativeBeansOut', DataTypes, { allowNull: false }),
+      // cumulativeProtocol -
+      ...bigintNumericColumn('cumulativeProtocolBeansNet', DataTypes, { allowNull: false }),
+      //... TODO
+      // Dont need cumulativeAccount
       ...bigintNumericColumn('deltaBeansNet', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('deltaBeansIn', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('deltaBeansOut', DataTypes, { allowNull: false }),

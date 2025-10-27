@@ -23,7 +23,7 @@ class FieldInflowsUtil {
     return net;
   }
 
-  static async inflowsFromFieldEvents(fieldEvents, netSiloBdvInflows, { block, timestamp, txnHash, beanPrice }) {
+  static inflowsFromFieldEvents(fieldEvents, netSiloBdvInflows, { block, timestamp, txnHash, beanPrice }) {
     const sowHarvest = fieldEvents.filter((e) => ['Sow', 'Harvest'].includes(e.name));
     const market = fieldEvents.filter((e) => ['PodListingFilled', 'PodOrderFilled'].includes(e.name));
 

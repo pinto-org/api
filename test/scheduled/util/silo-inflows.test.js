@@ -402,7 +402,7 @@ describe('SiloInflowsUtil', () => {
             token: C().BEAN,
             plenty: 50n
           },
-          _pseudoBdv: 50n
+          _pseudoBdv: 50 / Math.pow(10, 6)
         }
       ];
 

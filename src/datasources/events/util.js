@@ -1,5 +1,6 @@
 const { C } = require('../../constants/runtime-constants');
 const Concurrent = require('../../utils/async/concurrent');
+const retryable = require('../../utils/async/retryable');
 
 class EventsUtils {
   // Group events by transaction
@@ -19,7 +20,7 @@ class EventsUtils {
     const TAG = Concurrent.tag('eventTimestamps');
     for (const b of blockNumbers) {
       await Concurrent.run(TAG, 50, async () => {
-        const block = await C().RPC.getBlock(b);
+        const block = await retryable(() => C().RPC.getBlock(b));
         timestamps[b] = new Date(Number(block.timestamp) * 1000);
       });
     }

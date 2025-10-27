@@ -4,6 +4,7 @@ const SunriseTask = require('./tasks/sunrise');
 const Log = require('../utils/logging');
 const DepositsTask = require('./tasks/deposits');
 const TractorTask = require('./tasks/tractor');
+const InflowsTask = require('./tasks/inflows');
 
 const genericTask = (Executor, label) => ({
   [label]: {

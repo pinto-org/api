@@ -223,7 +223,7 @@ describe('FieldInflowsUtil', () => {
       ];
 
       const netSiloBdvInflows = {};
-      const result = await FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
+      const result = FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
 
       expect(result.length).toBe(1);
       expect(result[0].account).toBe('abc');
@@ -247,7 +247,7 @@ describe('FieldInflowsUtil', () => {
       ];
 
       const netSiloBdvInflows = {};
-      const result = await FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
+      const result = FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
 
       expect(result.length).toBe(2);
       const buyerDto = result.find((r) => r.account === 'buyer');
@@ -276,7 +276,7 @@ describe('FieldInflowsUtil', () => {
       ];
 
       const netSiloBdvInflows = {};
-      const result = await FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
+      const result = FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
 
       expect(result.length).toBe(1);
       expect(result[0].account).toBe('abc');
@@ -303,7 +303,7 @@ describe('FieldInflowsUtil', () => {
       ];
 
       const netSiloBdvInflows = {};
-      const result = await FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
+      const result = FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
 
       expect(result.length).toBe(2);
       expect(result.find((r) => r.account === 'abc').beans).toBe(100n);
@@ -330,7 +330,7 @@ describe('FieldInflowsUtil', () => {
       ];
 
       const netSiloBdvInflows = {};
-      const result = await FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
+      const result = FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
 
       expect(result.length).toBe(3);
       expect(result.find((r) => r.account === 'farmer').isMarket).toBe(false);
@@ -358,7 +358,7 @@ describe('FieldInflowsUtil', () => {
       ];
 
       const netSiloBdvInflows = {};
-      const result = await FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
+      const result = FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, mockMetadata);
 
       expect(result.length).toBe(3);
       const abcDtos = result.filter((r) => r.account === 'abc');
@@ -384,7 +384,7 @@ describe('FieldInflowsUtil', () => {
       };
 
       const netSiloBdvInflows = {};
-      const result = await FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, customMetadata);
+      const result = FieldInflowsUtil.inflowsFromFieldEvents(events, netSiloBdvInflows, customMetadata);
 
       expect(result[0].usd).toBeCloseTo(0.00015, 6);
     });

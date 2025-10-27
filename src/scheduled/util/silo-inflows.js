@@ -4,7 +4,7 @@ const SiloInflowDto = require('../../repository/dto/inflow/SiloInflowDto');
 const PriceService = require('../../service/price-service');
 const SiloService = require('../../service/silo-service');
 const { BigInt_abs } = require('../../utils/bigint');
-const { bigintFloatMultiplier, bigintPercent } = require('../../utils/number');
+const { bigintFloatMultiplier, bigintPercent, toBigInt, fromBigInt } = require('../../utils/number');
 
 class SiloInflowsUtil {
   // Sums the net deposit/withdrawal for each token in these events, and identifies transfers.
@@ -95,8 +95,8 @@ class SiloInflowsUtil {
 
     for (const e of claimPlenties) {
       const account = e.args.account.toLowerCase();
-      net[account] = (net[account] ?? 0n) - e._pseudoBdv;
-      net.protocol = (net.protocol ?? 0n) - e._pseudoBdv;
+      net[account] = (net[account] ?? 0n) - toBigInt(e._pseudoBdv, 6);
+      net.protocol = (net.protocol ?? 0n) - toBigInt(e._pseudoBdv, 6);
     }
     return net;
   }
@@ -171,7 +171,7 @@ class SiloInflowsUtil {
     }
   }
 
-  static async inflowsFromClaimPlenties(claimPlenties, netFieldBdvInflows, { block, timestamp, txnHash, beanPrice }) {
+  static inflowsFromClaimPlenties(claimPlenties, netFieldBdvInflows, { block, timestamp, txnHash, beanPrice }) {
     const dtos = [];
     for (let i = 0; i < claimPlenties.length; ++i) {
       const e = claimPlenties[i];
