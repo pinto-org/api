@@ -53,10 +53,7 @@ module.exports = {
           lastTractorUpdate: {
             type: Sequelize.INTEGER
           },
-          lastSiloInflowUpdate: {
-            type: Sequelize.INTEGER
-          },
-          lastFieldInflowUpdate: {
+          lastInflowUpdate: {
             type: Sequelize.INTEGER
           },
           ...timestamps(Sequelize)
