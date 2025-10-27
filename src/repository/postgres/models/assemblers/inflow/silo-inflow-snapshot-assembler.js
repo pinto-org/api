@@ -10,15 +10,27 @@ class SiloInflowSnapshotAssembler {
       cumulativeBdvNet: snapshotDto.cumulativeBdvNet,
       cumulativeBdvIn: snapshotDto.cumulativeBdvIn,
       cumulativeBdvOut: snapshotDto.cumulativeBdvOut,
+      cumulativeProtocolBdvNet: snapshotDto.cumulativeProtocolBdvNet,
+      cumulativeProtocolBdvIn: snapshotDto.cumulativeProtocolBdvIn,
+      cumulativeProtocolBdvOut: snapshotDto.cumulativeProtocolBdvOut,
       deltaBdvNet: snapshotDto.deltaBdvNet,
       deltaBdvIn: snapshotDto.deltaBdvIn,
       deltaBdvOut: snapshotDto.deltaBdvOut,
+      deltaProtocolBdvNet: snapshotDto.deltaProtocolBdvNet,
+      deltaProtocolBdvIn: snapshotDto.deltaProtocolBdvIn,
+      deltaProtocolBdvOut: snapshotDto.deltaProtocolBdvOut,
       cumulativeUsdNet: snapshotDto.cumulativeUsdNet,
       cumulativeUsdIn: snapshotDto.cumulativeUsdIn,
       cumulativeUsdOut: snapshotDto.cumulativeUsdOut,
+      cumulativeProtocolUsdNet: snapshotDto.cumulativeProtocolUsdNet,
+      cumulativeProtocolUsdIn: snapshotDto.cumulativeProtocolUsdIn,
+      cumulativeProtocolUsdOut: snapshotDto.cumulativeProtocolUsdOut,
       deltaUsdNet: snapshotDto.deltaUsdNet,
       deltaUsdIn: snapshotDto.deltaUsdIn,
-      deltaUsdOut: snapshotDto.deltaUsdOut
+      deltaUsdOut: snapshotDto.deltaUsdOut,
+      deltaProtocolUsdNet: snapshotDto.deltaProtocolUsdNet,
+      deltaProtocolUsdIn: snapshotDto.deltaProtocolUsdIn,
+      deltaProtocolUsdOut: snapshotDto.deltaProtocolUsdOut
     };
   }
 

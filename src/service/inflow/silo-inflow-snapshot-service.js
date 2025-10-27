@@ -37,9 +37,15 @@ class SiloInflowSnapshotService {
           sub.bdv_net as cumulative_bdv_net,
           sub.bdv_in as cumulative_bdv_in,
           sub.bdv_out as cumulative_bdv_out,
+          sub.protocol_bdv_net as cumulative_protocol_bdv_net,
+          sub.protocol_bdv_in as cumulative_protocol_bdv_in,
+          sub.protocol_bdv_out as cumulative_protocol_bdv_out,
           sub.usd_net as cumulative_usd_net,
           sub.usd_in as cumulative_usd_in,
-          sub.usd_out as cumulative_usd_out
+          sub.usd_out as cumulative_usd_out,
+          sub.protocol_usd_net as cumulative_protocol_usd_net,
+          sub.protocol_usd_in as cumulative_protocol_usd_in,
+          sub.protocol_usd_out as cumulative_protocol_usd_out
         from
           season s,
           lateral (
@@ -49,7 +55,13 @@ class SiloInflowSnapshotService {
               sum(case when bdv < 0 then -bdv else 0 end) as bdv_out,
               sum(usd) as usd_net,
               sum(case when usd > 0 then usd else 0 end) as usd_in,
-              sum(case when usd < 0 then -usd else 0 end) as usd_out
+              sum(case when usd < 0 then -usd else 0 end) as usd_out,
+              sum(bdv + "protocolFieldNegationBdv") as protocol_bdv_net,
+              sum(case when bdv + "protocolFieldNegationBdv" > 0 then bdv + "protocolFieldNegationBdv" else 0 end) as protocol_bdv_in,
+              sum(case when bdv + "protocolFieldNegationBdv" < 0 then -bdv - "protocolFieldNegationBdv" else 0 end) as protocol_bdv_out,
+              sum(usd + "protocolFieldNegationUsd") as protocol_usd_net,
+              sum(case when usd + "protocolFieldNegationUsd" > 0 then usd + "protocolFieldNegationUsd" else 0 end) as protocol_usd_in,
+              sum(case when usd + "protocolFieldNegationUsd" < 0 then -usd - "protocolFieldNegationUsd" else 0 end) as protocol_usd_out
             from ${SILO_INFLOW_TABLE.env} f
             where f.block < s.block and f."isTransfer" = false
           ) as sub
@@ -62,15 +74,27 @@ class SiloInflowSnapshotService {
         cumulative_bdv_net,
         cumulative_bdv_in,
         cumulative_bdv_out,
+        cumulative_protocol_bdv_net,
+        cumulative_protocol_bdv_in,
+        cumulative_protocol_bdv_out,
         cumulative_usd_net,
         cumulative_usd_in,
         cumulative_usd_out,
+        cumulative_protocol_usd_net,
+        cumulative_protocol_usd_in,
+        cumulative_protocol_usd_out,
         cumulative_bdv_net - lag(cumulative_bdv_net) over (order by block) as delta_bdv_net,
         cumulative_bdv_in - lag(cumulative_bdv_in) over (order by block) as delta_bdv_in,
         cumulative_bdv_out - lag(cumulative_bdv_out) over (order by block) as delta_bdv_out,
+        cumulative_protocol_bdv_net - lag(cumulative_protocol_bdv_net) over (order by block) as delta_protocol_bdv_net,
+        cumulative_protocol_bdv_in - lag(cumulative_protocol_bdv_in) over (order by block) as delta_protocol_bdv_in,
+        cumulative_protocol_bdv_out - lag(cumulative_protocol_bdv_out) over (order by block) as delta_protocol_bdv_out,
         cumulative_usd_net - lag(cumulative_usd_net) over (order by block) as delta_usd_net,
         cumulative_usd_in - lag(cumulative_usd_in) over (order by block) as delta_usd_in,
-        cumulative_usd_out - lag(cumulative_usd_out) over (order by block) as delta_usd_out
+        cumulative_usd_out - lag(cumulative_usd_out) over (order by block) as delta_usd_out,
+        cumulative_protocol_usd_net - lag(cumulative_protocol_usd_net) over (order by block) as delta_protocol_usd_net,
+        cumulative_protocol_usd_in - lag(cumulative_protocol_usd_in) over (order by block) as delta_protocol_usd_in,
+        cumulative_protocol_usd_out - lag(cumulative_protocol_usd_out) over (order by block) as delta_protocol_usd_out
       from
         cumulative
       order by timestamp asc

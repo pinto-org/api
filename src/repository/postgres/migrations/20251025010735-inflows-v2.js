@@ -4,7 +4,8 @@ const {
   SILO_INFLOW_TABLE,
   FIELD_INFLOW_TABLE,
   SILO_INFLOW_SNAPSHOT_TABLE,
-  FIELD_INFLOW_SNAPSHOT_TABLE
+  FIELD_INFLOW_SNAPSHOT_TABLE,
+  API_META_TABLE
 } = require('../../../constants/tables');
 const { bigintNumericColumn, timestamps } = require('../util/sequelize-util');
 
@@ -103,15 +104,15 @@ module.exports = {
       ...bigintNumericColumn('cumulativeBdvNet', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('cumulativeBdvIn', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('cumulativeBdvOut', Sequelize, { allowNull: false }),
-      ...bigintNumericColumn('cumulativeProtocolBdvNet', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('cumulativeProtocolBdvIn', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('cumulativeProtocolBdvOut', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeProtocolBdvNet', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeProtocolBdvIn', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeProtocolBdvOut', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('deltaBdvNet', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('deltaBdvIn', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('deltaBdvOut', Sequelize, { allowNull: false }),
-      ...bigintNumericColumn('deltaProtocolBdvNet', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('deltaProtocolBdvIn', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('deltaProtocolBdvOut', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('deltaProtocolBdvNet', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('deltaProtocolBdvIn', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('deltaProtocolBdvOut', Sequelize, { allowNull: false }),
       cumulativeUsdNet: {
         type: Sequelize.FLOAT,
         allowNull: false
@@ -125,15 +126,15 @@ module.exports = {
         allowNull: false
       },
       cumulativeProtocolUsdNet: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       cumulativeProtocolUsdIn: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       cumulativeProtocolUsdOut: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       deltaUsdNet: {
@@ -149,18 +150,23 @@ module.exports = {
         allowNull: false
       },
       deltaProtocolUsdNet: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       deltaProtocolUsdIn: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       deltaProtocolUsdOut: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       ...timestamps(Sequelize)
+    });
+    await queryInterface.addConstraint(SILO_INFLOW_SNAPSHOT_TABLE.prod, {
+      fields: ['season'],
+      type: 'unique',
+      name: 'silo_inflow_snapshot_season_ukey'
     });
 
     await queryInterface.createTable(FIELD_INFLOW_TABLE.prod, {
@@ -230,15 +236,15 @@ module.exports = {
       ...bigintNumericColumn('cumulativeBeansNet', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('cumulativeBeansIn', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('cumulativeBeansOut', Sequelize, { allowNull: false }),
-      ...bigintNumericColumn('cumulativeProtocolBeansNet', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('cumulativeProtocolBeansIn', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('cumulativeProtocolBeansOut', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeProtocolBeansNet', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeProtocolBeansIn', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('cumulativeProtocolBeansOut', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('deltaBeansNet', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('deltaBeansIn', Sequelize, { allowNull: false }),
       ...bigintNumericColumn('deltaBeansOut', Sequelize, { allowNull: false }),
-      ...bigintNumericColumn('deltaProtocolBeansNet', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('deltaProtocolBeansIn', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('deltaProtocolBeansOut', DataTypes, { allowNull: false }),
+      ...bigintNumericColumn('deltaProtocolBeansNet', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('deltaProtocolBeansIn', Sequelize, { allowNull: false }),
+      ...bigintNumericColumn('deltaProtocolBeansOut', Sequelize, { allowNull: false }),
       cumulativeUsdNet: {
         type: Sequelize.FLOAT,
         allowNull: false
@@ -252,15 +258,15 @@ module.exports = {
         allowNull: false
       },
       cumulativeProtocolUsdNet: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       cumulativeProtocolUsdIn: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       cumulativeProtocolUsdOut: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       deltaUsdNet: {
@@ -276,24 +282,31 @@ module.exports = {
         allowNull: false
       },
       deltaProtocolUsdNet: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       deltaProtocolUsdIn: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       deltaProtocolUsdOut: {
-        type: DataTypes.FLOAT,
+        type: Sequelize.FLOAT,
         allowNull: false
       },
       ...timestamps(Sequelize)
+    });
+    await queryInterface.addConstraint(FIELD_INFLOW_SNAPSHOT_TABLE.prod, {
+      fields: ['season'],
+      type: 'unique',
+      name: 'field_inflow_snapshot_season_ukey'
     });
   },
 
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable(SILO_INFLOW_TABLE.prod);
+    await queryInterface.dropTable(SILO_INFLOW_SNAPSHOT_TABLE.prod);
     await queryInterface.dropTable(FIELD_INFLOW_TABLE.prod);
+    await queryInterface.dropTable(FIELD_INFLOW_SNAPSHOT_TABLE.prod);
 
     await queryInterface.removeColumn(API_META_TABLE.prod, 'lastInflowUpdate');
     await queryInterface.addColumn(API_META_TABLE.prod, 'lastSiloInflowUpdate', {
