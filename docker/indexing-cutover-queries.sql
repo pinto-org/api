@@ -6,32 +6,16 @@ update "ApiMeta" set "lastDepositUpdate" = (select "lastDepositUpdate" from "ind
 commit;
 
 
---- @deprecated ---
--- Field inflow migration (indexing_ -> actual)
-begin;
-truncate table field_inflow;
-truncate table field_inflow_snapshot;
-insert into field_inflow ("id", "account", "beans", "usd", "isMarket", "block", "timestamp", "txnHash", "createdAt", "updatedAt") select "id", "account", "beans", "usd", "isMarket", "block", "timestamp", "txnHash", "createdAt", "updatedAt" from indexing_field_inflow;
-insert into field_inflow_snapshot ("id", "snapshotTimestamp", "snapshotBlock", "season", "cumulativeBeansNet", "cumulativeBeansIn", "cumulativeBeansOut", "deltaBeansNet", "deltaBeansIn", "deltaBeansOut", "cumulativeUsdNet", "cumulativeUsdIn", "cumulativeUsdOut", "deltaUsdNet", "deltaUsdIn", "deltaUsdOut", "createdAt", "updatedAt") select "id", "snapshotTimestamp", "snapshotBlock", "season", "cumulativeBeansNet", "cumulativeBeansIn", "cumulativeBeansOut", "deltaBeansNet", "deltaBeansIn", "deltaBeansOut", "cumulativeUsdNet", "cumulativeUsdIn", "cumulativeUsdOut", "deltaUsdNet", "deltaUsdIn", "deltaUsdOut", "createdAt", "updatedAt" from indexing_field_inflow_snapshot;
-update "ApiMeta" set "lastFieldInflowUpdate" = (select "lastFieldInflowUpdate" from "indexing_ApiMeta");
-commit;
--- Silo inflow migration (indexing_ -> actual)
-begin;
-truncate table silo_inflow;
-truncate table silo_inflow_snapshot;
-insert into silo_inflow ("id", "account", "token", "amount", "bdv", "usd", "isLp", "isTransfer", "isPlenty", "block", "timestamp", "txnHash", "createdAt", "updatedAt") select "id", "account", "token", "amount", "bdv", "usd", "isLp", "isTransfer", "isPlenty", "block", "timestamp", "txnHash", "createdAt", "updatedAt" from indexing_silo_inflow;
-insert into silo_inflow_snapshot ("id", "snapshotTimestamp", "snapshotBlock", "season", "cumulativeBdvNet", "cumulativeBdvIn", "cumulativeBdvOut", "deltaBdvNet", "deltaBdvIn", "deltaBdvOut", "cumulativeUsdNet", "cumulativeUsdIn", "cumulativeUsdOut", "deltaUsdNet", "deltaUsdIn", "deltaUsdOut", "createdAt", "updatedAt") select "id", "snapshotTimestamp", "snapshotBlock", "season", "cumulativeBdvNet", "cumulativeBdvIn", "cumulativeBdvOut", "deltaBdvNet", "deltaBdvIn", "deltaBdvOut", "cumulativeUsdNet", "cumulativeUsdIn", "cumulativeUsdOut", "deltaUsdNet", "deltaUsdIn", "deltaUsdOut", "createdAt", "updatedAt" from indexing_silo_inflow_snapshot;
-update "ApiMeta" set "lastSiloInflowUpdate" = (select "lastSiloInflowUpdate" from "indexing_ApiMeta");
-commit;
--------------------
-
 -- Inflow migration (indexing_ -> actual)
 begin;
 truncate table silo_inflow, field_inflow, silo_inflow_snapshot, field_inflow_snapshot;
 insert into silo_inflow ("id", "account", "token", "amount", "bdv", "usd", "isLp", "isTransfer", "isPlenty", "accountFieldNegationBdv", "accountFieldNegationUsd", "protocolFieldNegationBdv", "protocolFieldNegationUsd", "block", "timestamp", "txnHash", "createdAt", "updatedAt") select "id", "account", "token", "amount", "bdv", "usd", "isLp", "isTransfer", "isPlenty", "accountFieldNegationBdv", "accountFieldNegationUsd", "protocolFieldNegationBdv", "protocolFieldNegationUsd", "block", "timestamp", "txnHash", "createdAt", "updatedAt" from indexing_silo_inflow;
 insert into field_inflow ("id", "account", "beans", "usd", "isMarket", "accountSiloNegationBdv", "accountSiloNegationUsd", "protocolSiloNegationBdv", "protocolSiloNegationUsd", "block", "timestamp", "txnHash", "createdAt", "updatedAt") select "id", "account", "beans", "usd", "isMarket", "accountSiloNegationBdv", "accountSiloNegationUsd", "protocolSiloNegationBdv", "protocolSiloNegationUsd", "block", "timestamp", "txnHash", "createdAt", "updatedAt" from indexing_field_inflow;
-// TODO: Snapshots will need to be updated
+insert into silo_inflow_snapshot ("id", "snapshotTimestamp", "snapshotBlock", "season", "cumulativeBdvNet", "cumulativeBdvIn", "cumulativeBdvOut", "cumulativeProtocolBdvNet", "cumulativeProtocolBdvIn", "cumulativeProtocolBdvOut", "deltaBdvNet", "deltaBdvIn", "deltaBdvOut", "deltaProtocolBdvNet", "deltaProtocolBdvIn", "deltaProtocolBdvOut", "cumulativeUsdNet", "cumulativeUsdIn", "cumulativeUsdOut", "cumulativeProtocolUsdNet", "cumulativeProtocolUsdIn", "cumulativeProtocolUsdOut", "deltaUsdNet", "deltaUsdIn", "deltaUsdOut", "deltaProtocolUsdNet", "deltaProtocolUsdIn", "deltaProtocolUsdOut", "createdAt", "updatedAt") select "id", "snapshotTimestamp", "snapshotBlock", "season", "cumulativeBdvNet", "cumulativeBdvIn", "cumulativeBdvOut", "cumulativeProtocolBdvNet", "cumulativeProtocolBdvIn", "cumulativeProtocolBdvOut", "deltaBdvNet", "deltaBdvIn", "deltaBdvOut", "deltaProtocolBdvNet", "deltaProtocolBdvIn", "deltaProtocolBdvOut", "cumulativeUsdNet", "cumulativeUsdIn", "cumulativeUsdOut", "cumulativeProtocolUsdNet", "cumulativeProtocolUsdIn", "cumulativeProtocolUsdOut", "deltaUsdNet", "deltaUsdIn", "deltaUsdOut", "deltaProtocolUsdNet", "deltaProtocolUsdIn", "deltaProtocolUsdOut", "createdAt", "updatedAt" from indexing_silo_inflow_snapshot;
+insert into field_inflow_snapshot ("id", "snapshotTimestamp", "snapshotBlock", "season", "cumulativeBeansNet", "cumulativeBeansIn", "cumulativeBeansOut", "cumulativeProtocolBeansNet", "cumulativeProtocolBeansIn", "cumulativeProtocolBeansOut", "deltaBeansNet", "deltaBeansIn", "deltaBeansOut", "deltaProtocolBeansNet", "deltaProtocolBeansIn", "deltaProtocolBeansOut", "cumulativeUsdNet", "cumulativeUsdIn", "cumulativeUsdOut", "cumulativeProtocolUsdNet", "cumulativeProtocolUsdIn", "cumulativeProtocolUsdOut", "deltaUsdNet", "deltaUsdIn", "deltaUsdOut", "deltaProtocolUsdNet", "deltaProtocolUsdIn", "deltaProtocolUsdOut", "createdAt", "updatedAt") select "id", "snapshotTimestamp", "snapshotBlock", "season", "cumulativeBeansNet", "cumulativeBeansIn", "cumulativeBeansOut", "cumulativeProtocolBeansNet", "cumulativeProtocolBeansIn", "cumulativeProtocolBeansOut", "deltaBeansNet", "deltaBeansIn", "deltaBeansOut", "deltaProtocolBeansNet", "deltaProtocolBeansIn", "deltaProtocolBeansOut", "cumulativeUsdNet", "cumulativeUsdIn", "cumulativeUsdOut", "cumulativeProtocolUsdNet", "cumulativeProtocolUsdIn", "cumulativeProtocolUsdOut", "deltaUsdNet", "deltaUsdIn", "deltaUsdOut", "deltaProtocolUsdNet", "deltaProtocolUsdIn", "deltaProtocolUsdOut", "createdAt", "updatedAt" from indexing_field_inflow_snapshot;
+update "ApiMeta" set "lastInflowUpdate" = (select "lastInflowUpdate" from "indexing_ApiMeta");
 commit;
+
 
 -- Tractor migration (indexing_ -> actual)
 -- Column names need to be explicit if new properties are added (since the order will differ between the env)
@@ -66,19 +50,13 @@ update "indexing_ApiMeta" set "lastDepositUpdate" = null, "lastLambdaBdvs" = nul
 commit;
 
 
--- Field Inflow cleanup
-begin;
-drop table if exists indexing_field_inflow;
-drop table if exists indexing_field_inflow_snapshot;
-update "indexing_ApiMeta" set "lastFieldInflowUpdate" = null;
-commit;
-
-
--- Silo Inflow cleanup
+-- Inflows cleanup
 begin;
 drop table if exists indexing_silo_inflow;
+drop table if exists indexing_field_inflow;
 drop table if exists indexing_silo_inflow_snapshot;
-update "indexing_ApiMeta" set "lastSiloInflowUpdate" = null;
+drop table if exists indexing_field_inflow_snapshot;
+update "indexing_ApiMeta" set "lastInflowUpdate" = null;
 commit;
 
 
