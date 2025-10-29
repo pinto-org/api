@@ -7,6 +7,20 @@ const { BigInt_abs } = require('../../utils/bigint');
 const { bigintFloatMultiplier, bigintPercent, toBigInt, fromBigInt } = require('../../utils/number');
 
 class SiloInflowsUtil {
+  // Assigns a pseudo bdv to each claim plenty event (the claimed tokens aren't whitelisted and don't have a bdv)
+  static async assignClaimPlentyBdvs(claimPlenties, beanPrice, block) {
+    // Price the value and bdvs of all claimed tokens
+    const tokens = claimPlenties.map((e) => e.args.token.toLowerCase());
+    const tokenPrices = (
+      await Promise.all(tokens.map((t) => PriceService.getTokenPrice(t, { blockNumber: block })))
+    ).map((p) => p.usdPrice);
+    const pseudoBdvs = tokenPrices.map((p) => p / beanPrice);
+
+    for (let i = 0; i < claimPlenties.length; ++i) {
+      claimPlenties[i]._pseudoBdv = pseudoBdvs[i];
+    }
+  }
+
   // Sums the net deposit/withdrawal for each token in these events, and identifies transfers.
   // A Transfer is identified as the same token being negative and positive for different accounts.
   // Partial transfers are reflected via the transferPct field.
@@ -67,20 +81,6 @@ class SiloInflowsUtil {
       }
     }
     return net;
-  }
-
-  // Assigns a pseudo bdv to each claim plenty event (the claimed tokens aren't whitelisted and don't have a bdv)
-  static async assignClaimPlentyBdvs(claimPlenties, beanPrice, block) {
-    // Price the value and bdvs of all claimed tokens
-    const tokens = claimPlenties.map((e) => e.args.token.toLowerCase());
-    const tokenPrices = (
-      await Promise.all(tokens.map((t) => PriceService.getTokenPrice(t, { blockNumber: block })))
-    ).map((p) => p.usdPrice);
-    const pseudoBdvs = tokenPrices.map((p) => p / beanPrice);
-
-    for (let i = 0; i < claimPlenties.length; ++i) {
-      claimPlenties[i]._pseudoBdv = pseudoBdvs[i];
-    }
   }
 
   // Calculates the net bdv inflow for each account

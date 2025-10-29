@@ -1,6 +1,20 @@
+const Contracts = require('../../datasources/contracts/contracts');
 const FieldInflowDto = require('../../repository/dto/inflow/FieldInflowDto');
+const { toBigInt, fromBigInt } = require('../../utils/number');
 
 class FieldInflowsUtil {
+  // Previously there was a bug in the Sow event emission such that the amount of beans indicated
+  // was actually the amount of soil reduced. This occurred during the morning when above peg.
+  // The true amount of beans sown is computed here and attached as a _beansSown field.
+  static async assignTrueBeansSown(sowEvents, block) {
+    const beanstalk = Contracts.getBeanstalk();
+    const temperature = await beanstalk.temperature({ blockTag: block });
+
+    for (const e of sowEvents) {
+      e._beansSown = toBigInt(fromBigInt(BigInt(e.args.pods), 6) / (1 + fromBigInt(temperature, 6 + 2)), 6);
+    }
+  }
+
   // Calculates the net bdv inflow for each account
   static netBdvInflows(fieldEvents) {
     const net = {};
@@ -11,7 +25,7 @@ class FieldInflowsUtil {
     };
     for (const e of fieldEvents) {
       if (['Sow', 'Harvest'].includes(e.name)) {
-        add(e.args.account, e.name === 'Sow' ? BigInt(e.args.beans) : -BigInt(e.args.beans));
+        add(e.args.account, e.name === 'Sow' ? e._beansSown : -BigInt(e.args.beans));
       } else if (e.name === 'PodListingFilled') {
         add(e.args.filler, BigInt(e.args.costInBeans));
         add(e.args.lister, -BigInt(e.args.costInBeans));
@@ -30,8 +44,7 @@ class FieldInflowsUtil {
     const netSowHarvest = {};
     for (const e of sowHarvest) {
       netSowHarvest[e.args.account.toLowerCase()] =
-        (netSowHarvest[e.args.account.toLowerCase()] ?? 0n) +
-        (e.name === 'Sow' ? BigInt(e.args.beans) : -BigInt(e.args.beans));
+        (netSowHarvest[e.args.account.toLowerCase()] ?? 0n) + (e.name === 'Sow' ? e._beansSown : -BigInt(e.args.beans));
     }
 
     const netMarket = {};

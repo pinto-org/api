@@ -53,6 +53,7 @@ class InflowsTask {
         const addRemoves = txnEvents.filter((e) => e.name.includes('Deposit'));
         const claimPlenties = txnEvents.filter((e) => e.name === 'ClaimPlenty');
         const fieldEvents = txnEvents.filter((e) => FIELD_EVENTS.has(e.name));
+        const sowEvents = fieldEvents.filter((e) => e.name === 'Sow');
 
         // Ignore add/removal matching convert or pick
         SiloEvents.removeConvertRelatedEvents(addRemoves, converts);
@@ -60,6 +61,8 @@ class InflowsTask {
 
         const beanPrice = (await PriceService.getBeanPrice({ blockNumber: txnEvents[0].rawLog.blockNumber })).usdPrice;
 
+        // Assign true beans sown to the sow events
+        await FieldInflowsUtil.assignTrueBeansSown(sowEvents, txnEvents[0].rawLog.blockNumber);
         // Attaches bdv/bean price to the plenty events
         await SiloInflowsUtil.assignClaimPlentyBdvs(claimPlenties, beanPrice, txnEvents[0].rawLog.blockNumber);
 
