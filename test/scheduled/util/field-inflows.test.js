@@ -9,7 +9,8 @@ describe('FieldInflowsUtil', () => {
           args: {
             account: 'abc',
             beans: 100n
-          }
+          },
+          _beansSown: 100n
         }
       ];
 
@@ -26,7 +27,8 @@ describe('FieldInflowsUtil', () => {
           args: {
             account: 'abc',
             beans: 100n
-          }
+          },
+          _beansSown: 100n
         },
         {
           name: 'Harvest',
@@ -50,14 +52,16 @@ describe('FieldInflowsUtil', () => {
           args: {
             account: 'abc',
             beans: 100n
-          }
+          },
+          _beansSown: 100n
         },
         {
           name: 'Sow',
           args: {
             account: 'def',
             beans: 200n
-          }
+          },
+          _beansSown: 200n
         }
       ];
 
@@ -142,7 +146,8 @@ describe('FieldInflowsUtil', () => {
           args: {
             account: 'farmer',
             beans: 500n
-          }
+          },
+          _beansSown: 500n
         },
         {
           name: 'Harvest',
@@ -176,7 +181,8 @@ describe('FieldInflowsUtil', () => {
           args: {
             account: 'abc',
             beans: 500n
-          }
+          },
+          _beansSown: 500n
         },
         {
           name: 'PodListingFilled',
@@ -218,7 +224,8 @@ describe('FieldInflowsUtil', () => {
           args: {
             account: 'abc',
             beans: 100n
-          }
+          },
+          _beansSown: 100n
         }
       ];
 
@@ -264,7 +271,8 @@ describe('FieldInflowsUtil', () => {
           args: {
             account: 'abc',
             beans: 100n
-          }
+          },
+          _beansSown: 100n
         },
         {
           name: 'Harvest',
@@ -291,14 +299,16 @@ describe('FieldInflowsUtil', () => {
           args: {
             account: 'abc',
             beans: 100n
-          }
+          },
+          _beansSown: 100n
         },
         {
           name: 'Sow',
           args: {
             account: 'def',
             beans: 200n
-          }
+          },
+          _beansSown: 200n
         }
       ];
 
@@ -317,7 +327,8 @@ describe('FieldInflowsUtil', () => {
           args: {
             account: 'farmer',
             beans: 500n
-          }
+          },
+          _beansSown: 500n
         },
         {
           name: 'PodListingFilled',
@@ -345,7 +356,8 @@ describe('FieldInflowsUtil', () => {
           args: {
             account: 'abc',
             beans: 500n
-          }
+          },
+          _beansSown: 500n
         },
         {
           name: 'PodListingFilled',
@@ -374,7 +386,8 @@ describe('FieldInflowsUtil', () => {
           args: {
             account: 'abc',
             beans: 100n
-          }
+          },
+          _beansSown: 100n
         }
       ];
 
