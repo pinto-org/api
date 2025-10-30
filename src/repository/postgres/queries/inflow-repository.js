@@ -10,15 +10,21 @@ class InflowRepository {
         'snapshotBlock',
         'snapshotTimestamp',
         [
-          sequelize.literal('"SiloInflowSnapshot"."cumulativeUsdNet" + "FieldInflowSnapshot"."cumulativeUsdNet"'),
+          sequelize.literal(
+            '"SiloInflowSnapshot"."cumulativeProtocolUsdNet" + "FieldInflowSnapshot"."cumulativeProtocolUsdNet"'
+          ),
           'all_cumulative_usd_net'
         ],
         [
-          sequelize.literal('"SiloInflowSnapshot"."cumulativeUsdIn" + "FieldInflowSnapshot"."cumulativeUsdIn"'),
+          sequelize.literal(
+            '"SiloInflowSnapshot"."cumulativeProtocolUsdIn" + "FieldInflowSnapshot"."cumulativeProtocolUsdIn"'
+          ),
           'all_cumulative_usd_in'
         ],
         [
-          sequelize.literal('"SiloInflowSnapshot"."cumulativeUsdOut" + "FieldInflowSnapshot"."cumulativeUsdOut"'),
+          sequelize.literal(
+            '"SiloInflowSnapshot"."cumulativeProtocolUsdOut" + "FieldInflowSnapshot"."cumulativeProtocolUsdOut"'
+          ),
           'all_cumulative_usd_out'
         ],
         ['cumulativeUsdNet', 'silo_cumulative_usd_net'],
@@ -29,8 +35,8 @@ class InflowRepository {
         [sequelize.literal('"FieldInflowSnapshot"."cumulativeUsdOut"'), 'field_cumulative_usd_out'],
         [
           sequelize.literal(
-            '"SiloInflowSnapshot"."cumulativeUsdIn" + "SiloInflowSnapshot"."cumulativeUsdOut" + ' +
-              '"FieldInflowSnapshot"."cumulativeUsdIn" + "FieldInflowSnapshot"."cumulativeUsdOut"'
+            '"SiloInflowSnapshot"."cumulativeProtocolUsdIn" + "SiloInflowSnapshot"."cumulativeProtocolUsdOut" + ' +
+              '"FieldInflowSnapshot"."cumulativeProtocolUsdIn" + "FieldInflowSnapshot"."cumulativeProtocolUsdOut"'
           ),
           'all_cumulative_usd_volume'
         ],
@@ -44,15 +50,15 @@ class InflowRepository {
         ],
         // Delta calculations
         [
-          sequelize.literal('"SiloInflowSnapshot"."deltaUsdNet" + "FieldInflowSnapshot"."deltaUsdNet"'),
+          sequelize.literal('"SiloInflowSnapshot"."deltaProtocolUsdNet" + "FieldInflowSnapshot"."deltaProtocolUsdNet"'),
           'all_delta_usd_net'
         ],
         [
-          sequelize.literal('"SiloInflowSnapshot"."deltaUsdIn" + "FieldInflowSnapshot"."deltaUsdIn"'),
+          sequelize.literal('"SiloInflowSnapshot"."deltaProtocolUsdIn" + "FieldInflowSnapshot"."deltaProtocolUsdIn"'),
           'all_delta_usd_in'
         ],
         [
-          sequelize.literal('"SiloInflowSnapshot"."deltaUsdOut" + "FieldInflowSnapshot"."deltaUsdOut"'),
+          sequelize.literal('"SiloInflowSnapshot"."deltaProtocolUsdOut" + "FieldInflowSnapshot"."deltaProtocolUsdOut"'),
           'all_delta_usd_out'
         ],
         ['deltaUsdNet', 'silo_delta_usd_net'],
@@ -63,7 +69,8 @@ class InflowRepository {
         [sequelize.literal('"FieldInflowSnapshot"."deltaUsdOut"'), 'field_delta_usd_out'],
         [
           sequelize.literal(
-            '"SiloInflowSnapshot"."deltaUsdIn" + "SiloInflowSnapshot"."deltaUsdOut" + "FieldInflowSnapshot"."deltaUsdIn" + "FieldInflowSnapshot"."deltaUsdOut"'
+            '"SiloInflowSnapshot"."deltaProtocolUsdIn" + "SiloInflowSnapshot"."deltaProtocolUsdOut" + ' +
+              '"FieldInflowSnapshot"."deltaProtocolUsdIn" + "FieldInflowSnapshot"."deltaProtocolUsdOut"'
           ),
           'all_delta_usd_volume'
         ],

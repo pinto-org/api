@@ -24,6 +24,16 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         allowNull: false
       },
+      ...bigintNumericColumn('accountSiloNegationBdv', DataTypes, { allowNull: false }),
+      accountSiloNegationUsd: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
+      ...bigintNumericColumn('protocolSiloNegationBdv', DataTypes, { allowNull: false }),
+      protocolSiloNegationUsd: {
+        type: DataTypes.FLOAT,
+        allowNull: false
+      },
       block: {
         type: DataTypes.INTEGER,
         allowNull: false

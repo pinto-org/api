@@ -53,10 +53,7 @@ module.exports = {
           lastTractorUpdate: {
             type: Sequelize.INTEGER
           },
-          lastSiloInflowUpdate: {
-            type: Sequelize.INTEGER
-          },
-          lastFieldInflowUpdate: {
+          lastInflowUpdate: {
             type: Sequelize.INTEGER
           },
           ...timestamps(Sequelize)
@@ -656,6 +653,16 @@ module.exports = {
           type: Sequelize.BOOLEAN,
           allowNull: false
         },
+        ...bigintNumericColumn('accountFieldNegationBdv', Sequelize, { allowNull: false }),
+        accountFieldNegationUsd: {
+          type: Sequelize.FLOAT,
+          allowNull: false
+        },
+        ...bigintNumericColumn('protocolFieldNegationBdv', Sequelize, { allowNull: false }),
+        protocolFieldNegationUsd: {
+          type: Sequelize.FLOAT,
+          allowNull: false
+        },
         block: {
           type: Sequelize.INTEGER,
           allowNull: false
@@ -696,9 +703,15 @@ module.exports = {
           ...bigintNumericColumn('cumulativeBdvNet', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('cumulativeBdvIn', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('cumulativeBdvOut', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBdvNet', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBdvIn', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBdvOut', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('deltaBdvNet', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('deltaBdvIn', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('deltaBdvOut', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBdvNet', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBdvIn', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBdvOut', Sequelize, { allowNull: false }),
           cumulativeUsdNet: {
             type: Sequelize.FLOAT,
             allowNull: false
@@ -711,6 +724,18 @@ module.exports = {
             type: Sequelize.FLOAT,
             allowNull: false
           },
+          cumulativeProtocolUsdNet: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          cumulativeProtocolUsdIn: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          cumulativeProtocolUsdOut: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
           deltaUsdNet: {
             type: Sequelize.FLOAT,
             allowNull: false
@@ -720,6 +745,18 @@ module.exports = {
             allowNull: false
           },
           deltaUsdOut: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdNet: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdIn: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdOut: {
             type: Sequelize.FLOAT,
             allowNull: false
           },
@@ -753,6 +790,16 @@ module.exports = {
         },
         isMarket: {
           type: Sequelize.BOOLEAN,
+          allowNull: false
+        },
+        ...bigintNumericColumn('accountSiloNegationBdv', Sequelize, { allowNull: false }),
+        accountSiloNegationUsd: {
+          type: Sequelize.FLOAT,
+          allowNull: false
+        },
+        ...bigintNumericColumn('protocolSiloNegationBdv', Sequelize, { allowNull: false }),
+        protocolSiloNegationUsd: {
+          type: Sequelize.FLOAT,
           allowNull: false
         },
         block: {
@@ -795,9 +842,15 @@ module.exports = {
           ...bigintNumericColumn('cumulativeBeansNet', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('cumulativeBeansIn', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('cumulativeBeansOut', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBeansNet', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBeansIn', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('cumulativeProtocolBeansOut', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('deltaBeansNet', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('deltaBeansIn', Sequelize, { allowNull: false }),
           ...bigintNumericColumn('deltaBeansOut', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBeansNet', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBeansIn', Sequelize, { allowNull: false }),
+          ...bigintNumericColumn('deltaProtocolBeansOut', Sequelize, { allowNull: false }),
           cumulativeUsdNet: {
             type: Sequelize.FLOAT,
             allowNull: false
@@ -810,6 +863,18 @@ module.exports = {
             type: Sequelize.FLOAT,
             allowNull: false
           },
+          cumulativeProtocolUsdNet: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          cumulativeProtocolUsdIn: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          cumulativeProtocolUsdOut: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
           deltaUsdNet: {
             type: Sequelize.FLOAT,
             allowNull: false
@@ -819,6 +884,18 @@ module.exports = {
             allowNull: false
           },
           deltaUsdOut: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdNet: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdIn: {
+            type: Sequelize.FLOAT,
+            allowNull: false
+          },
+          deltaProtocolUsdOut: {
             type: Sequelize.FLOAT,
             allowNull: false
           },

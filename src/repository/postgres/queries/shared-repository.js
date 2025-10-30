@@ -49,7 +49,7 @@ class SharedRepository {
         transaction: AsyncContext.getOrUndef('transaction')
       }
     );
-    return seasons.map((s) => s.missingseason);
+    return seasons.map((s) => s.missingseason).sort((a, b) => a - b);
   }
 }
 module.exports = SharedRepository;

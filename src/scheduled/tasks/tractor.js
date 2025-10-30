@@ -1,7 +1,7 @@
 const { C } = require('../../constants/runtime-constants');
 const TractorConstants = require('../../constants/tractor');
 const Contracts = require('../../datasources/contracts/contracts');
-const DepositEvents = require('../../datasources/events/deposit-events');
+const SiloEvents = require('../../datasources/events/silo-events');
 const FilterLogs = require('../../datasources/events/filter-logs');
 const { logIndex } = require('../../datasources/rpc-discrepancies');
 const TractorExecutionDto = require('../../repository/dto/tractor/TractorExecutionDto');
@@ -71,7 +71,7 @@ class TractorTask {
     });
 
     // Identify accounts that moved silo funds since the last update. This can narrow which accounts need a periodicUpdate.
-    const depositEvents = await DepositEvents.getSiloDepositEvents(lastUpdate + 1, updateBlock);
+    const depositEvents = await SiloEvents.getSiloDepositEvents(lastUpdate + 1, updateBlock);
     const siloUpdateAccounts = new Set(depositEvents.map((e) => e.account));
 
     // Event processing can occur in parallel, but ensure all requisitions are created first

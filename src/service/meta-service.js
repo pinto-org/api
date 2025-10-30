@@ -38,26 +38,15 @@ class AppMetaService {
     await MetaRepository.update(C().CHAIN, { lastTractorUpdate: lastUpdate });
   }
 
-  static async getSiloInflowMeta() {
+  static async getInflowMeta() {
     const meta = await MetaRepository.get(C().CHAIN);
     return {
-      lastUpdate: meta?.lastSiloInflowUpdate ? meta.lastSiloInflowUpdate : null
+      lastUpdate: meta?.lastInflowUpdate ? meta.lastInflowUpdate : null
     };
   }
 
-  static async setLastSiloInflowUpdate(lastUpdate) {
-    await MetaRepository.update(C().CHAIN, { lastSiloInflowUpdate: lastUpdate });
-  }
-
-  static async getFieldInflowMeta() {
-    const meta = await MetaRepository.get(C().CHAIN);
-    return {
-      lastUpdate: meta?.lastFieldInflowUpdate ? meta.lastFieldInflowUpdate : null
-    };
-  }
-
-  static async setLastFieldInflowUpdate(lastUpdate) {
-    await MetaRepository.update(C().CHAIN, { lastFieldInflowUpdate: lastUpdate });
+  static async setLastInflowUpdate(lastUpdate) {
+    await MetaRepository.update(C().CHAIN, { lastInflowUpdate: lastUpdate });
   }
 }
 

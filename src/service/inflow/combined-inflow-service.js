@@ -17,18 +17,17 @@ class CombinedInflowService {
     request.limit ??= 100;
 
     const { snapshots, total, lastUpdated } = await AsyncContext.sequelizeTransaction(async () => {
-      const [{ snapshots, total }, siloInflowMeta, fieldInflowMeta] = await Promise.all([
+      const [{ snapshots, total }, inflowMeta] = await Promise.all([
         InflowRepository.getCombinedInflowSnapshots({
           criteriaList,
           ...request
         }),
-        AppMetaService.getSiloInflowMeta(),
-        AppMetaService.getFieldInflowMeta()
+        AppMetaService.getInflowMeta()
       ]);
       return {
         snapshots,
         total,
-        lastUpdated: Math.min(siloInflowMeta.lastUpdate, fieldInflowMeta.lastUpdate)
+        lastUpdated: inflowMeta.lastUpdate
       };
     });
     const dtos = snapshots.map((row) => CombinedInflowSnapshotDto.fromRow(row));

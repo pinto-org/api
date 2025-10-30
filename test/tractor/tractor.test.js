@@ -1,7 +1,7 @@
 const TractorConstants = require('../../src/constants/tractor');
 const AlchemyUtil = require('../../src/datasources/alchemy');
 const Contracts = require('../../src/datasources/contracts/contracts');
-const DepositEvents = require('../../src/datasources/events/deposit-events');
+const SiloEvents = require('../../src/datasources/events/silo-events');
 const FilterLogs = require('../../src/datasources/events/filter-logs');
 const TractorExecutionDto = require('../../src/repository/dto/tractor/TractorExecutionDto');
 const TractorOrderDto = require('../../src/repository/dto/tractor/TractorOrderDto');
@@ -56,7 +56,7 @@ describe('TractorTask', () => {
           { name: 'Tractor', value: 3 },
           { name: 'Tractor', value: 4 }
         ]);
-      jest.spyOn(DepositEvents, 'getSiloDepositEvents').mockResolvedValue([{ account: '0xabcd' }]);
+      jest.spyOn(SiloEvents, 'getSiloDepositEvents').mockResolvedValue([{ account: '0xabcd' }]);
       jest.spyOn(SnapshotSowV0Service, 'takeSnapshot').mockImplementation(() => {});
     });
 
@@ -106,7 +106,7 @@ describe('TractorTask', () => {
         isCaughtUp: false,
         meta: null
       });
-      jest.spyOn(DepositEvents, 'getSiloDepositEvents').mockResolvedValue([{ account: '0xabcd' }]);
+      jest.spyOn(SiloEvents, 'getSiloDepositEvents').mockResolvedValue([{ account: '0xabcd' }]);
       const blueprintSpy = {
         periodicUpdate: jest.fn().mockImplementation(() => {})
       };

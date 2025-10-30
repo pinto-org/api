@@ -1,4 +1,5 @@
 const { C } = require('../../constants/runtime-constants');
+const retryable = require('../../utils/async/retryable');
 const ChainUtil = require('../../utils/chain');
 const EnvUtil = require('../../utils/env');
 
@@ -16,7 +17,7 @@ class TaskRangeUtil {
     let isCaughtUp = true;
 
     // Determine range of blocks to update on
-    let updateBlock = (await C().RPC.getBlock()).number;
+    let updateBlock = (await retryable(() => C().RPC.getBlock())).number;
     // Buffer to avoid issues with a chain reorg on non-local rpc
     if (!EnvUtil.isLocalRpc(C().CHAIN)) {
       updateBlock -= ChainUtil.blocksPerInterval(C().CHAIN, 10000);

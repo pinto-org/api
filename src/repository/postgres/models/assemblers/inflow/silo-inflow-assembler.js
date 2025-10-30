@@ -12,6 +12,10 @@ class SiloInflowAssembler {
       isLp: inflowDto.isLp,
       isTransfer: inflowDto.isTransfer,
       isPlenty: inflowDto.isPlenty,
+      accountFieldNegationBdv: inflowDto.accountFieldNegationBdv,
+      accountFieldNegationUsd: inflowDto.accountFieldNegationUsd,
+      protocolFieldNegationBdv: inflowDto.protocolFieldNegationBdv,
+      protocolFieldNegationUsd: inflowDto.protocolFieldNegationUsd,
       block: inflowDto.block,
       timestamp: inflowDto.timestamp,
       txnHash: inflowDto.txnHash

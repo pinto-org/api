@@ -1,4 +1,4 @@
-const DepositEvents = require('../../src/datasources/events/deposit-events');
+const SiloEvents = require('../../src/datasources/events/silo-events');
 const DepositsTask = require('../../src/scheduled/tasks/deposits');
 const SiloService = require('../../src/service/silo-service');
 const { allToBigInt } = require('../../src/utils/number');
@@ -11,7 +11,7 @@ describe('Deposits Task', () => {
 
   test('Identifies net deposit activity over block range', async () => {
     const events = require('../mock-responses/events/getSiloDepositEvents.json');
-    jest.spyOn(DepositEvents, 'getSiloDepositEvents').mockResolvedValue(allToBigInt(events, ['type']));
+    jest.spyOn(SiloEvents, 'getSiloDepositEvents').mockResolvedValue(allToBigInt(events, ['type']));
 
     const netActivity = await DepositsTask.getNetChange(100, 200);
 

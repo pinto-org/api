@@ -1,5 +1,6 @@
 const { C } = require('../../src/constants/runtime-constants');
-const DepositEvents = require('../../src/datasources/events/deposit-events');
+const SiloEvents = require('../../src/datasources/events/silo-events');
+const SiloInflowsUtil = require('../../src/scheduled/util/silo-inflows');
 const { mockPintoConstants } = require('../util/mock-constants');
 
 const mockAddRemoveEvt = (name, account, token, amount) => {
@@ -31,7 +32,7 @@ describe('Deposit Events', () => {
     });
 
     test('Removes convert related events', () => {
-      DepositEvents.removeConvertRelatedEvents(addRemoveEvents, [
+      SiloEvents.removeConvertRelatedEvents(addRemoveEvents, [
         {
           args: {
             account: 'abc',
@@ -49,7 +50,7 @@ describe('Deposit Events', () => {
     });
 
     test('Does not remove convert unrelated events', () => {
-      DepositEvents.removeConvertRelatedEvents(addRemoveEvents, [
+      SiloEvents.removeConvertRelatedEvents(addRemoveEvents, [
         {
           args: {
             account: 'abc',
@@ -74,7 +75,7 @@ describe('Deposit Events', () => {
     });
 
     test('Removes plant related events', () => {
-      DepositEvents.removePlantRelatedEvents(addRemoveEvents, [
+      SiloEvents.removePlantRelatedEvents(addRemoveEvents, [
         {
           args: {
             account: 'abc',
@@ -88,7 +89,7 @@ describe('Deposit Events', () => {
     });
 
     test('Does not remove plant unrelated events', () => {
-      DepositEvents.removePlantRelatedEvents(addRemoveEvents, [
+      SiloEvents.removePlantRelatedEvents(addRemoveEvents, [
         {
           args: {
             account: 'abc',
@@ -109,7 +110,7 @@ describe('Deposit Events', () => {
 
   describe('Net Deposits', () => {
     test('Multiple Tokens', () => {
-      const result = DepositEvents.netDeposits([
+      const result = SiloInflowsUtil.netDeposits([
         mockAddRemoveEvt('AddDeposit', 'abc', C().BEAN, 100n),
         mockAddRemoveEvt('RemoveDeposit', 'abc', C().PINTOWETH, 200n)
       ]);
@@ -119,7 +120,7 @@ describe('Deposit Events', () => {
     });
 
     test('Multiple Accounts', () => {
-      const result = DepositEvents.netDeposits([
+      const result = SiloInflowsUtil.netDeposits([
         mockAddRemoveEvt('AddDeposit', 'abc', C().BEAN, 100n),
         mockAddRemoveEvt('RemoveDeposit', 'abcd', C().PINTOWETH, 200n)
       ]);
@@ -129,7 +130,7 @@ describe('Deposit Events', () => {
     });
 
     test('Summing multiple events', () => {
-      const result = DepositEvents.netDeposits([
+      const result = SiloInflowsUtil.netDeposits([
         mockAddRemoveEvt('AddDeposit', 'abc', C().BEAN, 100n),
         mockAddRemoveEvt('RemoveDeposit', 'abc', C().BEAN, 200n)
       ]);
@@ -138,7 +139,7 @@ describe('Deposit Events', () => {
     });
 
     test('Transfer (full)', () => {
-      const result = DepositEvents.netDeposits([
+      const result = SiloInflowsUtil.netDeposits([
         mockAddRemoveEvt('RemoveDeposit', 'abc', C().BEAN, 500n),
         mockAddRemoveEvt('AddDeposit', 'xyz', C().BEAN, 500n)
       ]);
@@ -150,7 +151,7 @@ describe('Deposit Events', () => {
     });
 
     test('Transfer (partial)', () => {
-      const result = DepositEvents.netDeposits([
+      const result = SiloInflowsUtil.netDeposits([
         mockAddRemoveEvt('RemoveDeposit', 'abc', C().BEAN, 500n),
         mockAddRemoveEvt('AddDeposit', 'xyz', C().BEAN, 400n)
       ]);
@@ -162,7 +163,7 @@ describe('Deposit Events', () => {
     });
 
     test('Transfer (laddered partial)', () => {
-      const result = DepositEvents.netDeposits([
+      const result = SiloInflowsUtil.netDeposits([
         mockAddRemoveEvt('RemoveDeposit', '1', C().BEAN, 500n),
         mockAddRemoveEvt('RemoveDeposit', '2', C().BEAN, 100n),
         mockAddRemoveEvt('RemoveDeposit', '3', C().BEAN, 300n),
