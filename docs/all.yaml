@@ -1324,6 +1324,7 @@ paths:
                   description: Type of the tractor order
                   enum:
                     - SOW_V0
+                    - CONVERT_UP_V0
                 betweenTimes:
                   type: array
                   description: Date range for snapshot time filtering

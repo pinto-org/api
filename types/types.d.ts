@@ -5,7 +5,10 @@ import SowV0OrderDto from '../src/repository/dto/tractor/SowV0OrderDto';
 import SowV0ExecutionDto from '../src/repository/dto/tractor/SowV0ExecutionDto';
 import { TractorOrderType } from '../src/repository/postgres/models/types/types';
 import SnapshotSowV0Dto from '../src/repository/dto/tractor/SnapshotSowV0Dto';
+import SnapshotConvertUpV0Dto from '../src/repository/dto/tractor/SnapshotConvertUpV0Dto';
 import CombinedInflowSnapshotDto from '../src/repository/dto/inflow/CombinedInflowSnapshotDto';
+import ConvertUpV0ExecutionDto from '../src/repository/dto/tractor/ConvertUpV0ExecutionDto';
+import ConvertUpV0OrderDto from '../src/repository/dto/tractor/ConvertUpV0OrderDto';
 
 export type DepositYield = {
   // Percentage growth in deposit's bdv
@@ -121,11 +124,14 @@ type SowV0ExecutionRequestParams = {
   usedToken?: string;
 };
 
+type ConvertUpV0OrderRequestParams = SowV0OrderRequestParams;
+type ConvertUpV0ExecutionRequestParams = SowV0ExecutionRequestParams;
+
 // Union types for all possible blueprint-specific values
-type BlueprintOrderRequestParams = SowV0OrderRequestParams;
-type BlueprintOrderResponse = SowV0OrderDto;
-type BlueprintExecutionRequestParams = SowV0ExecutionRequestParams;
-type BlueprintExecutionResponse = SowV0ExecutionDto;
+type BlueprintOrderRequestParams = SowV0OrderRequestParams | ConvertUpV0OrderRequestParams;
+type BlueprintOrderResponse = SowV0OrderDto | ConvertUpV0OrderDto;
+type BlueprintExecutionRequestParams = SowV0ExecutionRequestParams | ConvertUpV0ExecutionRequestParams;
+type BlueprintExecutionResponse = SowV0ExecutionDto | ConvertUpV0ExecutionDto;
 
 export type TractorOrderRequest = {
   orderType?: keyof TractorOrderType | 'KNOWN' | 'UKNOWN';
@@ -178,7 +184,7 @@ export type TractorExecutionsResult = {
 };
 
 export type TractorSnapshotsRequest = {
-  orderType?: keyof TractorOrderType | 'KNOWN' | 'UKNOWN';
+  orderType: keyof TractorOrderType;
   betweenTimes?: [Date, Date];
   betweenSeasons?: [number, number];
   limit?: number;
@@ -186,7 +192,7 @@ export type TractorSnapshotsRequest = {
 };
 
 // Potential union type as more are added
-type SnapshotResponse = SnapshotSowV0Dto;
+type SnapshotResponse = SnapshotSowV0Dto | SnapshotConvertUpV0Dto;
 export type TractorSnapshotsResult = {
   // Block number
   lastUpdated: number;
@@ -205,4 +211,19 @@ export type CombinedInflowSnapshotsResult = {
   lastUpdated: number;
   snapshots: CombinedInflowSnapshotResponse[];
   totalRecords: number;
+};
+
+export type TractorV2SnapshotsRequest = {
+  orderTypes?: Array<keyof TractorOrderType>;
+  betweenTimes?: [Date, Date];
+  betweenSeasons?: [number, number];
+  limit?: number;
+  skip?: number;
+};
+
+export type TractorV2SnapshotsResult = {
+  // Block number
+  lastUpdated: number;
+  snapshots: Record<keyof TractorOrderType, SnapshotResponse[]>;
+  maxRecords: number;
 };

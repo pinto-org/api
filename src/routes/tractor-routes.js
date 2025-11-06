@@ -96,6 +96,7 @@ router.post('/executions', async (ctx) => {
 
 /**
  * Returns all tractor state snapshots matching the requested criteria.
+ * @deprecated use v2 instead
  */
 router.post('/snapshots', async (ctx) => {
   /** @type {import('../../types/types').TractorSnapshotsRequest} */
@@ -127,6 +128,52 @@ router.post('/snapshots', async (ctx) => {
   /** @type {import('../../types/types').TractorSnapshotsResult} */
   const results = await method(body);
   ctx.body = results;
+});
+
+/**
+ * Returns all tractor state snapshots matching the requested criteria.
+ */
+router.post('/v2/snapshots', async (ctx) => {
+  /** @type {import('../../types/types').TractorV2SnapshotsRequest} */
+  const body = ctx.request.body;
+
+  if (
+    (body.orderTypes && !Array.isArray(body.orderTypes)) ||
+    (body.limit !== undefined && typeof body.limit !== 'number') ||
+    (body.skip !== undefined && typeof body.skip !== 'number')
+  ) {
+    throw new InputError('Invalid type provided for body parameter.');
+  }
+
+  const orderTypes = body.orderTypes ?? Object.keys(TractorOrderType);
+  if (orderTypes.some((type) => !TractorOrderType[type])) {
+    throw new InputError('Invalid orderType provided.');
+  }
+
+  body.between = body.between?.map((v) => new Date(v));
+  RestParsingUtil.dateRangeValidation(body.between);
+
+  RestParsingUtil.numberRangeValidation(body.betweenSeasons);
+
+  const results = await Promise.all(
+    orderTypes.map(async (type) => {
+      if (type === 'SOW_V0') {
+        return await SnapshotSowV0Service.getSnapshots(body);
+      } else if (type === 'CONVERT_UP_V0') {
+        return await SnapshotConvertUpV0Service.getSnapshots(body);
+      }
+    })
+  );
+
+  /** @type {import('../../types/types').TractorV2SnapshotsResult} */
+  ctx.body = {
+    lastUpdated: results[0].lastUpdated,
+    snapshots: results.reduce((acc, next, idx) => {
+      acc[orderTypes[idx]] = next.snapshots;
+      return acc;
+    }, {}),
+    maxRecords: results.reduce((max, result) => Math.max(max, result.totalRecords), 0)
+  };
 });
 
 module.exports = router;
