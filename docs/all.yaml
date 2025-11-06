@@ -1372,6 +1372,9 @@ paths:
                         snapshotBlock:
                           type: integer
                           description: Block number when the snapshot was taken
+                        season:
+                          type: integer
+                          description: Season number of this snapshot
                         totalPintoSown:
                           type: string
                           description: (SOW_V0) Cumulative amount of Pinto sown at snapshot time
@@ -1384,18 +1387,41 @@ paths:
                         totalCascadeFundedAnyTemp:
                           type: string
                           description: (SOW_V0) Total funded amount that can be executed at any temperature
+                        totalBeansConverted:
+                          type: string
+                          description: (CONVERT_UP_V0) Cumulative amount of Beans converted at snapshot time
+                        totalGsBonusStalk:
+                          type: string
+                          description: (CONVERT_UP_V0) Total Grown Stalk bonus received from conversions
+                        totalGsBonusBdv:
+                          type: string
+                          description: (CONVERT_UP_V0) Total BDV associated with Grown Stalk bonuses
+                        totalGsPenaltyStalk:
+                          type: string
+                          description: (CONVERT_UP_V0) Total Grown Stalk penalty from conversions
+                        totalGsPenaltyBdv:
+                          type: string
+                          description: (CONVERT_UP_V0) Total BDV associated with Grown Stalk penalties
+                        totalCascadeFunded:
+                          type: string
+                          description: (CONVERT_UP_V0) Total amount funded in cascade
+                        totalCascadeFundedExecutable:
+                          type: string
+                          description: (CONVERT_UP_V0) Total funded amount that is currently executable
                         totalTipsPaid:
                           type: string
-                          description: (SOW_V0) Cumulative tips paid at snapshot time
+                          description: Cumulative tips paid to this order type at snapshot time
                         currentMaxTip:
                           type: string
-                          description: (SOW_V0) Current maximum tip at snapshot time
+                          description: Current maximum tip of this order type at snapshot time
                         totalExecutions:
                           type: integer
-                          description: (SOW_V0) Cumulative number of executions at snapshot time
+                          description: Cumulative number of executions of this order type at snapshot time
+                        uniquePublishers:
+                          type: integer
+                          description: Number of unique publishers of this order type at snapshot time
                 example:
                   lastUpdated: 29374836
-                  totalRecords: 25
                   snapshots:
                     - id: 172
                       snapshotTimestamp: "2025-04-23T23:00:01.000Z"
@@ -1407,6 +1433,7 @@ paths:
                       totalTipsPaid: "26700000"
                       currentMaxTip: "910000"
                       totalExecutions: 71
+                  totalRecords: 25
         '400':
           description: Bad Request
           content:
@@ -1417,6 +1444,167 @@ paths:
                   error:
                     type: string
                     example: "Invalid date range provided."
+  /tractor/v2/snapshots:
+    post:
+      tags:
+        - Tractor
+      summary: Get tractor state snapshots (v2)
+      description: Returns historical snapshots of tractor metrics for multiple order types. This endpoint allows querying multiple order types at once and returns them organized by order type.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderTypes:
+                  type: array
+                  description: Array of tractor order types to query. If omitted, all order types are returned.
+                  items:
+                    type: string
+                    enum:
+                      - SOW_V0
+                      - CONVERT_UP_V0
+                betweenTimes:
+                  type: array
+                  description: Date range for snapshot time filtering
+                  items:
+                    type: string
+                    format: date-time
+                  minItems: 2
+                  maxItems: 2
+                betweenSeasons:
+                  type: array
+                  description: Season range for snapshot time filtering
+                  items:
+                    type: integer
+                  minItems: 2
+                  maxItems: 2
+                limit:
+                  type: number
+                  description: Maximum number of snapshots to return per order type
+                skip:
+                  type: number
+                  description: Number of snapshots to skip (for pagination)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lastUpdated:
+                    type: integer
+                    description: Block number of the last update
+                  maxRecords:
+                    type: integer
+                    description: Maximum number of total records across all queried order types
+                  snapshots:
+                    type: object
+                    description: Snapshots organized by order type
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          snapshotTimestamp:
+                            type: string
+                            format: date-time
+                            description: When the snapshot was taken
+                          snapshotBlock:
+                            type: integer
+                            description: Block number when the snapshot was taken
+                          season:
+                            type: integer
+                            description: Season number of this snapshot
+                          totalPintoSown:
+                            type: string
+                            description: (SOW_V0) Cumulative amount of Pinto sown at snapshot time
+                          totalPodsMinted:
+                            type: string
+                            description: (SOW_V0) Cumulative number of pods minted at snapshot time
+                          totalCascadeFundedBelowTemp:
+                            type: string
+                            description: (SOW_V0) Total funded amount that can be executed at the current temperature
+                          totalCascadeFundedAnyTemp:
+                            type: string
+                            description: (SOW_V0) Total funded amount that can be executed at any temperature
+                          totalBeansConverted:
+                            type: string
+                            description: (CONVERT_UP_V0) Cumulative amount of Beans converted at snapshot time
+                          totalGsBonusStalk:
+                            type: string
+                            description: (CONVERT_UP_V0) Total Grown Stalk bonus received from conversions
+                          totalGsBonusBdv:
+                            type: string
+                            description: (CONVERT_UP_V0) Total BDV associated with Grown Stalk bonuses
+                          totalGsPenaltyStalk:
+                            type: string
+                            description: (CONVERT_UP_V0) Total Grown Stalk penalty from conversions
+                          totalGsPenaltyBdv:
+                            type: string
+                            description: (CONVERT_UP_V0) Total BDV associated with Grown Stalk penalties
+                          totalCascadeFunded:
+                            type: string
+                            description: (CONVERT_UP_V0) Total amount funded in cascade
+                          totalCascadeFundedExecutable:
+                            type: string
+                            description: (CONVERT_UP_V0) Total funded amount that is currently executable
+                          totalTipsPaid:
+                            type: string
+                            description: Cumulative tips paid to this order type at snapshot time
+                          currentMaxTip:
+                            type: string
+                            description: Current maximum tip of this order type at snapshot time
+                          totalExecutions:
+                            type: integer
+                            description: Cumulative number of executions of this order type at snapshot time
+                          uniquePublishers:
+                            type: integer
+                            description: Number of unique publishers of this order type at snapshot time
+                example:
+                  lastUpdated: 29374836
+                  snapshots:
+                    SOW_V0:
+                      - id: 172
+                        snapshotTimestamp: "2025-04-23T23:00:01.000Z"
+                        snapshotBlock: 29329927
+                        season: 3700
+                        totalPintoSown: "25114326676"
+                        totalPodsMinted: "368220397685"
+                        totalCascadeFundedBelowTemp: "24198821026"
+                        totalCascadeFundedAnyTemp: "69015496855"
+                        totalTipsPaid: "26700000"
+                        currentMaxTip: "910000"
+                        totalExecutions: 71
+                        uniquePublishers: 4
+                    CONVERT_UP_V0:
+                      - snapshotTimestamp: "2025-11-06T09:00:01.000Z"
+                        snapshotBlock: 37815127
+                        season: 8426
+                        totalBeansConverted: "12000000"
+                        totalGsBonusStalk: "184994244374079"
+                        totalGsBonusBdv: "90266"
+                        totalGsPenaltyStalk: "0"
+                        totalGsPenaltyBdv: "0"
+                        totalCascadeFunded: "4153289614"
+                        totalCascadeFundedExecutable: "0"
+                        totalTipsPaid: "300000"
+                        currentMaxTip: "0"
+                        totalExecutions: 2
+                        uniquePublishers: 4
+                  maxRecords: 25
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid orderType provided."
   /seasons:
     get:
       tags:
