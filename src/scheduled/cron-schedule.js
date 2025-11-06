@@ -8,6 +8,7 @@ const InflowsTask = require('./tasks/inflows');
 
 const genericTask = (Executor, label) => ({
   [label]: {
+    executeOnStartup: true,
     // 11 seconds into the minute; these tasks have a 5 block buffer, this will ensure it processes the block on the minute
     cron: '11 * * * * *',
     function: async () => {
@@ -70,7 +71,7 @@ function activateJobs(jobNames) {
   for (const jobName of jobNames) {
     const job = ALL_JOBS[jobName];
     if (job) {
-      cron.schedule(job.cron, () => {
+      const execute = () => {
         // This is to mitigate a quirk in node-cron where sometimes jobs are missed. Jobs can specify
         // a range of seconds they are willing to execute on, making it far less likely to drop.
         // This guard prevents double-execution.
@@ -80,7 +81,11 @@ function activateJobs(jobNames) {
         job.__lastExecuted = Date.now();
 
         errorWrapper(job.function);
-      });
+      };
+      if (job.executeOnStartup) {
+        execute();
+      }
+      cron.schedule(job.cron, execute);
       activated.push(jobName);
     } else {
       failed.push(jobName);

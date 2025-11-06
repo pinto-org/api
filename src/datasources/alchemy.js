@@ -3,6 +3,8 @@ const EnvUtil = require('../utils/env');
 const { ethers } = require('ethers');
 
 class AlchemyUtil {
+  // Contains alchemy object
+  static _alchemies = {};
   // Contains a provider by chain
   static _providers = {};
   // Access to the underlying promise whos execution populates _providers.
@@ -20,12 +22,16 @@ class AlchemyUtil {
           apiKey: EnvUtil.getAlchemyKey(),
           network: `${chain}-mainnet` // Of type alchemy-sdk.Network
         };
-        const alchemy = new Alchemy(settings);
-        this._providerPromises[chain] = alchemy.config.getProvider().then((p) => {
+        this._alchemies[chain] = new Alchemy(settings);
+        this._providerPromises[chain] = this._alchemies[chain].config.getProvider().then((p) => {
           this._providers[chain] = p;
         });
       }
     }
+  }
+
+  static alchemyForChain(chain) {
+    return AlchemyUtil._alchemies[chain];
   }
 
   static providerForChain(chain) {
