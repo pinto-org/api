@@ -8,6 +8,8 @@ const Contracts = require('../../../datasources/contracts/contracts');
 const EnvUtil = require('../../../utils/env');
 const { TOKEN_TABLE } = require('../../../constants/tables');
 
+// This was copied from silo-tokens-base.js and modified to include only pintowsteth.
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -16,7 +18,7 @@ module.exports = {
       return;
     }
     const c = C('base');
-    const tokens = [c.BEAN, c.PINTOWETH, c.PINTOCBETH, c.PINTOCBBTC, c.PINTOWSOL, c.PINTOUSDC];
+    const tokens = [c.PINTOWSTETH];
 
     // Add base tokens
     await AlchemyUtil.ready(c.CHAIN);
@@ -83,7 +85,7 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     if (EnvUtil.isChainEnabled('base')) {
       const c = C('base');
-      const tokens = [c.BEAN, c.PINTOWETH, c.PINTOCBETH, c.PINTOCBBTC, c.PINTOWSOL, c.PINTOUSDC];
+      const tokens = [c.PINTOWSTETH];
       // Delete pinto tokens
       await queryInterface.bulkDelete(TOKEN_TABLE.env, {
         address: {
