@@ -8,7 +8,8 @@ class BlueprintConstants {
       [C().PINTOCBETH]: 2,
       [C().PINTOCBBTC]: 3,
       [C().PINTOUSDC]: 4,
-      [C().PINTOWSOL]: 5
+      [C().PINTOWSOL]: 5,
+      [C().PINTOWSTETH]: 6
     };
   }
 

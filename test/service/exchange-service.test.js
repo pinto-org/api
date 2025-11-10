@@ -13,8 +13,6 @@ const ERC20Info = require('../../src/datasources/erc20-info');
 const BasinSubgraphRepository = require('../../src/repository/subgraph/basin-subgraph');
 const TradeDto = require('../../src/repository/dto/TradeDto');
 
-const testTimestamp = 1715020584;
-
 describe('ExchangeService', () => {
   beforeEach(() => {
     mockBeanstalkConstants();
