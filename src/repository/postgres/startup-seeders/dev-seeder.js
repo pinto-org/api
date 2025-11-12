@@ -23,7 +23,7 @@ class DevSeeder {
       await AsyncContext.run({ chain: 'base' }, async () => {
         try {
           TractorTask.__cronLock = true;
-          while (await TractorTask.update()) {}
+          while ((await TractorTask.update()).canExecuteAgain) {}
         } finally {
           TractorTask.__cronLock = false;
         }

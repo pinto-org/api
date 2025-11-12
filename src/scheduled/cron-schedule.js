@@ -6,16 +6,6 @@ const DepositsTask = require('./tasks/deposits');
 const TractorTask = require('./tasks/tractor');
 const InflowsTask = require('./tasks/inflows');
 
-const indexingTask = (indexingTask, label, cron) => ({
-  [label]: {
-    executeOnStartup: true,
-    cron,
-    function: async () => {
-      while (await indexingTask.queueExecution()) {}
-    }
-  }
-});
-
 // All cron jobs which could be activated are configured here
 const ALL_JOBS = {
   sunrise: {
@@ -23,10 +13,37 @@ const ALL_JOBS = {
     cron: '50-59 59 * * * *',
     function: SunriseTask.handleSunrise
   },
-  // Deposits/inflows can be updated less frequently because deposits are unused, and inflows are only useful for the snapshots.
-  ...indexingTask(DepositsTask, 'deposits', '0 0 * * * *'),
-  ...indexingTask(InflowsTask, 'inflows', '0 0 * * * *'),
-  ...indexingTask(TractorTask, 'tractor', '0 */5 * * * *'),
+  deposits: {
+    executeOnStartup: true,
+    // Updated less frequently because the underlying data is currently unused
+    cron: '0 30 * * * *',
+    function: async () => {
+      while ((await DepositsTask.queueExecution(50)).canExecuteAgain) {}
+    }
+  },
+  inflows: {
+    executeOnStartup: true,
+    // Updated less frequently because its only used for snapshots (and the ws should invoke it at sunrise)
+    cron: '0 30 * * * *',
+    function: async () => {
+      while ((await InflowsTask.queueExecution(50)).canExecuteAgain) {}
+    }
+  },
+  tractor: {
+    executeOnStartup: true,
+    cron: '0 */5 * * * *',
+    function: async () => {
+      while (true) {
+        const { countEvents, canExecuteAgain } = await TractorTask.queueExecution(4.5);
+        if (!canExecuteAgain) {
+          if (countEvents > 0) {
+            sendWebhookMessage(`Cron task processed ${countEvents} tractor events; websocket might be disconnected?`);
+          }
+          break;
+        }
+      }
+    }
+  },
   alert: {
     cron: '*/10 * * * * *',
     function: () => Log.info('10 seconds testing Alert')

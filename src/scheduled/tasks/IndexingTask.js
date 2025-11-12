@@ -1,11 +1,15 @@
 class IndexingTask {
-  // TODO: do something with this var
-  static lastExecution = null;
+  static _lastExecution = null;
   static _running = false;
   static _queueCounter = 0;
 
   // Runs update immediately if nothing is executing, otherwise queues an update execution.
-  static async queueExecution() {
+  static async queueExecution(minIntervalMinutes = 0) {
+    // Ensure at least the minimum requested interval has passed since the last execution
+    if (this._lastExecution && Date.now() - this._lastExecution < minIntervalMinutes * 60 * 1000) {
+      return { countEvents: 0, canExecuteAgain: false };
+    }
+
     const localCount = ++this._queueCounter;
     // Wait up to 20 seconds for the task to finish executing
     for (let i = 0; i < 20 && this._running; ++i) {
@@ -16,9 +20,10 @@ class IndexingTask {
     if (localCount === this._queueCounter) {
       try {
         this._running = true;
-        const canExecuteAgain = await this.update();
+        // update return sig to be number of events, and boolean?
+        const { countEvents, canExecuteAgain } = await this.update();
         this._lastExecution = new Date();
-        return canExecuteAgain;
+        return { countEvents, canExecuteAgain };
       } finally {
         this._running = false;
       }

@@ -31,7 +31,6 @@ class TractorTask extends IndexingTask {
     // Silo events could trigger a periodicUpdate, ignoring currently
   }
 
-  // Returns true if the task can be called again immediately
   static async update() {
     const meta = await AppMetaService.getTractorMeta();
     if (!meta.lastUpdate) {
@@ -110,7 +109,7 @@ class TractorTask extends IndexingTask {
       await AppMetaService.setLastTractorUpdate(updateBlock);
     });
 
-    return !isCaughtUp;
+    return { countEvents: events.length + sunrise.length, canExecuteAgain: !isCaughtUp };
   }
 
   static async handlePublishRequsition(event) {

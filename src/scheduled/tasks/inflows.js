@@ -33,7 +33,6 @@ class InflowsTask extends IndexingTask {
     // }
   }
 
-  // Returns true if the task can be called again immediately
   static async update() {
     const meta = await AppMetaService.getInflowMeta();
     let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS);
@@ -106,7 +105,7 @@ class InflowsTask extends IndexingTask {
       await AppMetaService.setLastInflowUpdate(updateBlock);
     });
 
-    return !isCaughtUp;
+    return { countEvents: events.length, canExecuteAgain: !isCaughtUp };
   }
 }
 module.exports = InflowsTask;

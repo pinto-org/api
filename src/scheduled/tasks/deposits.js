@@ -74,7 +74,8 @@ class DepositsTask extends IndexingTask {
     });
     DepositsTask.__seasonUpdate = false;
 
-    return !isCaughtUp;
+    // Unknown number of events, this task should be refactrored to retrieve them upfront within this method instead of separately
+    return { countEvents: -1, canExecuteAgain: !isCaughtUp };
   }
 
   // Updates the list of deposits in the database, adding/removing entries as needed
