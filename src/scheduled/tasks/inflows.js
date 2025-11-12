@@ -105,7 +105,8 @@ class InflowsTask extends IndexingTask {
       await AppMetaService.setLastInflowUpdate(updateBlock);
     });
 
-    return { countEvents: events.length, canExecuteAgain: !isCaughtUp };
+    this._isCaughtUp = isCaughtUp;
+    return events.length;
   }
 }
 module.exports = InflowsTask;

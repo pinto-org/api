@@ -109,7 +109,8 @@ class TractorTask extends IndexingTask {
       await AppMetaService.setLastTractorUpdate(updateBlock);
     });
 
-    return { countEvents: events.length + sunrise.length, canExecuteAgain: !isCaughtUp };
+    this._isCaughtUp = isCaughtUp;
+    return events.length + sunrise.length;
   }
 
   static async handlePublishRequsition(event) {

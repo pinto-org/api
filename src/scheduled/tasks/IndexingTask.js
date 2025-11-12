@@ -2,6 +2,7 @@ class IndexingTask {
   static _lastExecution = null;
   static _running = false;
   static _queueCounter = 0;
+  static _isCaughtUp = false;
 
   // Runs update immediately if nothing is executing, otherwise queues an update execution.
   static async queueExecution(minIntervalMinutes = 0) {
@@ -21,9 +22,9 @@ class IndexingTask {
       try {
         this._running = true;
         // update return sig to be number of events, and boolean?
-        const { countEvents, canExecuteAgain } = await this.update();
+        const countEvents = await this.update();
         this._lastExecution = new Date();
-        return { countEvents, canExecuteAgain };
+        return { countEvents, canExecuteAgain: !this.isCaughtUp() };
       } finally {
         this._running = false;
       }
@@ -39,6 +40,11 @@ class IndexingTask {
   // Runs the task, updating as many blocks as possible
   static async update() {
     throw new Error('Must be implemented by subclass');
+  }
+
+  // Indicates if the task is caught up to the latest block as of its most recent update.
+  static isCaughtUp() {
+    return this._isCaughtUp;
   }
 }
 

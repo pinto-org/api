@@ -20,15 +20,15 @@ const EVENT_TASKS = {
   Tractor: [TractorTask],
   AddDeposit: [DepositsTask, InflowsTask, TractorTask],
   RemoveDeposit: [DepositsTask, InflowsTask, TractorTask],
-  RemoveDeposits: [DepositsTask, InflowsTask, TractorTask]
-  // StalkBalanceChanged: [DepositsTask],
-  // Sow: [InflowsTask],
-  // Harvest: [InflowsTask],
-  // PodListingFilled: [InflowsTask],
-  // PodOrderFilled: [InflowsTask],
-  // Plant: [InflowsTask],
-  // Convert: [InflowsTask],
-  // ClaimPlenty: [InflowsTask]
+  RemoveDeposits: [DepositsTask, InflowsTask, TractorTask],
+  StalkBalanceChanged: [DepositsTask],
+  Sow: [InflowsTask],
+  Harvest: [InflowsTask],
+  PodListingFilled: [InflowsTask],
+  PodOrderFilled: [InflowsTask],
+  Plant: [InflowsTask],
+  Convert: [InflowsTask],
+  ClaimPlenty: [InflowsTask]
 };
 
 class WebsocketTaskTrigger {
@@ -66,7 +66,9 @@ class WebsocketTaskTrigger {
         console.log(`encountered ${parsedLog.name} log ${log.transactionHash}`);
         for (const task of EVENT_TASKS[parsedLog.name]) {
           // TODO: bind this? check it
-          task.handleLiveEvent(parsedLog);
+          if (task.isCaughtUp()) {
+            task.handleLiveEvent(parsedLog);
+          }
         }
 
         if (log.removed) {
@@ -81,6 +83,3 @@ class WebsocketTaskTrigger {
   }
 }
 module.exports = WebsocketTaskTrigger;
-
-// TODO: underlying executors will keep getting invoked by the cron task, if they have already executed within the last interval,
-// it is unnecessary to process again.
