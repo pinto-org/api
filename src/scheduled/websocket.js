@@ -4,25 +4,45 @@
 // re-retrieve the logs on its own (implementation will vary by task).
 
 const { C } = require('../constants/runtime-constants');
-const Contracts = require('../datasources/contracts/contracts');
+const Beanstalk = require('../datasources/contracts/upgradeable/beanstalk');
+const SeasonService = require('../service/season-service');
 const { sendWebhookMessage } = require('../utils/discord');
 const Log = require('../utils/logging');
+const DepositsTask = require('./tasks/deposits');
+const InflowsTask = require('./tasks/inflows');
+const TractorTask = require('./tasks/tractor');
 
-// Add other events here to support other tasks.
-const EVENT_NAMES = ['PublishRequisition', 'CancelBlueprint', 'Tractor'];
+// These events will be listened for, and the corresponding tasks notified when encountered.
+const EVENT_TASKS = {
+  Sunrise: [DepositsTask, InflowsTask, TractorTask],
+  PublishRequisition: [TractorTask],
+  CancelBlueprint: [TractorTask],
+  Tractor: [TractorTask],
+  AddDeposit: [DepositsTask, InflowsTask, TractorTask],
+  RemoveDeposit: [DepositsTask, InflowsTask, TractorTask],
+  RemoveDeposits: [DepositsTask, InflowsTask, TractorTask]
+  // StalkBalanceChanged: [DepositsTask],
+  // Sow: [InflowsTask],
+  // Harvest: [InflowsTask],
+  // PodListingFilled: [InflowsTask],
+  // PodOrderFilled: [InflowsTask],
+  // Plant: [InflowsTask],
+  // Convert: [InflowsTask],
+  // ClaimPlenty: [InflowsTask]
+};
 
 class WebsocketTaskTrigger {
   static async listen(c = C()) {
-    const beanstalk = Contracts.getBeanstalk(c);
-    const interfaces = [beanstalk.interface];
+    const interfaces = Beanstalk.getAllInterfaces(c);
 
     const topics = [];
     const ifaceMap = {};
-    for (const eventName of EVENT_NAMES) {
+    for (const eventName in EVENT_TASKS) {
       for (const iface of interfaces) {
         const topicHash = iface.getEventTopic(eventName);
         if (topicHash) {
           topics.push(topicHash);
+          // If multiple interfaces have the same name/topicHash mapping, doesn't matter which interface is used.
           ifaceMap[topicHash] = iface;
         }
       }
@@ -35,13 +55,19 @@ class WebsocketTaskTrigger {
         address: [c.BEANSTALK],
         topics: [topics]
       },
-      (log) => {
+      async (log) => {
         const parsedLog = ifaceMap[log.topics[0]].parseLog(log);
+        parsedLog.rawLog = log;
+
+        if (log.name === 'Sunrise') {
+          await SeasonService.handleSunrise(parsedLog);
+        }
 
         console.log(`encountered ${parsedLog.name} log ${log.transactionHash}`);
-        // Determine which task(s) to invoke based on the event name.
-        // Might need to do so at a delay to prevent hitting the reorg protection?
-        // Or just always call into the task immediately and let that executor decide what to do?
+        for (const task of EVENT_TASKS[parsedLog.name]) {
+          // TODO: bind this? check it
+          task.handleLiveEvent(parsedLog);
+        }
 
         if (log.removed) {
           // If this occurs in practice, we may need to start handling it if the underlying task executors

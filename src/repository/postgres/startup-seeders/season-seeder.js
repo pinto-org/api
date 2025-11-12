@@ -20,7 +20,7 @@ class SeasonSeeder {
       await Concurrent.run(TAG, 50, () =>
         retryable(async () => {
           try {
-            await SeasonService.insertSeasonFromEvent(season);
+            await SeasonService.insertSeason(season);
 
             if (season % 100 === 0) {
               Log.info(`Saved season ${season}...`);

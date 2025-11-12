@@ -25,7 +25,7 @@ class SunriseTask {
 
     try {
       // Insert basic season info
-      await SeasonService.insertSeasonFromEvent(nextSeason);
+      await SeasonService.insertSeason(nextSeason);
 
       // Update whitelisted token info
       const tokenModels = await SiloService.updateWhitelistedTokenInfo();

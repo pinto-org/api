@@ -6,26 +6,12 @@ const DepositsTask = require('./tasks/deposits');
 const TractorTask = require('./tasks/tractor');
 const InflowsTask = require('./tasks/inflows');
 
-const genericTask = (Executor, label) => ({
+const indexingTask = (indexingTask, label, cron) => ({
   [label]: {
     executeOnStartup: true,
-    // 11 seconds into the minute; these tasks have a 5 block buffer, this will ensure it processes the block on the minute
-    cron: '11 * * * * *',
+    cron,
     function: async () => {
-      if (Executor.__cronLock) {
-        Log.info(`${label} task is still running, skipping this minute...`);
-        return;
-      }
-
-      try {
-        Executor.__cronLock = true;
-        let canExecuteAgain = true;
-        while (canExecuteAgain) {
-          canExecuteAgain = await Executor.update();
-        }
-      } finally {
-        Executor.__cronLock = false;
-      }
+      while (await indexingTask.queueExecution()) {}
     }
   }
 });
@@ -37,9 +23,10 @@ const ALL_JOBS = {
     cron: '50-59 59 * * * *',
     function: SunriseTask.handleSunrise
   },
-  ...genericTask(DepositsTask, 'deposits'),
-  ...genericTask(TractorTask, 'tractor'),
-  ...genericTask(InflowsTask, 'inflows'),
+  // Deposits/inflows can be updated less frequently because deposits are unused, and inflows are only useful for the snapshots.
+  ...indexingTask(DepositsTask, 'deposits', '0 0 * * * *'),
+  ...indexingTask(InflowsTask, 'inflows', '0 0 * * * *'),
+  ...indexingTask(TractorTask, 'tractor', '0 */5 * * * *'),
   alert: {
     cron: '*/10 * * * * *',
     function: () => Log.info('10 seconds testing Alert')
