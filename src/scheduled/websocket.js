@@ -65,7 +65,6 @@ class WebsocketTaskTrigger {
 
         console.log(`encountered ${parsedLog.name} log ${log.transactionHash}`);
         for (const task of EVENT_TASKS[parsedLog.name]) {
-          // TODO: bind this? check it
           if (task.isCaughtUp()) {
             task.handleLiveEvent(parsedLog);
           }
