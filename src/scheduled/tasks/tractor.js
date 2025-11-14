@@ -26,7 +26,7 @@ const SNAPSHOT_SERVICES = [SnapshotSowV0Service, SnapshotConvertUpV0Service];
 class TractorTask extends IndexingTask {
   static async handleLiveEvent(event) {
     if (['Sunrise', 'PublishRequisition', 'CancelBlueprint', 'Tractor'].includes(event.name)) {
-      await this.queueExecution();
+      await this.queueExecution({ blockNumber: event.rawLog.blockNumber });
     }
     // Silo events could trigger a periodicUpdate, ignoring currently
   }

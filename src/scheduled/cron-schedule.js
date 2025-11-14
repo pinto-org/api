@@ -16,27 +16,28 @@ const ALL_JOBS = {
   deposits: {
     executeOnStartup: true,
     // Updated less frequently because the underlying data is currently unused
-    cron: '0 30 * * * *',
+    cron: '0 10 * * * *',
     function: async () => {
-      while ((await DepositsTask.queueExecution(50)).canExecuteAgain) {}
+      while ((await DepositsTask.queueExecution({ minIntervalMinutes: 55 })).canExecuteAgain) {}
     }
   },
   inflows: {
     executeOnStartup: true,
     // Updated less frequently because its only used for snapshots (and the ws should invoke it at sunrise)
-    cron: '0 30 * * * *',
+    cron: '0 10 * * * *',
     function: async () => {
-      while ((await InflowsTask.queueExecution(50)).canExecuteAgain) {}
+      while ((await InflowsTask.queueExecution({ minIntervalMinutes: 55 })).canExecuteAgain) {}
     }
   },
   tractor: {
-    executeOnStartup: true,
+    executeOnStartup: !EnvUtil.getDevTractor().seeder, // will execute on startup either from here or from the dev seeder
     cron: '0 */5 * * * *',
     function: async () => {
+      const isInitialRun = TractorTask.getLastExecutionTime() === null;
       while (true) {
-        const { countEvents, canExecuteAgain } = await TractorTask.queueExecution(4.5);
+        const { countEvents, canExecuteAgain } = await TractorTask.queueExecution({ minIntervalMinutes: 4.5 });
         if (!canExecuteAgain) {
-          if (countEvents > 0) {
+          if (countEvents > 0 && !isInitialRun) {
             sendWebhookMessage(`Cron task processed ${countEvents} tractor events; websocket might be disconnected?`);
           }
           break;

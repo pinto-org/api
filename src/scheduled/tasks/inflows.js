@@ -26,7 +26,7 @@ class InflowsTask extends IndexingTask {
   static async handleLiveEvent(event) {
     // Inflows are only used for snapshots currently, therefore update on Sunrise only
     if (event.name === 'Sunrise') {
-      await this.queueExecution();
+      await this.queueExecution({ blockNumber: event.rawLog.blockNumber });
     }
     // if (ALL_EVENTS.includes(event.name)) {
     //   await this.queueExecution();

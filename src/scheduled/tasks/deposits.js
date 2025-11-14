@@ -24,7 +24,7 @@ class DepositsTask extends IndexingTask {
   static async handleLiveEvent(event) {
     // Deposits task is not currently used for anything, therefore ok to update infrequently
     if (event.name === 'Sunrise') {
-      await this.queueExecution();
+      await this.queueExecution({ blockNumber: event.rawLog.blockNumber });
     }
     // if (['AddDeposit', 'RemoveDeposit', 'RemoveDeposits', 'StalkBalanceChanged'].includes(event.name)) {
     //   await this.queueExecution();
