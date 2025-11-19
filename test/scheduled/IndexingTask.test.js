@@ -82,7 +82,7 @@ describe('IndexingTask', () => {
       const { countEvents, canExecuteAgain } = await IndexingTask.queueExecution({ blockNumber: 200 });
 
       expect(countEvents).toBe(10);
-      expect(canExecuteAgain).toBe(true);
+      expect(canExecuteAgain).toBe(false);
     });
 
     it('should wait for running task to finish before executing', async () => {
@@ -92,16 +92,16 @@ describe('IndexingTask', () => {
       const queuePromise = IndexingTask.queueExecution({ blockNumber: 500 });
 
       // Still waiting on running task
-      await jest.runAllTimersAsync();
+      await jest.advanceTimersByTimeAsync(1000);
       expect(mockUpdate).not.toHaveBeenCalled();
-      await jest.runAllTimersAsync();
+      await jest.advanceTimersByTimeAsync(1000);
       expect(mockUpdate).not.toHaveBeenCalled();
 
       // Stop the running task
       IndexingTask._running = false;
 
       // Advance time to complete waiting
-      await jest.runAllTimersAsync();
+      await jest.advanceTimersByTimeAsync(1000);
       await queuePromise;
 
       expect(mockUpdate).toHaveBeenCalled();
@@ -115,13 +115,15 @@ describe('IndexingTask', () => {
 
       // Advance many wait times
       for (let i = 0; i < 50; ++i) {
-        await jest.runAllTimersAsync();
+        await jest.advanceTimersByTimeAsync(1000);
       }
 
       // Task should still be running from another caller, this wont update
       await queuePromise;
 
       expect(mockUpdate).not.toHaveBeenCalled();
+      expect(IndexingTask._running).toBeTruthy();
+      IndexingTask._running = false;
     });
 
     it('should not execute if another execution was queued during wait', async () => {

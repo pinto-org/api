@@ -31,7 +31,7 @@ class IndexingTask {
     }
 
     // If another execution was queued during the wait, allow that one to execute instead
-    if (localCount === this._queueCounter) {
+    if (!this._running && localCount === this._queueCounter) {
       try {
         this._running = true;
         // update return sig to be number of events, and boolean?
