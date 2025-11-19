@@ -148,8 +148,8 @@ describe('IndexingTask', () => {
       const secondResult = await secondPromise;
 
       // First execution should be skipped because another arrived during wait
-      expect(firstResult).toEqual({ countEvents: 0, canExecuteAgain: false });
-      expect(secondResult).toEqual({ countEvents: 5, canExecuteAgain: true });
+      expect(firstResult).toEqual({ countEvents: 0, queuedCallersBehind: true, canExecuteAgain: false });
+      expect(secondResult).toEqual({ countEvents: 5, queuedCallersBehind: false, canExecuteAgain: true });
       expect(mockUpdate).toHaveBeenCalledTimes(1);
     });
 

@@ -36,9 +36,13 @@ const ALL_JOBS = {
     function: async () => {
       const isInitialRun = TractorTask.getLastExecutionTime() === null;
       while (true) {
-        const { countEvents, canExecuteAgain } = await TractorTask.queueExecution({ minIntervalMinutes: 4.5 });
+        const { countEvents, queuedCallersBehind, canExecuteAgain } = await TractorTask.queueExecution({
+          minIntervalMinutes: 4.5
+        });
         if (!canExecuteAgain) {
-          if (countEvents > 0 && !isInitialRun) {
+          // queuedCallersBehind can be true if the task ran slightly before the websocket got the event,
+          // and the websocket queued a run while this one was still running.
+          if (countEvents > 0 && !isInitialRun && !queuedCallersBehind) {
             sendWebhookMessage(`Cron task processed ${countEvents} tractor events; websocket might be disconnected?`);
           }
           break;

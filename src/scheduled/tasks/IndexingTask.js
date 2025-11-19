@@ -9,15 +9,15 @@ class IndexingTask {
    * Attempts to execute the tasks, queuing an execution if its already running and the second request is unique.
    * @param blockNumber - the block an update is being requested for; ignores processing if already processed up to this block.
    * @param minIntervalMinutes - ignores queue requests if the task was recently executed within this interval.
-   * @returns {Promise<{ countEvents: number, canExecuteAgain: boolean }>}
+   * @returns {Promise<{ countEvents: number, queuedCallersBehind: boolean, canExecuteAgain: boolean }>}
    */
   static async queueExecution({ blockNumber = -1, minIntervalMinutes = 0 } = {}) {
     if (blockNumber !== -1 && blockNumber <= this._lastQueuedBlock) {
       // Requested block number was already queued or processed
-      return { countEvents: 0, canExecuteAgain: false };
+      return { countEvents: 0, queuedCallersBehind: false, canExecuteAgain: false };
     } else if (this._lastExecutionTime && Date.now() - this._lastExecutionTime < minIntervalMinutes * 60 * 1000) {
       // Minimum requested interval hasn't passed since the last execution
-      return { countEvents: 0, canExecuteAgain: false };
+      return { countEvents: 0, queuedCallersBehind: false, canExecuteAgain: false };
     }
 
     if (blockNumber !== -1) {
@@ -37,12 +37,16 @@ class IndexingTask {
         // update return sig to be number of events, and boolean?
         const countEvents = await this.update();
         this._lastExecutionTime = new Date();
-        return { countEvents, canExecuteAgain: !this.isCaughtUp() };
+        return {
+          countEvents,
+          queuedCallersBehind: this._queueCounter > localCount,
+          canExecuteAgain: !this.isCaughtUp()
+        };
       } finally {
         this._running = false;
       }
     }
-    return { countEvents: 0, canExecuteAgain: false };
+    return { countEvents: 0, queuedCallersBehind: this._queueCounter > localCount, canExecuteAgain: false };
   }
 
   // Notifies of an event occuring in real-time via a websocket. Task decides how to proceed.
