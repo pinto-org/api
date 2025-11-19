@@ -5,6 +5,7 @@ const Log = require('../utils/logging');
 const DepositsTask = require('./tasks/deposits');
 const TractorTask = require('./tasks/tractor');
 const InflowsTask = require('./tasks/inflows');
+const EnvUtil = require('../utils/env');
 
 // All cron jobs which could be activated are configured here
 const ALL_JOBS = {

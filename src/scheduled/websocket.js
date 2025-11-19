@@ -1,7 +1,5 @@
 // Process sitting atop each of the scheduled tasks; Depending on which events are encountered,
-// triggers the appropriate task to run immediately. The tasks decide what to do with the provided events;
-// the task may decide to wait to process until a larger volume of events is encountered, and may also
-// re-retrieve the logs on its own (implementation will vary by task).
+// triggers the appropriate task to run immediately. The tasks decide what to do with the provided events.
 
 const { C } = require('../constants/runtime-constants');
 const Beanstalk = require('../datasources/contracts/upgradeable/beanstalk');
@@ -32,7 +30,7 @@ const EVENT_TASKS = {
 };
 
 class WebsocketTaskTrigger {
-  static async listen(c = C()) {
+  static listen(c = C()) {
     const interfaces = Beanstalk.getAllInterfaces(c);
 
     const topics = [];
@@ -63,7 +61,7 @@ class WebsocketTaskTrigger {
           await SeasonService.handleSunrise(parsedLog);
         }
 
-        console.log(`encountered ${parsedLog.name} log ${log.transactionHash}`);
+        Log.info(`encountered ${parsedLog.name} log in txn: ${log.transactionHash}`);
         for (const task of EVENT_TASKS[parsedLog.name]) {
           if (task.isCaughtUp()) {
             task.handleLiveEvent(parsedLog);

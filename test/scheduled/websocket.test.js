@@ -4,7 +4,6 @@ const SeasonService = require('../../src/service/season-service');
 const DepositsTask = require('../../src/scheduled/tasks/deposits');
 const InflowsTask = require('../../src/scheduled/tasks/inflows');
 const TractorTask = require('../../src/scheduled/tasks/tractor');
-const { sendWebhookMessage } = require('../../src/utils/discord');
 const { mockBeanstalkConstants } = require('../util/mock-constants');
 
 describe('WebsocketTaskTrigger', () => {
