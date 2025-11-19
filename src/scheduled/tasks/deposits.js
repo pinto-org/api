@@ -8,6 +8,7 @@ const { percentDiff } = require('../../utils/number');
 const Log = require('../../utils/logging');
 const SiloService = require('../../service/silo-service');
 const TaskRangeUtil = require('../util/task-range');
+const IndexingTask = require('./IndexingTask');
 
 // If the BDV has changed by at least these amounts, update lambda stats
 const DEFAULT_UPDATE_THRESHOLD = 0.01;
@@ -15,10 +16,20 @@ const HOURLY_UPDATE_THRESHOLD = 0.005;
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 10000;
 
-class DepositsTask {
+class DepositsTask extends IndexingTask {
   // Set by SunriseTask when a new season is encountered. Indicates that all deposits should be updated.
   // This approach would not work if also taking deposit snapshots (this flag/behavior is only triggered in real-time).
   static __seasonUpdate = false;
+
+  static async handleLiveEvent(event) {
+    // Deposits task is not currently used for anything, therefore ok to update infrequently
+    if (event.name === 'Sunrise') {
+      await this.queueExecution({ blockNumber: event.rawLog.blockNumber });
+    }
+    // if (['AddDeposit', 'RemoveDeposit', 'RemoveDeposits', 'StalkBalanceChanged'].includes(event.name)) {
+    //   await this.queueExecution();
+    // }
+  }
 
   // Returns true if the task can be called again immediately
   static async update() {
@@ -63,7 +74,9 @@ class DepositsTask {
     });
     DepositsTask.__seasonUpdate = false;
 
-    return !isCaughtUp;
+    this._isCaughtUp = isCaughtUp;
+    // Unknown number of events, this task should be refactrored to retrieve them upfront within this method instead of separately
+    return -1;
   }
 
   // Updates the list of deposits in the database, adding/removing entries as needed

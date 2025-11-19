@@ -13,6 +13,7 @@ const SiloEvents = require('../../datasources/events/silo-events');
 const SiloInflowService = require('../../service/inflow/silo-inflow-service');
 const SiloInflowSnapshotService = require('../../service/inflow/silo-inflow-snapshot-service');
 const PriceService = require('../../service/price-service');
+const IndexingTask = require('./IndexingTask');
 
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 2000;
@@ -21,8 +22,17 @@ const FIELD_EVENTS = new Set(['Sow', 'Harvest', 'PodListingFilled', 'PodOrderFil
 const SILO_EVENTS = new Set(['AddDeposit', 'RemoveDeposit', 'RemoveDeposits', 'Plant', 'Convert', 'ClaimPlenty']);
 const ALL_EVENTS = [...FIELD_EVENTS, ...SILO_EVENTS];
 
-class InflowsTask {
-  // Returns true if the task can be called again immediately
+class InflowsTask extends IndexingTask {
+  static async handleLiveEvent(event) {
+    // Inflows are only used for snapshots currently, therefore update on Sunrise only
+    if (event.name === 'Sunrise') {
+      await this.queueExecution({ blockNumber: event.rawLog.blockNumber });
+    }
+    // if (ALL_EVENTS.includes(event.name)) {
+    //   await this.queueExecution();
+    // }
+  }
+
   static async update() {
     const meta = await AppMetaService.getInflowMeta();
     let { isInitialized, lastUpdate, updateBlock, isCaughtUp } = await TaskRangeUtil.getUpdateInfo(meta, MAX_BLOCKS);
@@ -95,7 +105,8 @@ class InflowsTask {
       await AppMetaService.setLastInflowUpdate(updateBlock);
     });
 
-    return !isCaughtUp;
+    this._isCaughtUp = isCaughtUp;
+    return events.length;
   }
 }
 module.exports = InflowsTask;

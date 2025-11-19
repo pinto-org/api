@@ -20,6 +20,7 @@ const EnvUtil = require('./utils/env.js');
 const ChainUtil = require('./utils/chain.js');
 const AlchemyUtil = require('./datasources/alchemy.js');
 const StartupSeeder = require('./repository/postgres/startup-seeders/startup-seeder.js');
+const WebsocketTaskTrigger = require('./scheduled/websocket.js');
 
 async function appStartup() {
   // Activate whichever cron jobs are configured, if any
@@ -37,6 +38,9 @@ async function appStartup() {
 
   // Long-running async seeder process, the api will come online before this is complete.
   StartupSeeder.seedDatabase();
+
+  // Websocket begins listening for events
+  WebsocketTaskTrigger.listen();
 
   const app = new Koa();
 

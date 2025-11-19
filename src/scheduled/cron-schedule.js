@@ -5,29 +5,7 @@ const Log = require('../utils/logging');
 const DepositsTask = require('./tasks/deposits');
 const TractorTask = require('./tasks/tractor');
 const InflowsTask = require('./tasks/inflows');
-
-const genericTask = (Executor, label) => ({
-  [label]: {
-    // 11 seconds into the minute; these tasks have a 5 block buffer, this will ensure it processes the block on the minute
-    cron: '11 * * * * *',
-    function: async () => {
-      if (Executor.__cronLock) {
-        Log.info(`${label} task is still running, skipping this minute...`);
-        return;
-      }
-
-      try {
-        Executor.__cronLock = true;
-        let canExecuteAgain = true;
-        while (canExecuteAgain) {
-          canExecuteAgain = await Executor.update();
-        }
-      } finally {
-        Executor.__cronLock = false;
-      }
-    }
-  }
-});
+const EnvUtil = require('../utils/env');
 
 // All cron jobs which could be activated are configured here
 const ALL_JOBS = {
@@ -36,9 +14,42 @@ const ALL_JOBS = {
     cron: '50-59 59 * * * *',
     function: SunriseTask.handleSunrise
   },
-  ...genericTask(DepositsTask, 'deposits'),
-  ...genericTask(TractorTask, 'tractor'),
-  ...genericTask(InflowsTask, 'inflows'),
+  deposits: {
+    executeOnStartup: true,
+    // Updated less frequently because the underlying data is currently unused
+    cron: '0 10 * * * *',
+    function: async () => {
+      while ((await DepositsTask.queueExecution({ minIntervalMinutes: 55 })).canExecuteAgain) {}
+    }
+  },
+  inflows: {
+    executeOnStartup: true,
+    // Updated less frequently because its only used for snapshots (and the ws should invoke it at sunrise)
+    cron: '0 10 * * * *',
+    function: async () => {
+      while ((await InflowsTask.queueExecution({ minIntervalMinutes: 55 })).canExecuteAgain) {}
+    }
+  },
+  tractor: {
+    executeOnStartup: !EnvUtil.getDevTractor().seeder, // will execute on startup either from here or from the dev seeder
+    cron: '0 */5 * * * *',
+    function: async () => {
+      const isInitialRun = TractorTask.getLastExecutionTime() === null;
+      while (true) {
+        const { countEvents, queuedCallersBehind, canExecuteAgain } = await TractorTask.queueExecution({
+          minIntervalMinutes: 4.5
+        });
+        if (!canExecuteAgain) {
+          // queuedCallersBehind can be true if the task ran slightly before the websocket got the event,
+          // and the websocket queued a run while this one was still running.
+          if (countEvents > 0 && !isInitialRun && !queuedCallersBehind) {
+            sendWebhookMessage(`Cron task processed ${countEvents} tractor events; websocket might be disconnected?`);
+          }
+          break;
+        }
+      }
+    }
+  },
   alert: {
     cron: '*/10 * * * * *',
     function: () => Log.info('10 seconds testing Alert')
@@ -70,7 +81,7 @@ function activateJobs(jobNames) {
   for (const jobName of jobNames) {
     const job = ALL_JOBS[jobName];
     if (job) {
-      cron.schedule(job.cron, () => {
+      const execute = () => {
         // This is to mitigate a quirk in node-cron where sometimes jobs are missed. Jobs can specify
         // a range of seconds they are willing to execute on, making it far less likely to drop.
         // This guard prevents double-execution.
@@ -80,7 +91,11 @@ function activateJobs(jobNames) {
         job.__lastExecuted = Date.now();
 
         errorWrapper(job.function);
-      });
+      };
+      if (job.executeOnStartup) {
+        execute();
+      }
+      cron.schedule(job.cron, execute);
       activated.push(jobName);
     } else {
       failed.push(jobName);
