@@ -57,7 +57,7 @@ class WebsocketTaskTrigger {
         const parsedLog = ifaceMap[log.topics[0]].parseLog(log);
         parsedLog.rawLog = log;
 
-        if (log.name === 'Sunrise') {
+        if (parsedLog.name === 'Sunrise') {
           await SeasonService.handleSunrise(parsedLog);
         }
 
