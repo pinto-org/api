@@ -13,8 +13,6 @@ const ERC20Info = require('../../src/datasources/erc20-info');
 const BasinSubgraphRepository = require('../../src/repository/subgraph/basin-subgraph');
 const TradeDto = require('../../src/repository/dto/TradeDto');
 
-const testTimestamp = 1715020584;
-
 describe('ExchangeService', () => {
   beforeEach(() => {
     mockBeanstalkConstants();
@@ -25,12 +23,12 @@ describe('ExchangeService', () => {
 
   it('should return all Basin tickers in the expected format', async () => {
     const wellsResponse = require('../mock-responses/subgraph/basin/wells.json');
-    jest.spyOn(mockBasinSG, 'request').mockResolvedValueOnce(wellsResponse);
+    jest.spyOn(mockBasinSG, 'request').mockResolvedValue(wellsResponse);
     // In practice these 2 values are not necessary since the subsequent getWellPriceRange is also mocked.
-    jest.spyOn(BasinSubgraphRepository, 'getAllTrades').mockResolvedValueOnce(undefined);
+    jest.spyOn(BasinSubgraphRepository, 'getAllTrades').mockResolvedValue(undefined);
     jest.spyOn(ExchangeService, 'priceEventsByWell').mockReturnValueOnce(undefined);
-    jest.spyOn(LiquidityUtil, 'calcWellLiquidityUSD').mockResolvedValueOnce(27491579.59267346);
-    jest.spyOn(LiquidityUtil, 'calcDepth').mockResolvedValueOnce({
+    jest.spyOn(LiquidityUtil, 'calcWellLiquidityUSD').mockResolvedValue(27491579.59267346);
+    jest.spyOn(LiquidityUtil, 'calcDepth').mockResolvedValue({
       buy: {
         float: [135736.220357, 52.83352694098683]
       },
@@ -81,9 +79,7 @@ describe('ExchangeService', () => {
   });
 
   test('Returns swap history', async () => {
-    jest
-      .spyOn(mockBasinSG, 'request')
-      .mockResolvedValueOnce(require('../mock-responses/subgraph/basin/swapHistory.json'));
+    jest.spyOn(mockBasinSG, 'request').mockResolvedValue(require('../mock-responses/subgraph/basin/swapHistory.json'));
 
     const options = {
       ticker_id: `${BEAN}_${WETH}`,
