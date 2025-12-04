@@ -7,6 +7,7 @@ const fieldRoutes = require('./routes/field-routes.js');
 const proxyRoutes = require('./routes/proxy-routes.js');
 const seasonRoutes = require('./routes/season-routes.js');
 const inflowRoutes = require('./routes/inflow-routes.js');
+const sgCacheRoutes = require('./routes/sg-cache-routes.js');
 
 const Koa = require('koa');
 const bodyParser = require('koa-bodyparser');
@@ -117,6 +118,8 @@ async function appStartup() {
   app.use(seasonRoutes.allowedMethods());
   app.use(inflowRoutes.routes());
   app.use(inflowRoutes.allowedMethods());
+  app.use(sgCacheRoutes.routes());
+  app.use(sgCacheRoutes.allowedMethods());
 
   const router = new Router();
   router.get('/healthcheck', async (ctx) => {
