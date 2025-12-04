@@ -5,6 +5,9 @@ services:
   postgres:
     networks:
       - api_indexable_network
+  redis:
+    networks:
+      - api_indexable_network
 
 networks:
   api_indexable_network:

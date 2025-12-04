@@ -5,9 +5,9 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node ./src/app.js",
-    "docker": "./docker/build.sh local && ./docker/start.sh local 3000 5432",
+    "docker": "./docker/build.sh local && ./docker/start.sh local 3000 5432 6379",
     "docker:stop": "./docker/stop.sh local",
-    "docker:db": "./docker/start.sh local 3000 5432 postgres",
+    "docker:db": "./docker/start.sh local 3000 5432 6379 postgres redis",
     "test": "jest",
     "debug": "node --inspect ./src/app.js",
     "prettier": "prettier --write .",
