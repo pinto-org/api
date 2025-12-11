@@ -84,7 +84,6 @@ const introspect = async (sgName) => {
   const schema = introspection.data.data.__schema;
 
   if ((await redis.get(`sg-deployment:${sgName}`)) === deployment) {
-    console.log('using cached introspection');
     return { fromCache: true, introspection: JSON.parse(await redis.get(`sg-introspection:${sgName}`)) };
   }
 
@@ -116,17 +115,31 @@ const introspect = async (sgName) => {
   await redis.set(`sg-deployment:${sgName}`, deployment);
   await redis.set(`sg-introspection:${sgName}`, JSON.stringify(queryInfo));
 
-  // TODO: when from cache false, clear all underlying cache data for the corresponding subgraph
   return { fromCache: false, introspection: queryInfo };
+};
+
+const clearSubgraphCache = async (subgraph) => {
+  let cursor = '0';
+  do {
+    const reply = await redis.scan(cursor, {
+      MATCH: `sg:${subgraph}:*`,
+      COUNT: 100
+    });
+    if (reply.keys.length > 0) {
+      await redis.del(...reply.keys);
+    }
+    cursor = reply.cursor;
+  } while (cursor !== '0');
 };
 
 // Returns { latest: <latest value>, cache: [<cached results>] }
 const getCachedResults = async (cachedQueryName) => {
   const cfg = config[cachedQueryName];
-  const cachedResults = JSON.parse(await redis.get(`sg:cache:${cachedQueryName}`)) ?? [];
+  const cachedResults = JSON.parse(await redis.get(`sg:${cfg.subgraph}:${cachedQueryName}`)) ?? [];
 
   return {
-    latest: cachedResults[cachedResults.length - 1][cfg.paginationSettings.field] ?? cfg.paginationSettings.lastValue,
+    latest:
+      cachedResults?.[cachedResults.length - 1]?.[cfg.paginationSettings.field] ?? cfg.paginationSettings.lastValue,
     cache: cachedResults
   };
 };
@@ -143,31 +156,38 @@ const queryFreshResults = async (cachedQueryName, introspection, latestValue, c 
 };
 
 const aggregateAndCache = async (cachedQueryName, cachedResults, freshResults) => {
+  const cfg = config[cachedQueryName];
   // The final element was re-retrieved and included in the fresh results.
   const aggregated = [...cachedResults.slice(0, -1), ...freshResults];
-  await redis.set(`sg:cache:${cachedQueryName}`, JSON.stringify(aggregated));
+  await redis.set(`sg:${cfg.subgraph}:${cachedQueryName}`, JSON.stringify(aggregated));
   return aggregated;
 };
 
 if (require.main === module) {
   (async () => {
-    const { fromCache, introspection } = await introspect('pintostalk');
-    const { latest, cache } = await getCachedResults('cached_siloHourlySnapshots');
-    const freshResults = await queryFreshResults('cached_siloHourlySnapshots', introspection, latest);
-    const aggregated = await aggregateAndCache('cached_siloHourlySnapshots', cache, freshResults);
-    console.log(aggregated);
+    const QUERY_NAME = 'cached_siloHourlySnapshots';
+    const sgName = config[QUERY_NAME].subgraph;
 
-    // console.log(queryInfo);
-    // console.log(Object.keys(queryInfo).map((k) => `{ ${k} { ${queryInfo[k].fields.join(' ')} } }`));
-    // const cachedResults = await getCachedResults('cached_siloHourlySnapshots');
-    // console.log(cachedResults);
-    // console.log(JSON.parse(await redis.get('introspection:beanstalk')));
+    console.time('query >9k seasons');
+
+    const { fromCache, introspection } = await introspect(sgName);
+    console.log('introspection from cache?', fromCache);
+    if (!fromCache) {
+      console.log(`New deployment detected; clearing subgraph cache for ${sgName}`);
+      await clearSubgraphCache(sgName);
+    }
+
+    const { latest, cache } = await getCachedResults(QUERY_NAME);
+    console.log('latest', latest, 'cache length', cache.length);
+    const freshResults = await queryFreshResults(QUERY_NAME, introspection, latest);
+    console.log('fresh results length', freshResults.length);
+    const aggregated = await aggregateAndCache(QUERY_NAME, cache, freshResults);
+    console.log('aggregated results length', aggregated.length);
+
+    console.timeEnd('query >9k seasons');
+
+    console.log(aggregated.slice(9270));
+
+    process.exit(0);
   })();
 }
-
-// full introspect
-// find cached result for requested entity
-// identify max season/id etc
-// sg query all gte that one
-// aggregate and save to cache
-// return result
