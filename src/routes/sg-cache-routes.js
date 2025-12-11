@@ -53,8 +53,6 @@ const config = {
     subgraph: 'pintostalk',
     queryName: 'siloHourlySnapshots',
     client: (c) => c.SG.BEANSTALK,
-    // TODO: ideally we could cache by farmers too? not sure if the ui actually uses this currently
-    where: 'silo: "0xd1a0d188e861ed9d15773a2f3574a2e94134ba8f"',
     paginationSettings: {
       field: 'season',
       lastValue: 0,
@@ -65,7 +63,6 @@ const config = {
     subgraph: 'pintostalk',
     queryName: 'fieldHourlySnapshots',
     client: (c) => c.SG.BEANSTALK,
-    where: 'field: "0xd1a0d188e861ed9d15773a2f3574a2e94134ba8f"',
     paginationSettings: {
       field: 'season',
       lastValue: 0,
@@ -133,9 +130,9 @@ const clearSubgraphCache = async (subgraph) => {
 };
 
 // Returns { latest: <latest value>, cache: [<cached results>] }
-const getCachedResults = async (cachedQueryName) => {
+const getCachedResults = async (cachedQueryName, where) => {
   const cfg = config[cachedQueryName];
-  const cachedResults = JSON.parse(await redis.get(`sg:${cfg.subgraph}:${cachedQueryName}`)) ?? [];
+  const cachedResults = JSON.parse(await redis.get(`sg:${cfg.subgraph}:${cachedQueryName}:${where}`)) ?? [];
 
   return {
     latest:
@@ -144,28 +141,29 @@ const getCachedResults = async (cachedQueryName) => {
   };
 };
 
-const queryFreshResults = async (cachedQueryName, introspection, latestValue, c = C()) => {
+const queryFreshResults = async (cachedQueryName, where, latestValue, introspection, c = C()) => {
   const cfg = config[cachedQueryName];
   return await SubgraphQueryUtil.allPaginatedSG(
     cfg.client(c),
     `{ ${cfg.queryName} { ${introspection[cachedQueryName].fields.join(' ')} } }`,
     '',
-    cfg.where,
+    where,
     { ...cfg.paginationSettings, lastValue: latestValue }
   );
 };
 
-const aggregateAndCache = async (cachedQueryName, cachedResults, freshResults) => {
+const aggregateAndCache = async (cachedQueryName, where, cachedResults, freshResults) => {
   const cfg = config[cachedQueryName];
   // The final element was re-retrieved and included in the fresh results.
   const aggregated = [...cachedResults.slice(0, -1), ...freshResults];
-  await redis.set(`sg:${cfg.subgraph}:${cachedQueryName}`, JSON.stringify(aggregated));
+  await redis.set(`sg:${cfg.subgraph}:${cachedQueryName}:${where}`, JSON.stringify(aggregated));
   return aggregated;
 };
 
 if (require.main === module) {
   (async () => {
     const QUERY_NAME = 'cached_siloHourlySnapshots';
+    const WHERE = 'silo: "0xd1a0d188e861ed9d15773a2f3574a2e94134ba8f"'.trim();
     const sgName = config[QUERY_NAME].subgraph;
 
     console.time('query >9k seasons');
@@ -177,11 +175,11 @@ if (require.main === module) {
       await clearSubgraphCache(sgName);
     }
 
-    const { latest, cache } = await getCachedResults(QUERY_NAME);
+    const { latest, cache } = await getCachedResults(QUERY_NAME, WHERE);
     console.log('latest', latest, 'cache length', cache.length);
-    const freshResults = await queryFreshResults(QUERY_NAME, introspection, latest);
+    const freshResults = await queryFreshResults(QUERY_NAME, WHERE, latest, introspection);
     console.log('fresh results length', freshResults.length);
-    const aggregated = await aggregateAndCache(QUERY_NAME, cache, freshResults);
+    const aggregated = await aggregateAndCache(QUERY_NAME, WHERE, cache, freshResults);
     console.log('aggregated results length', aggregated.length);
 
     console.timeEnd('query >9k seasons');
