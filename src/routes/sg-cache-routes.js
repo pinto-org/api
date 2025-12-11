@@ -2,7 +2,7 @@ const Router = require('koa-router');
 const { createClient } = require('redis');
 const SubgraphQueryUtil = require('../utils/subgraph-query');
 const { C } = require('../constants/runtime-constants');
-const { gql } = require('graphql-request');
+const axios = require('axios');
 
 const router = new Router({
   prefix: '/sg-cache'
@@ -28,18 +28,14 @@ redis.connect();
  * ?key: the cache key to read
  */
 router.get('/', async (ctx) => {
-  const key = ctx.query.key;
+  const queryName = ctx.query.queryName;
 
-  if (!key) {
-    ctx.status = 400;
-    ctx.body = {
-      message: 'Query parameter `key` is required.'
-    };
-    return;
-  }
+  // Derive the latest season number already retrieved per query. And then retreive all gte that one.
+  // Latest season will get rewritten always since it can be updating, and any further seasons would get appended to the cache.
+  // Then can respond to user request for specific fields
 
-  await testIntrospect();
-  await testSnap();
+  const queryInfo = await testIntrospect();
+  const t = await testSnap(queryName, queryInfo);
 
   const value = JSON.parse(await redis.get(key));
 
@@ -49,179 +45,62 @@ router.get('/', async (ctx) => {
   };
 });
 
-/**
- * Writes a value to the cache
- * Body should contain: { key: string, value: any }
- */
-router.post('/', async (ctx) => {
-  const { key, value } = ctx.request.body;
-
-  if (!key) {
-    ctx.status = 400;
-    ctx.body = {
-      message: 'Body parameter `key` is required.'
-    };
-    return;
-  }
-
-  if (value === undefined) {
-    ctx.status = 400;
-    ctx.body = {
-      message: 'Body parameter `value` is required.'
-    };
-    return;
-  }
-
-  await redis.set(key, JSON.stringify(value));
-
-  ctx.body = {
-    success: true,
-    key,
-    message: 'Value cached successfully' // Placeholder - will be replaced with actual cache operation
-  };
-});
-
 module.exports = router;
 
 // Must be List queries that dont require explicitly provided id (in subgraph framework, usually ending in 's')
 const config = {
-  beanstalk: {
-    queries: [
-      {
-        name: 'cached_siloHourlySnapshots',
-        underlying: {
-          name: 'siloHourlySnapshots',
-          where: 'silo: "0xd1a0d188e861ed9d15773a2f3574a2e94134ba8f"',
-          paginationSettings: {
-            field: 'season',
-            lastValue: 0,
-            direction: 'asc'
-          }
-        }
-      },
-      {
-        name: 'cached_fieldHourlySnapshots',
-        underlying: {
-          name: 'fieldHourlySnapshots',
-          where: 'field: "0xd1a0d188e861ed9d15773a2f3574a2e94134ba8f"',
-          paginationSettings: {
-            field: 'season',
-            lastValue: 0,
-            direction: 'asc'
-          }
-        }
-      }
-    ]
+  cached_siloHourlySnapshots: {
+    subgraph: 'pintostalk',
+    queryName: 'siloHourlySnapshots',
+    client: (c) => c.SG.BEANSTALK,
+    // TODO: ideally we could cache by farmers too? not sure if the ui actually uses this currently
+    where: 'silo: "0xd1a0d188e861ed9d15773a2f3574a2e94134ba8f"',
+    paginationSettings: {
+      field: 'season',
+      lastValue: 0,
+      direction: 'asc'
+    }
+  },
+  cached_fieldHourlySnapshots: {
+    subgraph: 'pintostalk',
+    queryName: 'fieldHourlySnapshots',
+    client: (c) => c.SG.BEANSTALK,
+    where: 'field: "0xd1a0d188e861ed9d15773a2f3574a2e94134ba8f"',
+    paginationSettings: {
+      field: 'season',
+      lastValue: 0,
+      direction: 'asc'
+    }
   }
 };
 
-const testIntrospect = async (sgName, c = C()) => {
-  const introspection = await c.SG[sgName.toUpperCase()](gql`
-    query IntrospectionQuery {
-      __schema {
-        queryType {
-          name
-        }
-        mutationType {
-          name
-        }
-        subscriptionType {
-          name
-        }
-        types {
-          ...FullType
-        }
-        directives {
-          name
-          description
-          locations
-          args {
-            ...InputValue
-          }
-        }
-      }
-    }
-    fragment FullType on __Type {
-      kind
-      name
-      description
-      fields(includeDeprecated: true) {
-        name
-        description
-        args {
-          ...InputValue
-        }
-        type {
-          ...TypeRef
-        }
-        isDeprecated
-        deprecationReason
-      }
-      inputFields {
-        ...InputValue
-      }
-      interfaces {
-        ...TypeRef
-      }
-      enumValues(includeDeprecated: true) {
-        name
-        description
-        isDeprecated
-        deprecationReason
-      }
-      possibleTypes {
-        ...TypeRef
-      }
-    }
-    fragment InputValue on __InputValue {
-      name
-      description
-      type {
-        ...TypeRef
-      }
-      defaultValue
-    }
-    fragment TypeRef on __Type {
-      kind
-      name
-      ofType {
-        kind
-        name
-        ofType {
-          kind
-          name
-          ofType {
-            kind
-            name
-            ofType {
-              kind
-              name
-              ofType {
-                kind
-                name
-                ofType {
-                  kind
-                  name
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  `);
+const testIntrospect = async (sgName) => {
+  const introspection = await axios.post(`https://graph.pinto.money/${sgName}`, {
+    query:
+      'query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } }'
+  });
+
+  const deployment = introspection.headers['x-deployment'];
+  const schema = introspection.data.data.__schema;
+
+  if ((await redis.get(`sg-deployment:${sgName}`)) === deployment) {
+    console.log('using cached introspection');
+    return JSON.parse(await redis.get(`sg-introspection:${sgName}`));
+  }
 
   // Find the underlying types for each enabled query
   const queryInfo = {};
-  const queryTypes = introspection.__schema.types.find((t) => t.kind === 'OBJECT' && t.name === 'Query');
+  const queryTypes = schema.types.find((t) => t.kind === 'OBJECT' && t.name === 'Query');
   for (const field of queryTypes.fields) {
-    const configQuery = config[sgName].queries.find((q) => q.underlying.name === field.name);
+    const configQuery = Object.entries(config).find(
+      ([key, queryCfg]) => queryCfg.subgraph === sgName && queryCfg.queryName === field.name
+    );
     if (configQuery) {
       let type = field.type;
       while (type.ofType) {
         type = type.ofType;
       }
-      queryInfo[configQuery.name] = {
+      queryInfo[configQuery[0]] = {
         type: type.name
       };
     }
@@ -229,31 +108,26 @@ const testIntrospect = async (sgName, c = C()) => {
 
   // Identify all fields accessible for each query
   for (const query in queryInfo) {
-    const queryObject = introspection.__schema.types.find(
-      (t) => t.kind === 'OBJECT' && t.name === queryInfo[query].type
-    );
+    const queryObject = schema.types.find((t) => t.kind === 'OBJECT' && t.name === queryInfo[query].type);
     queryInfo[query].fields = queryObject.fields.map((f) => f.name);
   }
 
-  console.log(queryInfo);
-  console.log(Object.keys(queryInfo).map((k) => `{ ${k} { ${queryInfo[k].fields.join(' ')} } }`));
+  // Should also save the subgraph version number and only recompute this if that changes
+  await redis.set(`sg-deployment:${sgName}`, deployment);
+  await redis.set(`sg-introspection:${sgName}`, JSON.stringify(queryInfo));
 
-  await redis.set('introspection:beanstalk', JSON.stringify(queryInfo));
+  return queryInfo;
 };
 
-const testSnap = async (c = C()) => {
+const testSnap = async (queryName, introspectedInfo, c = C()) => {
+  const cfg = config[queryName];
+
   const siloHourlySnapshots = await SubgraphQueryUtil.allPaginatedSG(
-    c.SG.BEANSTALK,
-    `
-      { siloHourlySnapshots { id season silo stalk depositedBDV plantedBeans roots germinatingStalk penalizedStalkConvertDown unpenalizedStalkConvertDown avgConvertDownPenalty bonusStalkConvertUp totalBdvConvertUpBonus totalBdvConvertUp beanMints plantableStalk beanToMaxLpGpPerBdvRatio cropRatio avgGrownStalkPerBdvPerSeason grownStalkPerSeason convertDownPenalty activeFarmers deltaStalk deltaDepositedBDV deltaPlantedBeans deltaRoots deltaGerminatingStalk deltaPenalizedStalkConvertDown deltaUnpenalizedStalkConvertDown deltaAvgConvertDownPenalty deltaBonusStalkConvertUp deltaTotalBdvConvertUpBonus deltaTotalBdvConvertUp deltaBeanMints deltaPlantableStalk deltaBeanToMaxLpGpPerBdvRatio deltaCropRatio deltaAvgGrownStalkPerBdvPerSeason deltaGrownStalkPerSeason deltaConvertDownPenalty deltaActiveFarmers createdAt updatedAt caseId } }
-    `,
+    cfg.client(c),
+    `{ ${queryName} { ${introspectedInfo[queryName].fields.join(' ')} } }`,
     '',
-    `silo: "${c.BEANSTALK}"`,
-    {
-      field: 'season',
-      lastValue: 0,
-      direction: 'asc'
-    }
+    cfg.where,
+    cfg.paginationSettings // TODO: here it should put in the min season as to whatever we have already retrieved
   );
   console.log(siloHourlySnapshots.length);
   console.log(siloHourlySnapshots.map((s) => s.season));
@@ -261,7 +135,9 @@ const testSnap = async (c = C()) => {
 
 if (require.main === module) {
   (async () => {
-    await testIntrospect('beanstalk');
+    const queryInfo = await testIntrospect('pintostalk');
+    console.log(queryInfo);
+    console.log(Object.keys(queryInfo).map((k) => `{ ${k} { ${queryInfo[k].fields.join(' ')} } }`));
     // await testSnap();
     // console.log(JSON.parse(await redis.get('introspection:beanstalk')));
   })();
