@@ -34,7 +34,7 @@ router.get('/', async (ctx) => {
   // Latest season will get rewritten always since it can be updating, and any further seasons would get appended to the cache.
   // Then can respond to user request for specific fields
 
-  const queryInfo = await testIntrospect();
+  const queryInfo = await introspect('subgraph');
   const t = await testSnap(queryName, queryInfo);
 
   const value = JSON.parse(await redis.get(key));
@@ -74,7 +74,7 @@ const config = {
   }
 };
 
-const testIntrospect = async (sgName) => {
+const introspect = async (sgName) => {
   const introspection = await axios.post(`https://graph.pinto.money/${sgName}`, {
     query:
       'query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } }'
@@ -85,7 +85,7 @@ const testIntrospect = async (sgName) => {
 
   if ((await redis.get(`sg-deployment:${sgName}`)) === deployment) {
     console.log('using cached introspection');
-    return JSON.parse(await redis.get(`sg-introspection:${sgName}`));
+    return { fromCache: true, introspection: JSON.parse(await redis.get(`sg-introspection:${sgName}`)) };
   }
 
   // Find the underlying types for each enabled query
@@ -116,29 +116,58 @@ const testIntrospect = async (sgName) => {
   await redis.set(`sg-deployment:${sgName}`, deployment);
   await redis.set(`sg-introspection:${sgName}`, JSON.stringify(queryInfo));
 
-  return queryInfo;
+  // TODO: when from cache false, clear all underlying cache data for the corresponding subgraph
+  return { fromCache: false, introspection: queryInfo };
 };
 
-const testSnap = async (queryName, introspectedInfo, c = C()) => {
-  const cfg = config[queryName];
+// Returns { latest: <latest value>, cache: [<cached results>] }
+const getCachedResults = async (cachedQueryName) => {
+  const cfg = config[cachedQueryName];
+  const cachedResults = JSON.parse(await redis.get(`sg:cache:${cachedQueryName}`)) ?? [];
 
-  const siloHourlySnapshots = await SubgraphQueryUtil.allPaginatedSG(
+  return {
+    latest: cachedResults[cachedResults.length - 1][cfg.paginationSettings.field] ?? cfg.paginationSettings.lastValue,
+    cache: cachedResults
+  };
+};
+
+const queryFreshResults = async (cachedQueryName, introspection, latestValue, c = C()) => {
+  const cfg = config[cachedQueryName];
+  return await SubgraphQueryUtil.allPaginatedSG(
     cfg.client(c),
-    `{ ${queryName} { ${introspectedInfo[queryName].fields.join(' ')} } }`,
+    `{ ${cfg.queryName} { ${introspection[cachedQueryName].fields.join(' ')} } }`,
     '',
     cfg.where,
-    cfg.paginationSettings // TODO: here it should put in the min season as to whatever we have already retrieved
+    { ...cfg.paginationSettings, lastValue: latestValue }
   );
-  console.log(siloHourlySnapshots.length);
-  console.log(siloHourlySnapshots.map((s) => s.season));
+};
+
+const aggregateAndCache = async (cachedQueryName, cachedResults, freshResults) => {
+  // The final element was re-retrieved and included in the fresh results.
+  const aggregated = [...cachedResults.slice(0, -1), ...freshResults];
+  await redis.set(`sg:cache:${cachedQueryName}`, JSON.stringify(aggregated));
+  return aggregated;
 };
 
 if (require.main === module) {
   (async () => {
-    const queryInfo = await testIntrospect('pintostalk');
-    console.log(queryInfo);
-    console.log(Object.keys(queryInfo).map((k) => `{ ${k} { ${queryInfo[k].fields.join(' ')} } }`));
-    // await testSnap();
+    const { fromCache, introspection } = await introspect('pintostalk');
+    const { latest, cache } = await getCachedResults('cached_siloHourlySnapshots');
+    const freshResults = await queryFreshResults('cached_siloHourlySnapshots', introspection, latest);
+    const aggregated = await aggregateAndCache('cached_siloHourlySnapshots', cache, freshResults);
+    console.log(aggregated);
+
+    // console.log(queryInfo);
+    // console.log(Object.keys(queryInfo).map((k) => `{ ${k} { ${queryInfo[k].fields.join(' ')} } }`));
+    // const cachedResults = await getCachedResults('cached_siloHourlySnapshots');
+    // console.log(cachedResults);
     // console.log(JSON.parse(await redis.get('introspection:beanstalk')));
   })();
 }
+
+// full introspect
+// find cached result for requested entity
+// identify max season/id etc
+// sg query all gte that one
+// aggregate and save to cache
+// return result
