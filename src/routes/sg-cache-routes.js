@@ -1,8 +1,6 @@
 const Router = require('koa-router');
 const { createClient } = require('redis');
-const SubgraphQueryUtil = require('../utils/subgraph-query');
-const { C } = require('../constants/runtime-constants');
-const axios = require('axios');
+const SubgraphCache = require('../repository/subgraph/subgraph-cache');
 
 const router = new Router({
   prefix: '/sg-cache'
@@ -48,6 +46,9 @@ router.get('/', async (ctx) => {
 module.exports = router;
 
 // Must be List queries that dont require explicitly provided id (in subgraph framework, usually ending in 's')
+// Expand config
+// Move things to better places
+// Explore exposing graphql interface for the api
 const config = {
   cached_siloHourlySnapshots: {
     subgraph: 'pintostalk',
@@ -71,95 +72,6 @@ const config = {
   }
 };
 
-const introspect = async (sgName) => {
-  const introspection = await axios.post(`https://graph.pinto.money/${sgName}`, {
-    query:
-      'query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } }'
-  });
-
-  const deployment = introspection.headers['x-deployment'];
-  const schema = introspection.data.data.__schema;
-
-  if ((await redis.get(`sg-deployment:${sgName}`)) === deployment) {
-    return { fromCache: true, introspection: JSON.parse(await redis.get(`sg-introspection:${sgName}`)) };
-  }
-
-  // Find the underlying types for each enabled query
-  const queryInfo = {};
-  const queryTypes = schema.types.find((t) => t.kind === 'OBJECT' && t.name === 'Query');
-  for (const field of queryTypes.fields) {
-    const configQuery = Object.entries(config).find(
-      ([key, queryCfg]) => queryCfg.subgraph === sgName && queryCfg.queryName === field.name
-    );
-    if (configQuery) {
-      let type = field.type;
-      while (type.ofType) {
-        type = type.ofType;
-      }
-      queryInfo[configQuery[0]] = {
-        type: type.name
-      };
-    }
-  }
-
-  // Identify all fields accessible for each query
-  for (const query in queryInfo) {
-    const queryObject = schema.types.find((t) => t.kind === 'OBJECT' && t.name === queryInfo[query].type);
-    queryInfo[query].fields = queryObject.fields.map((f) => f.name);
-  }
-
-  // Should also save the subgraph version number and only recompute this if that changes
-  await redis.set(`sg-deployment:${sgName}`, deployment);
-  await redis.set(`sg-introspection:${sgName}`, JSON.stringify(queryInfo));
-
-  return { fromCache: false, introspection: queryInfo };
-};
-
-const clearSubgraphCache = async (subgraph) => {
-  let cursor = '0';
-  do {
-    const reply = await redis.scan(cursor, {
-      MATCH: `sg:${subgraph}:*`,
-      COUNT: 100
-    });
-    if (reply.keys.length > 0) {
-      await redis.del(...reply.keys);
-    }
-    cursor = reply.cursor;
-  } while (cursor !== '0');
-};
-
-// Returns { latest: <latest value>, cache: [<cached results>] }
-const getCachedResults = async (cachedQueryName, where) => {
-  const cfg = config[cachedQueryName];
-  const cachedResults = JSON.parse(await redis.get(`sg:${cfg.subgraph}:${cachedQueryName}:${where}`)) ?? [];
-
-  return {
-    latest:
-      cachedResults?.[cachedResults.length - 1]?.[cfg.paginationSettings.field] ?? cfg.paginationSettings.lastValue,
-    cache: cachedResults
-  };
-};
-
-const queryFreshResults = async (cachedQueryName, where, latestValue, introspection, c = C()) => {
-  const cfg = config[cachedQueryName];
-  return await SubgraphQueryUtil.allPaginatedSG(
-    cfg.client(c),
-    `{ ${cfg.queryName} { ${introspection[cachedQueryName].fields.join(' ')} } }`,
-    '',
-    where,
-    { ...cfg.paginationSettings, lastValue: latestValue }
-  );
-};
-
-const aggregateAndCache = async (cachedQueryName, where, cachedResults, freshResults) => {
-  const cfg = config[cachedQueryName];
-  // The final element was re-retrieved and included in the fresh results.
-  const aggregated = [...cachedResults.slice(0, -1), ...freshResults];
-  await redis.set(`sg:${cfg.subgraph}:${cachedQueryName}:${where}`, JSON.stringify(aggregated));
-  return aggregated;
-};
-
 if (require.main === module) {
   (async () => {
     const QUERY_NAME = 'cached_siloHourlySnapshots';
@@ -168,18 +80,18 @@ if (require.main === module) {
 
     console.time('query >9k seasons');
 
-    const { fromCache, introspection } = await introspect(sgName);
+    const { fromCache, introspection } = await SubgraphCache.introspect(sgName);
     console.log('introspection from cache?', fromCache);
     if (!fromCache) {
       console.log(`New deployment detected; clearing subgraph cache for ${sgName}`);
-      await clearSubgraphCache(sgName);
+      await SubgraphCache.clear(sgName);
     }
 
-    const { latest, cache } = await getCachedResults(QUERY_NAME, WHERE);
+    const { latest, cache } = await SubgraphCache.getCachedResults(QUERY_NAME, WHERE);
     console.log('latest', latest, 'cache length', cache.length);
-    const freshResults = await queryFreshResults(QUERY_NAME, WHERE, latest, introspection);
+    const freshResults = await SubgraphCache.queryFreshResults(QUERY_NAME, WHERE, latest, introspection);
     console.log('fresh results length', freshResults.length);
-    const aggregated = await aggregateAndCache(QUERY_NAME, WHERE, cache, freshResults);
+    const aggregated = await SubgraphCache.aggregateAndCache(QUERY_NAME, WHERE, cache, freshResults);
     console.log('aggregated results length', aggregated.length);
 
     console.timeEnd('query >9k seasons');
