@@ -6,7 +6,36 @@ const CommonSubgraphRepository = require('./common-subgraph');
 
 // Caches past season results for configured queries, enabling retrieval of the full history to be fast
 class SubgraphCache {
-  static async introspect(sgName) {
+  static async get(cacheQueryName, where) {
+    const sgName = SG_CACHE_CONFIG[cacheQueryName].subgraph;
+
+    const { fromCache, introspection } = await this._introspect(sgName);
+    if (!fromCache) {
+      console.log(`New deployment detected; clearing subgraph cache for ${sgName}`);
+      await this.clear(sgName);
+    }
+
+    const { latest, cache } = await this._getCachedResults(cacheQueryName, where);
+    const freshResults = await this._queryFreshResults(cacheQueryName, where, latest, introspection);
+    const aggregated = await this._aggregateAndCache(cacheQueryName, where, cache, freshResults);
+    return aggregated;
+  }
+
+  static async clear(sgName) {
+    let cursor = '0';
+    do {
+      const reply = await redisClient.scan(cursor, {
+        MATCH: `sg:${sgName}:*`,
+        COUNT: 100
+      });
+      if (reply.keys.length > 0) {
+        await redisClient.del(...reply.keys);
+      }
+      cursor = reply.cursor;
+    } while (cursor !== '0');
+  }
+
+  static async _introspect(sgName) {
     const { deployment, schema } = await CommonSubgraphRepository.introspect(sgName);
 
     const fromCache = (await redisClient.get(`sg-deployment:${sgName}`)) === deployment;
@@ -43,24 +72,9 @@ class SubgraphCache {
     return { fromCache, introspection: queryInfo };
   }
 
-  static async clear(sgName) {
-    let cursor = '0';
-    do {
-      const reply = await redisClient.scan(cursor, {
-        MATCH: `sg:${sgName}:*`,
-        COUNT: 100
-      });
-      if (reply.keys.length > 0) {
-        await redisClient.del(...reply.keys);
-      }
-      cursor = reply.cursor;
-    } while (cursor !== '0');
-  }
-
-  // Returns { latest: <latest value>, cache: [<cached results>] }
-  static async getCachedResults(cachedQueryName, where) {
-    const cfg = SG_CACHE_CONFIG[cachedQueryName];
-    const cachedResults = JSON.parse(await redisClient.get(`sg:${cfg.subgraph}:${cachedQueryName}:${where}`)) ?? [];
+  static async _getCachedResults(cacheQueryName, where) {
+    const cfg = SG_CACHE_CONFIG[cacheQueryName];
+    const cachedResults = JSON.parse(await redisClient.get(`sg:${cfg.subgraph}:${cacheQueryName}:${where}`)) ?? [];
 
     return {
       latest:
@@ -69,22 +83,22 @@ class SubgraphCache {
     };
   }
 
-  static async queryFreshResults(cachedQueryName, where, latestValue, introspection, c = C()) {
-    const cfg = SG_CACHE_CONFIG[cachedQueryName];
+  static async _queryFreshResults(cacheQueryName, where, latestValue, introspection, c = C()) {
+    const cfg = SG_CACHE_CONFIG[cacheQueryName];
     return await SubgraphQueryUtil.allPaginatedSG(
       cfg.client(c),
-      `{ ${cfg.queryName} { ${introspection[cachedQueryName].fields.join(' ')} } }`,
+      `{ ${cfg.queryName} { ${introspection[cacheQueryName].fields.join(' ')} } }`,
       '',
       where,
       { ...cfg.paginationSettings, lastValue: latestValue }
     );
   }
 
-  static async aggregateAndCache(cachedQueryName, where, cachedResults, freshResults) {
-    const cfg = SG_CACHE_CONFIG[cachedQueryName];
+  static async _aggregateAndCache(cacheQueryName, where, cachedResults, freshResults) {
+    const cfg = SG_CACHE_CONFIG[cacheQueryName];
     // The final element was re-retrieved and included in the fresh results.
     const aggregated = [...cachedResults.slice(0, -1), ...freshResults];
-    await redisClient.set(`sg:${cfg.subgraph}:${cachedQueryName}:${where}`, JSON.stringify(aggregated));
+    await redisClient.set(`sg:${cfg.subgraph}:${cacheQueryName}:${where}`, JSON.stringify(aggregated));
     return aggregated;
   }
 }

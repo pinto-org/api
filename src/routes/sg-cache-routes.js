@@ -50,7 +50,7 @@ module.exports = router;
 // Move things to better places
 // Explore exposing graphql interface for the api
 const config = {
-  cached_siloHourlySnapshots: {
+  cache_siloHourlySnapshots: {
     subgraph: 'pintostalk',
     queryName: 'siloHourlySnapshots',
     client: (c) => c.SG.BEANSTALK,
@@ -60,7 +60,7 @@ const config = {
       direction: 'asc'
     }
   },
-  cached_fieldHourlySnapshots: {
+  cache_fieldHourlySnapshots: {
     subgraph: 'pintostalk',
     queryName: 'fieldHourlySnapshots',
     client: (c) => c.SG.BEANSTALK,
@@ -74,26 +74,11 @@ const config = {
 
 if (require.main === module) {
   (async () => {
-    const QUERY_NAME = 'cached_siloHourlySnapshots';
+    const QUERY_NAME = 'cache_siloHourlySnapshots';
     const WHERE = 'silo: "0xd1a0d188e861ed9d15773a2f3574a2e94134ba8f"'.trim();
-    const sgName = config[QUERY_NAME].subgraph;
 
     console.time('query >9k seasons');
-
-    const { fromCache, introspection } = await SubgraphCache.introspect(sgName);
-    console.log('introspection from cache?', fromCache);
-    if (!fromCache) {
-      console.log(`New deployment detected; clearing subgraph cache for ${sgName}`);
-      await SubgraphCache.clear(sgName);
-    }
-
-    const { latest, cache } = await SubgraphCache.getCachedResults(QUERY_NAME, WHERE);
-    console.log('latest', latest, 'cache length', cache.length);
-    const freshResults = await SubgraphCache.queryFreshResults(QUERY_NAME, WHERE, latest, introspection);
-    console.log('fresh results length', freshResults.length);
-    const aggregated = await SubgraphCache.aggregateAndCache(QUERY_NAME, WHERE, cache, freshResults);
-    console.log('aggregated results length', aggregated.length);
-
+    const aggregated = await SubgraphCache.get(QUERY_NAME, WHERE);
     console.timeEnd('query >9k seasons');
 
     console.log(aggregated.slice(9270));

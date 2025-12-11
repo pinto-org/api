@@ -1,6 +1,6 @@
 // Must be List queries that dont require explicitly provided id (in subgraph framework, usually ending in 's')
 const SG_CACHE_CONFIG = {
-  cached_siloHourlySnapshots: {
+  cache_siloHourlySnapshots: {
     subgraph: 'pintostalk',
     queryName: 'siloHourlySnapshots',
     client: (c) => c.SG.BEANSTALK,
@@ -10,7 +10,7 @@ const SG_CACHE_CONFIG = {
       direction: 'asc'
     }
   },
-  cached_fieldHourlySnapshots: {
+  cache_fieldHourlySnapshots: {
     subgraph: 'pintostalk',
     queryName: 'fieldHourlySnapshots',
     client: (c) => c.SG.BEANSTALK,
