@@ -9,11 +9,7 @@ class SubgraphCache {
   static async get(cacheQueryName, where) {
     const sgName = SG_CACHE_CONFIG[cacheQueryName].subgraph;
 
-    const { fromCache, introspection } = await this._introspect(sgName);
-    if (!fromCache) {
-      console.log(`New deployment detected; clearing subgraph cache for ${sgName}`);
-      await this.clear(sgName);
-    }
+    const introspection = await this.introspect(sgName);
 
     const { latest, cache } = await this._getCachedResults(cacheQueryName, where);
     const freshResults = await this._queryFreshResults(cacheQueryName, where, latest, introspection);
@@ -35,7 +31,7 @@ class SubgraphCache {
     } while (cursor !== '0');
   }
 
-  static async _introspect(sgName) {
+  static async introspect(sgName) {
     const { deployment, schema } = await CommonSubgraphRepository.introspect(sgName);
 
     const fromCache = (await redisClient.get(`sg-deployment:${sgName}`)) === deployment;
@@ -65,11 +61,14 @@ class SubgraphCache {
     }
 
     if (!fromCache) {
+      console.log(`New deployment detected; clearing subgraph cache for ${sgName}`);
+      await this.clear(sgName);
+
       await redisClient.set(`sg-deployment:${sgName}`, deployment);
       await redisClient.set(`sg-introspection:${sgName}`, JSON.stringify(queryInfo));
     }
 
-    return { fromCache, introspection: queryInfo };
+    return queryInfo;
   }
 
   static async _getCachedResults(cacheQueryName, where) {
