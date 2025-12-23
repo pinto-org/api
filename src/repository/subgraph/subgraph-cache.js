@@ -91,6 +91,9 @@ class SubgraphCache {
 
     return {
       latest:
+        // TODO: this is issue for basin because it does not save season__season.
+        // We may need to support synthetic fields (which is releavant to other omitted associations too)
+        // also in the _queryFreshResults, need to query like "where: {season_: {season_gt: 50}}"
         cachedResults?.[cachedResults.length - 1]?.[cfg.paginationSettings.field] ?? cfg.paginationSettings.lastValue,
       cache: cachedResults
     };

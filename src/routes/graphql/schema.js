@@ -15,6 +15,7 @@ class GraphQLSchema {
     const typeDefs = `
       scalar BigInt
       scalar BigDecimal
+      scalar Bytes
       ${Object.keys(introspection).map(
         (query) =>
           `type ${introspection[query].type} {
@@ -38,7 +39,7 @@ class GraphQLSchema {
       Query: Object.keys(SG_CACHE_CONFIG).reduce((acc, configKey) => {
         // Each query supports generic where clause, and order/pagination related args
         acc[configKey] = async (_parent, { where, ...args }, _ctx) => {
-          const results = await SubgraphCache.get(configKey, where);
+          const results = await SubgraphCache.get(configKey, where ?? '');
 
           if (args.orderBy && args.orderDirection) {
             results.sort((a, b) => {
