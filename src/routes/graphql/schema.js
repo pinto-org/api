@@ -26,23 +26,19 @@ class GraphQLSchema {
       )}
       type Query {
         ${Object.keys(introspection)
-          .map((query) => `${query}: [${introspection[query].type}!]!`)
+          .map(
+            (query) =>
+              `${query}(where: String, orderBy: String, orderDirection: String, skip: Int, first: Int): [${introspection[query].type}!]!`
+          )
           .join('\n')}
       }
     `;
-    //type Query {
-    //    testEntity(season_gte: Int): [Entity!]!
-    //   health: String!
-    // }
 
     const resolvers = {
       Query: Object.keys(SG_CACHE_CONFIG).reduce((acc, configKey) => {
         // Each query supports generic where clause, and order/pagination related args
         acc[configKey] = async (_parent, { where, ...args }, _ctx) => {
-          const whereClause = Object.entries(args)
-            .map(([key, value]) => `${key}: "${value}"`)
-            .join(', ');
-          const results = await SubgraphCache.get(configKey, whereClause);
+          const results = await SubgraphCache.get(configKey, where);
 
           if (args.orderBy && args.orderDirection) {
             results.sort((a, b) => {
