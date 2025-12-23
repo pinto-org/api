@@ -57,7 +57,9 @@ class SubgraphCache {
     // Identify all fields accessible for each query
     for (const query in queryInfo) {
       const queryObject = schema.types.find((t) => t.kind === 'OBJECT' && t.name === queryInfo[query].type);
-      queryInfo[query].fields = queryObject.fields.map((f) => f.name);
+      queryInfo[query].fields = queryObject.fields.map((f) => {
+        return { name: f.name, typeName: this._buildTypeName(f.type) };
+      });
     }
 
     if (!fromCache) {
@@ -69,6 +71,18 @@ class SubgraphCache {
     }
 
     return queryInfo;
+  }
+
+  // Recursively build a type string to use in the re-exported schema
+  // new Set(schema.types.flatMap((t) => t.fields?.flatMap((f) => f.type.kind)));
+  static _buildTypeName(type) {
+    if (['OBJECT', 'SCALAR', 'ENUM'].includes(type.kind)) {
+      return type.name; // base case
+    } else if (type.kind === 'NON_NULL') {
+      return this._buildTypeName(type.ofType) + '!';
+    } else if (type.kind === 'LIST') {
+      return `[${this._buildTypeName(type.ofType)}]`;
+    }
   }
 
   static async _getCachedResults(cacheQueryName, where) {
@@ -86,7 +100,7 @@ class SubgraphCache {
     const cfg = SG_CACHE_CONFIG[cacheQueryName];
     return await SubgraphQueryUtil.allPaginatedSG(
       cfg.client(c),
-      `{ ${cfg.queryName} { ${introspection[cacheQueryName].fields.join(' ')} } }`,
+      `{ ${cfg.queryName} { ${introspection[cacheQueryName].fields.map((f) => f.name).join(' ')} } }`,
       '',
       where,
       { ...cfg.paginationSettings, lastValue: latestValue }

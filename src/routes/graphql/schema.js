@@ -3,24 +3,36 @@ const SubgraphCache = require('../../repository/subgraph/subgraph-cache');
 
 class GraphQLSchema {
   static async getTypeDefsAndResolvers() {
-    const subgraphNames = new Set(Object.values(SG_CACHE_CONFIG).map((config) => config.subgraph));
-    for (const subgraphName of subgraphNames) {
-      const introspection = await SubgraphCache.introspect(subgraphName);
+    const subgraphQueries = Object.values(SG_CACHE_CONFIG).reduce((acc, next) => {
+      (acc[next.subgraph] ??= []).push(next.queryName);
+      return acc;
+    }, {});
+    let introspection = {};
+    for (const subgraphName in subgraphQueries) {
+      introspection = { ...introspection, ...(await SubgraphCache.introspect(subgraphName)) };
     }
-    //
+
     const typeDefs = `
-      type Entity {
-        id: ID!
-        name: String!
-      }
+      ${Object.keys(introspection).map(
+        (query) =>
+          `type ${introspection[query].type} {
+            ${introspection[query].fields.map((f) => `${f.name}: ${f.typeName}`).join('\n')}
+          }`
+      )}
       type Query {
-        testEntity(season_gte: Int): [Entity!]!
-        health: String!
+        ${Object.keys(introspection)
+          .map((query) => `${query}: [${introspection[query].type}!]!`)
+          .join('\n')}
       }
     `;
+    //type Query {
+    //    testEntity(season_gte: Int): [Entity!]!
+    //   health: String!
+    // }
 
     const resolvers = {
       Query: Object.keys(SG_CACHE_CONFIG).reduce((acc, configKey) => {
+        // Each query supports generic where clause, and order/pagination related args
         acc[configKey] = async (_parent, { where, ...args }, _ctx) => {
           const whereClause = Object.entries(args)
             .map(([key, value]) => `${key}: "${value}"`)
@@ -54,3 +66,11 @@ class GraphQLSchema {
 }
 
 module.exports = GraphQLSchema;
+
+if (require.main === module) {
+  (async () => {
+    const { typeDefs, resolvers } = await GraphQLSchema.getTypeDefsAndResolvers();
+    console.log(typeDefs);
+    console.log(resolvers);
+  })();
+}
