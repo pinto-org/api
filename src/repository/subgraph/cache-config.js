@@ -8,7 +8,8 @@ const SG_CACHE_CONFIG = {
       field: 'season',
       lastValue: 0,
       direction: 'asc'
-    }
+    },
+    omitFields: ['silo']
   },
   cache_fieldHourlySnapshots: {
     subgraph: 'pintostalk',
@@ -18,7 +19,8 @@ const SG_CACHE_CONFIG = {
       field: 'season',
       lastValue: 0,
       direction: 'asc'
-    }
+    },
+    omitFields: ['field']
   }
 };
 

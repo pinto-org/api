@@ -100,7 +100,10 @@ class SubgraphCache {
     const cfg = SG_CACHE_CONFIG[cacheQueryName];
     return await SubgraphQueryUtil.allPaginatedSG(
       cfg.client(c),
-      `{ ${cfg.queryName} { ${introspection[cacheQueryName].fields.map((f) => f.name).join(' ')} } }`,
+      `{ ${cfg.queryName} { ${introspection[cacheQueryName].fields
+        .filter((f) => !cfg.omitFields?.includes(f.name))
+        .map((f) => f.name)
+        .join(' ')} } }`,
       '',
       where,
       { ...cfg.paginationSettings, lastValue: latestValue }

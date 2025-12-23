@@ -13,10 +13,15 @@ class GraphQLSchema {
     }
 
     const typeDefs = `
+      scalar BigInt
+      scalar BigDecimal
       ${Object.keys(introspection).map(
         (query) =>
           `type ${introspection[query].type} {
-            ${introspection[query].fields.map((f) => `${f.name}: ${f.typeName}`).join('\n')}
+            ${introspection[query].fields
+              .filter((f) => !SG_CACHE_CONFIG[query].omitFields?.includes(f.name))
+              .map((f) => `${f.name}: ${f.typeName}`)
+              .join('\n')}
           }`
       )}
       type Query {
