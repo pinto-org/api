@@ -53,7 +53,13 @@ class SubgraphQueryUtil {
         }
       }
       prevPageIds = pageIds;
-      pagination.lastValue = result[entityName][PAGE_SIZE - 1]?.[pagination.field];
+      if (!result[entityName][PAGE_SIZE - 1]) {
+        break;
+      } else {
+        pagination.lastValue =
+          pagination.objectAccessor?.(result[entityName][PAGE_SIZE - 1]) ??
+          result[entityName][PAGE_SIZE - 1][pagination.field];
+      }
     }
     return retval;
   }

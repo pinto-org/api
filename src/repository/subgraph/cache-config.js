@@ -1,9 +1,10 @@
-const paginationSettings = (fieldName, { objectField = undefined, orderBy } = {}) => ({
+const paginationSettings = (fieldName, { objectField, objectAccessor, orderBy } = {}) => ({
   field: fieldName,
   lastValue: 0,
   direction: 'asc',
   // For synthetic fields
   objectField,
+  objectAccessor,
   orderBy: orderBy ?? fieldName
 });
 
@@ -121,7 +122,11 @@ const SG_CACHE_CONFIG = {
     subgraph: 'exchange',
     queryName: 'beanstalkHourlySnapshots',
     client: (c) => c.SG.BASIN,
-    paginationSettings: paginationSettings('season_: {season', { objectField: 'season', orderBy: 'season__season' }),
+    paginationSettings: paginationSettings('season_: {season', {
+      objectField: 'season',
+      objectAccessor: (o) => o.season.season,
+      orderBy: 'season__season'
+    }),
     omitFields: ['season', 'wells'],
     syntheticFields: [
       {
@@ -136,7 +141,11 @@ const SG_CACHE_CONFIG = {
     subgraph: 'exchange',
     queryName: 'wellHourlySnapshots',
     client: (c) => c.SG.BASIN,
-    paginationSettings: paginationSettings('season_: {season', { objectField: 'season', orderBy: 'season__season' }),
+    paginationSettings: paginationSettings('season_: {season', {
+      objectField: 'season',
+      objectAccessor: (o) => o.season.season,
+      orderBy: 'season__season'
+    }),
     omitFields: ['season', 'well'],
     syntheticFields: [
       {
