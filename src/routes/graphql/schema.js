@@ -60,13 +60,6 @@ class GraphQLSchema {
         };
         return acc;
       }, {})
-      // {
-      //   testEntity: async (a, b, c) => {
-      //     console.log(a, b, c);
-      //     return [{ id: '1', name: 'oks' + (b.season_gte ?? 'none') }];
-      //   },
-      //   health: () => 'oks1'
-      // }
     };
 
     return { typeDefs, resolvers };
