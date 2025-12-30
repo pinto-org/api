@@ -1,7 +1,8 @@
 const { createClient } = require('redis');
+const EnvUtil = require('../utils/env');
 
 const redisClient = createClient({
-  url: 'redis://localhost:6379'
+  url: EnvUtil.getRedisUrl()
 });
 redisClient.connect();
 

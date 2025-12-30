@@ -1,7 +1,6 @@
 const { gql } = require('graphql-request');
 const SubgraphClients = require('../../datasources/subgraph-client');
 const axios = require('axios');
-const redisClient = require('../../datasources/redis-client');
 
 class CommonSubgraphRepository {
   static async getMeta(client) {
