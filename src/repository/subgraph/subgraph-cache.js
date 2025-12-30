@@ -91,26 +91,33 @@ class SubgraphCache {
 
     return {
       latest:
-        // TODO: this is issue for basin because it does not save season__season.
-        // We may need to support synthetic fields (which is releavant to other omitted associations too)
-        // also in the _queryFreshResults, need to query like "where: {season_: {season_gt: 50}}"
-        cachedResults?.[cachedResults.length - 1]?.[cfg.paginationSettings.field] ?? cfg.paginationSettings.lastValue,
+        cachedResults?.[cachedResults.length - 1]?.[
+          cfg.paginationSettings.objectField ?? cfg.paginationSettings.field
+        ] ?? cfg.paginationSettings.lastValue,
       cache: cachedResults
     };
   }
 
   static async _queryFreshResults(cacheQueryName, where, latestValue, introspection, c = C()) {
     const cfg = SG_CACHE_CONFIG[cacheQueryName];
-    return await SubgraphQueryUtil.allPaginatedSG(
+    const results = await SubgraphQueryUtil.allPaginatedSG(
       cfg.client(c),
       `{ ${cfg.queryName} { ${introspection[cacheQueryName].fields
         .filter((f) => !cfg.omitFields?.includes(f.name))
+        .concat(cfg.syntheticFields?.map((f) => ({ name: f.queryAccessor })) ?? [])
         .map((f) => f.name)
         .join(' ')} } }`,
       '',
       where,
       { ...cfg.paginationSettings, lastValue: latestValue }
     );
+
+    for (const result of results) {
+      for (const syntheticField of cfg.syntheticFields ?? []) {
+        result[syntheticField.objectRewritePath] = syntheticField.objectAccessor(result);
+      }
+    }
+    return results;
   }
 
   static async _aggregateAndCache(cacheQueryName, where, cachedResults, freshResults) {

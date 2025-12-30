@@ -1,7 +1,10 @@
-const paginationSettings = (fieldName) => ({
+const paginationSettings = (fieldName, { objectField = undefined, orderBy } = {}) => ({
   field: fieldName,
   lastValue: 0,
-  direction: 'asc'
+  direction: 'asc',
+  // For synthetic fields
+  objectField,
+  orderBy: orderBy ?? fieldName
 });
 
 // Must be List queries that dont require explicitly provided id (in subgraph framework, usually ending in 's')
@@ -118,15 +121,31 @@ const SG_CACHE_CONFIG = {
     subgraph: 'exchange',
     queryName: 'beanstalkHourlySnapshots',
     client: (c) => c.SG.BASIN,
-    paginationSettings: paginationSettings('season__season'),
-    omitFields: ['season', 'wells']
+    paginationSettings: paginationSettings('season_: {season', { objectField: 'season', orderBy: 'season__season' }),
+    omitFields: ['season', 'wells'],
+    syntheticFields: [
+      {
+        queryAccessor: 'season { season }',
+        objectAccessor: (o) => o.season.season,
+        objectRewritePath: 'season',
+        typeName: 'Int!'
+      }
+    ]
   },
   cache_wellHourlySnapshots: {
     subgraph: 'exchange',
     queryName: 'wellHourlySnapshots',
     client: (c) => c.SG.BASIN,
-    paginationSettings: paginationSettings('season__season'),
-    omitFields: ['season', 'well']
+    paginationSettings: paginationSettings('season_: {season', { objectField: 'season', orderBy: 'season__season' }),
+    omitFields: ['season', 'well'],
+    syntheticFields: [
+      {
+        queryAccessor: 'season { season }',
+        objectAccessor: (o) => o.season.season,
+        objectRewritePath: 'season',
+        typeName: 'Int!'
+      }
+    ]
   }
 };
 

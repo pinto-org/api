@@ -21,6 +21,12 @@ class GraphQLSchema {
           `type ${introspection[query].type} {
             ${introspection[query].fields
               .filter((f) => !SG_CACHE_CONFIG[query].omitFields?.includes(f.name))
+              .concat(
+                SG_CACHE_CONFIG[query].syntheticFields?.map((f) => ({
+                  name: f.objectRewritePath,
+                  typeName: f.typeName
+                })) ?? []
+              )
               .map((f) => `${f.name}: ${f.typeName}`)
               .join('\n')}
           }`
