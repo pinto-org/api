@@ -7,6 +7,7 @@ const fieldRoutes = require('./routes/field-routes.js');
 const proxyRoutes = require('./routes/proxy-routes.js');
 const seasonRoutes = require('./routes/season-routes.js');
 const inflowRoutes = require('./routes/inflow-routes.js');
+const initGraphql = require('./routes/graphql/init.js');
 
 const Koa = require('koa');
 const bodyParser = require('koa-bodyparser');
@@ -73,7 +74,10 @@ async function appStartup() {
     }
     try {
       await next(); // pass control to the next function specified in .use()
-      ctx.body = JSON.stringify(ctx.body, formatBigintDecimal);
+      // GraphQL handles its own JSON serialization
+      if (!ctx.originalUrl.includes('/graphql')) {
+        ctx.body = JSON.stringify(ctx.body, formatBigintDecimal);
+      }
       if (!ctx.originalUrl.includes('healthcheck')) {
         console.log(
           `${new Date().toISOString()} [success] ${ctx.method} ${ctx.originalUrl} - ${ctx.status}`
@@ -123,8 +127,9 @@ async function appStartup() {
     ctx.body = 'healthy';
   });
 
-  app.use(router.routes());
-  app.use(router.allowedMethods());
+  await initGraphql(router);
+
+  app.use(router.routes()).use(router.allowedMethods());
 
   app.listen(3000, () => {
     console.log('Server running on port 3000');

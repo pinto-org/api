@@ -6,6 +6,10 @@ const BASE_URL = 'https://graph.pinto.money/';
 class SubgraphClients {
   static _clients = {};
 
+  static baseUrl() {
+    return BASE_URL;
+  }
+
   static named(name) {
     return SubgraphClients.fromUrl(BASE_URL + name);
   }
