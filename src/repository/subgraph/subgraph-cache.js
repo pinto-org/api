@@ -1,5 +1,6 @@
 const { C } = require('../../constants/runtime-constants');
 const redisClient = require('../../datasources/redis-client');
+const Log = require('../../utils/logging');
 const SubgraphQueryUtil = require('../../utils/subgraph-query');
 const { SG_CACHE_CONFIG } = require('./cache-config');
 const CommonSubgraphRepository = require('./common-subgraph');
@@ -63,7 +64,7 @@ class SubgraphCache {
     }
 
     if (!fromCache) {
-      console.log(`New deployment detected; clearing subgraph cache for ${sgName}`);
+      Log.info(`New deployment detected; clearing subgraph cache for ${sgName}`);
       await this.clear(sgName);
 
       await redisClient.set(`sg-deployment:${sgName}`, deployment);

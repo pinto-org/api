@@ -24,15 +24,7 @@ echo "Postgres is up"
 
 # Wait for Redis
 echo "Waiting for Redis at $redis_host:$redis_port..."
-until node -e "
-  const net = require('net');
-  const client = net.createConnection({host: '$redis_host', port: $redis_port}, () => {
-    client.end();
-    process.exit(0);
-  });
-  client.on('error', () => process.exit(1));
-  setTimeout(() => process.exit(1), 2000);
-" 2>/dev/null; do
+until redis-cli -h "$redis_host" -p "$redis_port" ping 2>&1 | grep -q "PONG"; do
   echo "Redis is unavailable - sleeping"
   sleep 1
 done
