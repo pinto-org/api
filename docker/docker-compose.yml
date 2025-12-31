@@ -8,7 +8,7 @@ services:
       - "${KOAJS_PORT}:3000"
     env_file:
       - .env
-    entrypoint: ["./entrypoint-proxy.sh", "postgres", "5432", "npm", "start"]
+    entrypoint: ["./entrypoint-proxy.sh", "postgres", "5432", "redis", "6379", "npm", "start"]
     restart: no
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/healthcheck"]
