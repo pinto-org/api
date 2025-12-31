@@ -20,6 +20,8 @@ const SG_BEANSTALK = process.env.SG_BEANSTALK?.split(',').filter((s) => s.trim()
 const SG_BEAN = process.env.SG_BEAN?.split(',').filter((s) => s.trim().length > 0);
 const SG_BASIN = process.env.SG_BASIN?.split(',').filter((s) => s.trim().length > 0);
 
+const REDIS_URL = process.env.REDIS_URL;
+
 const DEV_TRACTOR_SEEDER = process.env.DEV_TRACTOR_SEEDER === 'true';
 const DEV_TRACTOR_RECENT = process.env.DEV_TRACTOR_RECENT === 'true';
 const DEV_TRACTOR_SEEDER_START = parseInt(process.env.DEV_TRACTOR_SEEDER_START ?? '0');
@@ -41,6 +43,10 @@ if (
   SG_BASIN?.length !== ENABLED_CHAINS.length
 ) {
   throw new Error(`Invalid environment configured: one subgraph name must be provided for each chain.`);
+}
+
+if (!REDIS_URL) {
+  throw new Error('Invalid environment configured: REDIS_URL is not set.');
 }
 
 class EnvUtil {
@@ -95,6 +101,10 @@ class EnvUtil {
       BEAN: SG_BEAN[chainIndex],
       BASIN: SG_BASIN[chainIndex]
     };
+  }
+
+  static getRedisUrl() {
+    return REDIS_URL;
   }
 
   static getDevTractor() {

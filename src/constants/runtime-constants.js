@@ -21,6 +21,8 @@ class RuntimeConstants {
       get: (target, property, receiver) => {
         if (property === 'RPC') {
           return AlchemyUtil.providerForChain(chain);
+        } else if (property === 'WS') {
+          return AlchemyUtil.alchemyForChain(chain).ws;
         }
         let constants;
         if (chain) {

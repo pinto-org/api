@@ -3,7 +3,7 @@ const TaskRangeUtil = require('../../src/scheduled/util/task-range');
 const ChainUtil = require('../../src/utils/chain');
 
 const CHAIN_HEAD = 2500;
-const BUFFER = 5;
+const BUFFER = 0; // Reduced as the reorg resistance was disabled in src
 
 describe('TaskRangeUtil', () => {
   beforeEach(() => {

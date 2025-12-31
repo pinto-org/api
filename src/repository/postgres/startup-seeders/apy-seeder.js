@@ -22,7 +22,7 @@ class ApySeeder {
     // Calculate and save all vapys for each season (this will take a long time for many seasons)
     const TAG = Concurrent.tag('apySeeder');
     for (const season of missingSeasons) {
-      await Concurrent.run(TAG, 5, async () => {
+      await Concurrent.run(TAG, 3, async () => {
         try {
           await YieldService.saveSeasonalApys({ season });
         } catch (e) {

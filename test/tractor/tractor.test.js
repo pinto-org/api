@@ -35,6 +35,11 @@ describe('TractorTask', () => {
   });
 
   describe('Initialized', () => {
+    let requisitionSpy;
+    let cancelSpy;
+    let tractorSpy;
+    let metaSpy;
+
     beforeEach(() => {
       jest.spyOn(AppMetaService, 'getTractorMeta').mockResolvedValue({
         lastUpdate: 10
@@ -58,18 +63,18 @@ describe('TractorTask', () => {
         ]);
       jest.spyOn(SiloEvents, 'getSiloDepositEvents').mockResolvedValue([{ account: '0xabcd' }]);
       jest.spyOn(SnapshotSowV0Service, 'takeSnapshot').mockImplementation(() => {});
+      requisitionSpy = jest.spyOn(TractorTask, 'handlePublishRequsition').mockImplementation(() => {});
+      cancelSpy = jest.spyOn(TractorTask, 'handleCancelBlueprint').mockImplementation(() => {});
+      tractorSpy = jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
+      metaSpy = jest.spyOn(AppMetaService, 'setLastTractorUpdate').mockImplementation(() => {});
     });
 
     test('Passes events to correct handlers', async () => {
       jest.spyOn(TractorConstants, 'knownBlueprints').mockReturnValue({});
-      const requisitionSpy = jest.spyOn(TractorTask, 'handlePublishRequsition').mockImplementation(() => {});
-      const cancelSpy = jest.spyOn(TractorTask, 'handleCancelBlueprint').mockImplementation(() => {});
-      const tractorSpy = jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
-      const metaSpy = jest.spyOn(AppMetaService, 'setLastTractorUpdate').mockImplementation(() => {});
 
       const retval = await TractorTask.update();
 
-      expect(retval).toBe(true);
+      expect(retval).toBe(5);
       expect(requisitionSpy).toHaveBeenCalledWith(expect.objectContaining({ value: 1 }));
       expect(cancelSpy).toHaveBeenCalledWith(expect.objectContaining({ value: 2 }));
       expect(tractorSpy).toHaveBeenCalledWith(expect.objectContaining({ value: 3 }));
@@ -82,13 +87,10 @@ describe('TractorTask', () => {
         periodicUpdate: jest.fn().mockImplementation(() => {})
       };
       jest.spyOn(TractorConstants, 'knownBlueprints').mockReturnValue({ a: blueprintSpy });
-      jest.spyOn(TractorTask, 'handlePublishRequsition').mockImplementation(() => {});
-      jest.spyOn(TractorTask, 'handleCancelBlueprint').mockImplementation(() => {});
-      jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
-      jest.spyOn(AppMetaService, 'setLastTractorUpdate').mockImplementation(() => {});
 
       await TractorTask.update();
 
+      expect(TractorTask.isCaughtUp()).toBe(false);
       expect(blueprintSpy.periodicUpdate).toHaveBeenCalledWith(
         expect.any(Function),
         expect.any(Function),
@@ -111,10 +113,6 @@ describe('TractorTask', () => {
         periodicUpdate: jest.fn().mockImplementation(() => {})
       };
       jest.spyOn(TractorConstants, 'knownBlueprints').mockReturnValue({ a: blueprintSpy });
-      jest.spyOn(TractorTask, 'handlePublishRequsition').mockImplementation(() => {});
-      jest.spyOn(TractorTask, 'handleCancelBlueprint').mockImplementation(() => {});
-      jest.spyOn(TractorTask, 'handleTractor').mockImplementation(() => {});
-      jest.spyOn(AppMetaService, 'setLastTractorUpdate').mockImplementation(() => {});
 
       await TractorTask.update();
 
@@ -125,6 +123,21 @@ describe('TractorTask', () => {
         new Set(['0xabcd']),
         true
       );
+    });
+
+    test('Task can catch up', async () => {
+      jest.spyOn(TaskRangeUtil, 'getUpdateInfo').mockResolvedValue({
+        isInitialized: true,
+        lastUpdate: 500,
+        updateBlock: 1000,
+        isCaughtUp: true,
+        meta: null
+      });
+      jest.spyOn(TractorConstants, 'knownBlueprints').mockReturnValue({});
+
+      await TractorTask.update();
+
+      expect(TractorTask.isCaughtUp()).toBe(true);
     });
   });
 

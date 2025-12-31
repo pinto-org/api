@@ -16,14 +16,21 @@ const AsyncContext = require('../../utils/async/context');
 const EnvUtil = require('../../utils/env');
 const Log = require('../../utils/logging');
 const TaskRangeUtil = require('../util/task-range');
+const IndexingTask = require('./IndexingTask');
 
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 10000;
 
 const SNAPSHOT_SERVICES = [SnapshotSowV0Service, SnapshotConvertUpV0Service];
 
-class TractorTask {
-  // Returns true if the task can be called again immediately
+class TractorTask extends IndexingTask {
+  static async handleLiveEvent(event) {
+    if (['Sunrise', 'PublishRequisition', 'CancelBlueprint', 'Tractor'].includes(event.name)) {
+      await this.queueExecution({ blockNumber: event.rawLog.blockNumber });
+    }
+    // Silo events could trigger a periodicUpdate, ignoring currently
+  }
+
   static async update() {
     const meta = await AppMetaService.getTractorMeta();
     if (!meta.lastUpdate) {
@@ -102,7 +109,8 @@ class TractorTask {
       await AppMetaService.setLastTractorUpdate(updateBlock);
     });
 
-    return !isCaughtUp;
+    this._isCaughtUp = isCaughtUp;
+    return events.length + sunrise.length;
   }
 
   static async handlePublishRequsition(event) {

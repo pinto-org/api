@@ -14,7 +14,7 @@ class SeasonService {
   }
 
   // Finds the corresponding onchain event and inserts the season info
-  static async insertSeasonFromEvent(season) {
+  static async insertSeason(season) {
     const events = await FilterLogs.getBeanstalkEvents(['Sunrise'], {
       indexedTopics: [ethers.toBeHex(season, 32)],
       safeBatch: false
@@ -23,7 +23,12 @@ class SeasonService {
       throw new Error(`No sunrise event found for season ${season}`);
     }
 
-    const dto = await SeasonDto.fromEvent(events[0]);
+    await this.handleSunrise(events[0]);
+  }
+
+  // Inserts the season info from the given sunrise event. Event is expected to be a parsed log with a rawLog property.
+  static async handleSunrise(event) {
+    const dto = await SeasonDto.fromEvent(event);
     await SharedRepository.genericUpsert(sequelize.models.Season, [dto], false);
   }
 

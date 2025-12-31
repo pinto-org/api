@@ -19,9 +19,9 @@ class TaskRangeUtil {
     // Determine range of blocks to update on
     let updateBlock = (await retryable(() => C().RPC.getBlock())).number;
     // Buffer to avoid issues with a chain reorg on non-local rpc
-    if (!EnvUtil.isLocalRpc(C().CHAIN)) {
-      updateBlock -= ChainUtil.blocksPerInterval(C().CHAIN, 10000);
-    }
+    // if (!EnvUtil.isLocalRpc(C().CHAIN)) {
+    //   updateBlock -= ChainUtil.blocksPerInterval(C().CHAIN, 10000);
+    // }
     if (updateBlock - lastUpdate > maxBlocksAtOnce) {
       updateBlock = lastUpdate + maxBlocksAtOnce;
       isCaughtUp = false;
