@@ -23,16 +23,6 @@ class ExchangeService {
       BasinSubgraphRepository.getAllWells(block.number),
       BasinSubgraphRepository.getAllTrades(block.timestamp - ONE_DAY, block.timestamp)
     ]);
-    // The exchange subgraph needs to update to indiate isBeanstalk or wasBeanstalk (for dewhitelisted)
-    // Until then allWells must manually filter out pools
-    if (C().PROJECT === 'pinto') {
-      const allWellAddresses = Object.keys(allWells);
-      for (const wellAddress of allWellAddresses) {
-        if (![C().PINTOWETH, C().PINTOCBETH, C().PINTOCBBTC, C().PINTOUSDC, C().PINTOWSOL].includes(wellAddress)) {
-          delete allWells[wellAddress];
-        }
-      }
-    }
     const allPriceEvents = ExchangeService.priceEventsByWell(allWells, allTrades);
 
     // For each well in the subgraph, construct a formatted response
