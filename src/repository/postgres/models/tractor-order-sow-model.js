@@ -36,7 +36,12 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('maxPodlineLength', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('maxGrownStalkPerBdv', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('runBlocksAfterSunrise', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('slippageRatio', DataTypes, { allowNull: false })
+      ...bigintNumericColumn('slippageRatio', DataTypes, { allowNull: false }),
+      // Present in SowBlueprintReferral
+      referralAddress: {
+        type: DataTypes.STRING,
+        allowNull: true
+      }
     },
     {
       tableName: TRACTOR_ORDER_SOW_TABLE.env

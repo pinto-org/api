@@ -17,7 +17,8 @@ class SowOrderAssembler {
       maxPodlineLength: orderDto.maxPodlineLength,
       maxGrownStalkPerBdv: orderDto.maxGrownStalkPerBdv,
       runBlocksAfterSunrise: orderDto.runBlocksAfterSunrise,
-      slippageRatio: orderDto.slippageRatio
+      slippageRatio: orderDto.slippageRatio,
+      referralAddress: orderDto.referralAddress
     };
   }
 

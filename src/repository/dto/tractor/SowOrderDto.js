@@ -18,6 +18,7 @@ class SowOrderDto {
       this.maxGrownStalkPerBdv = d.sowParams.maxGrownStalkPerBdv;
       this.runBlocksAfterSunrise = d.sowParams.runBlocksAfterSunrise;
       this.slippageRatio = d.sowParams.slippageRatio;
+      this.referralAddress = d.referral;
     } else if (type === 'db') {
       this.blueprintHash = d.blueprintHash;
       this.pintoSownCounter = d.pintoSownCounter;
@@ -34,6 +35,7 @@ class SowOrderDto {
       this.maxGrownStalkPerBdv = d.maxGrownStalkPerBdv;
       this.runBlocksAfterSunrise = d.runBlocksAfterSunrise;
       this.slippageRatio = d.slippageRatio;
+      this.referralAddress = d.referralAddress;
     }
   }
 

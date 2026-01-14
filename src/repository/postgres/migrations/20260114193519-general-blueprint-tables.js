@@ -10,9 +10,18 @@ module.exports = {
     await queryInterface.renameTable('tractor_order_convert_up_v0', 'tractor_order_convert_up');
     await queryInterface.renameTable('tractor_snapshot_sow_v0', 'tractor_snapshot_sow');
     await queryInterface.renameTable('tractor_snapshot_convert_up_v0', 'tractor_snapshot_convert_up');
+
+    // Add referralAddress column to tractor_order_sow
+    await queryInterface.addColumn('tractor_order_sow', 'referralAddress', {
+      type: Sequelize.STRING,
+      allowNull: true
+    });
   },
 
   async down(queryInterface, Sequelize) {
+    // Remove referralAddress column from tractor_order_sow before renaming
+    await queryInterface.removeColumn('tractor_order_sow', 'referralAddress');
+
     // Revert table names by adding _v0 suffix back
     await queryInterface.renameTable('tractor_execution_sow', 'tractor_execution_sow_v0');
     await queryInterface.renameTable('tractor_execution_convert_up', 'tractor_execution_convert_up_v0');
