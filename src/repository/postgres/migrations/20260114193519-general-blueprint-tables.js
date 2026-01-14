@@ -11,6 +11,11 @@ module.exports = {
     await queryInterface.renameTable('tractor_snapshot_sow_v0', 'tractor_snapshot_sow');
     await queryInterface.renameTable('tractor_snapshot_convert_up_v0', 'tractor_snapshot_convert_up');
 
+    await queryInterface.sequelize.query(`
+      ALTER TYPE public."enum_tractor_order_convert_up_v0_lowStalkDeposits"
+      RENAME TO "enum_tractor_order_convert_up_lowStalkDeposits";
+    `);
+
     // Add referralAddress column to tractor_order_sow
     await queryInterface.addColumn('tractor_order_sow', 'referralAddress', {
       type: Sequelize.STRING,
@@ -29,5 +34,10 @@ module.exports = {
     await queryInterface.renameTable('tractor_order_convert_up', 'tractor_order_convert_up_v0');
     await queryInterface.renameTable('tractor_snapshot_sow', 'tractor_snapshot_sow_v0');
     await queryInterface.renameTable('tractor_snapshot_convert_up', 'tractor_snapshot_convert_up_v0');
+
+    await queryInterface.sequelize.query(`
+      ALTER TYPE public."enum_tractor_order_convert_up_lowStalkDeposits"
+      RENAME TO "enum_tractor_order_convert_up_v0_lowStalkDeposits";
+    `);
   }
 };
