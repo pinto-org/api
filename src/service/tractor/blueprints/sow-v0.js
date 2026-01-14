@@ -192,6 +192,7 @@ class TractorSowV0Service extends Blueprint {
   // If possible, decodes blueprint data into the sowBlueprintv0 call
   static decodeBlueprintData(blueprintData) {
     const iBeanstalk = Interfaces.getBeanstalk();
+    // Could iterate different sowing compatible blueprints here.
     const iSowV0 = Interfaces.get(C().SOW_V0);
 
     const advFarm = Interfaces.safeParseTxn(iBeanstalk, blueprintData);

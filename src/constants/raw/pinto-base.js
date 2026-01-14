@@ -8,11 +8,14 @@ const erc20Abi = require('../../datasources/abi/ERC20.json');
 const wrappedDepositAbi = require('../../datasources/abi/WrappedDepositERC20.json');
 const wellAbi = require('../../datasources/abi/basin/Well.json');
 const wellFunctionAbi = require('../../datasources/abi/basin/WellFunction.json');
-const sowBlueprintV0Abi = require('../../datasources/abi/tractor/sow-v0/SowBlueprintV0.json');
-const tractorHelpersAbi = require('../../datasources/abi/tractor/sow-v0/TractorHelpers.json');
-const convertUpBlueprintV0Abi = require('../../datasources/abi/tractor/convert-up-v0/ConvertUpBlueprintV0.json');
-const convertUpTractorHelpersAbi = require('../../datasources/abi/tractor/convert-up-v0/TractorHelpers.json');
-const convertUpSiloHelpersAbi = require('../../datasources/abi/tractor/convert-up-v0/SiloHelpers.json');
+const sowBlueprintV0Abi = require('../../datasources/abi/tractor/sow/v0/SowBlueprintV0.json');
+const sowV0TractorHelpersAbi = require('../../datasources/abi/tractor/sow/v0/TractorHelpers.json');
+const sowReferralAbi = require('../../datasources/abi/tractor/sow/referral/SowBlueprintReferral.json');
+const sowReferralTractorHelpersAbi = require('../../datasources/abi/tractor/sow/referral/TractorHelpers.json');
+const sowReferralSiloHelpersAbi = require('../../datasources/abi/tractor/sow/referral/SiloHelpers.json');
+const convertUpBlueprintV0Abi = require('../../datasources/abi/tractor/convert-up/v0/ConvertUpBlueprintV0.json');
+const convertUpTractorHelpersAbi = require('../../datasources/abi/tractor/convert-up/v0/TractorHelpers.json');
+const convertUpSiloHelpersAbi = require('../../datasources/abi/tractor/convert-up/v0/SiloHelpers.json');
 
 const contracts = {
   BEANSTALK: ['0xD1A0D188E861ed9d15773a2F3574a2e94134bA8f', null, pintoDiamondAbi],
@@ -31,7 +34,10 @@ const contracts = {
   CP2: ['0xBA510C289fD067EBbA41335afa11F0591940d6fe', null, wellFunctionAbi],
   STABLE2: ['0xBA51055a97b40d7f41f3F64b57469b5D45B67c87', null, wellFunctionAbi],
   SOW_V0: ['0xbb0a41927895F8ca2b4ECCc659ba158735fCF28B', null, sowBlueprintV0Abi],
-  SOW_V0_TRACTOR_HELPERS: ['0x2808b14d287F8CA77eb25B16575aF187d5A05119', null, tractorHelpersAbi],
+  SOW_V0_TRACTOR_HELPERS: ['0x2808b14d287F8CA77eb25B16575aF187d5A05119', null, sowV0TractorHelpersAbi],
+  SOW_REFERRAL: ['tbd', null, sowReferralAbi],
+  SOW_REFERRAL_TRACTOR_HELPERS: ['tbd', null, sowReferralTractorHelpersAbi],
+  SOW_REFERRAL_SILO_HELPERS: ['tbd', null, sowReferralSiloHelpersAbi],
   CONVERT_UP_V0: ['0x5167Ae1fF37bE08D9cc9188C7e64DB228B6F06ca', null, convertUpBlueprintV0Abi],
   CONVERT_UP_V0_TRACTOR_HELPERS: ['0xBCa2F299602c2a43850c8b2FD19D5275D0F388b6', null, convertUpTractorHelpersAbi],
   CONVERT_UP_V0_SILO_HELPERS: ['0xE145082A7C5EDd1767f8148A6c29a17488d1eb31', null, convertUpSiloHelpersAbi]
