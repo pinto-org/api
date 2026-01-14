@@ -1,6 +1,6 @@
-const ConvertUpV0OrderDto = require('../../../../dto/tractor/ConvertUpV0OrderDto');
+const ConvertUpOrderDto = require('../../../../dto/tractor/ConvertUpOrderDto');
 
-class ConvertUpV0OrderAssembler {
+class ConvertUpOrderAssembler {
   static toModel(orderDto) {
     return {
       blueprintHash: orderDto.blueprintHash,
@@ -28,7 +28,7 @@ class ConvertUpV0OrderAssembler {
   }
 
   static fromModel(orderModel) {
-    return ConvertUpV0OrderDto.fromModel(orderModel);
+    return ConvertUpOrderDto.fromModel(orderModel);
   }
 }
-module.exports = ConvertUpV0OrderAssembler;
+module.exports = ConvertUpOrderAssembler;

@@ -1,14 +1,14 @@
 const { C } = require('../../../constants/runtime-constants');
 const {
-  TRACTOR_EXECUTION_SOW_V0_TABLE,
-  TRACTOR_ORDER_SOW_V0_TABLE,
+  TRACTOR_EXECUTION_SOW_TABLE,
+  TRACTOR_ORDER_SOW_TABLE,
   TRACTOR_ORDER_TABLE,
   TRACTOR_EXECUTION_TABLE
 } = require('../../../constants/tables');
 const Contracts = require('../../../datasources/contracts/contracts');
-const SnapshotSowV0Dto = require('../../../repository/dto/tractor/SnapshotSowV0Dto');
+const SnapshotSowDto = require('../../../repository/dto/tractor/SnapshotSowDto');
 const { sequelize } = require('../../../repository/postgres/models');
-const SnapshotSowV0Assembler = require('../../../repository/postgres/models/assemblers/tractor/snapshot-sow-v0-assembler');
+const SnapshotSowAssembler = require('../../../repository/postgres/models/assemblers/tractor/snapshot-sow-assembler');
 const SharedRepository = require('../../../repository/postgres/queries/shared-repository');
 const TractorSnapshotRepository = require('../../../repository/postgres/queries/tractor-snapshot-repository');
 const AsyncContext = require('../../../utils/async/context');
@@ -16,9 +16,9 @@ const BlockUtil = require('../../../utils/block');
 const EnvUtil = require('../../../utils/env');
 const TractorSnapshotService = require('./tractor-snapshot-service');
 
-class SnapshotSowV0Service extends TractorSnapshotService {
-  static snapshotRepository = new TractorSnapshotRepository(sequelize.models.TractorSnapshotSowV0);
-  static snapshotAssembler = SnapshotSowV0Assembler;
+class SnapshotSowService extends TractorSnapshotService {
+  static snapshotRepository = new TractorSnapshotRepository(sequelize.models.TractorSnapshotSow);
+  static snapshotAssembler = SnapshotSowAssembler;
   static initialSnapshotBlock = EnvUtil.getDevTractor().seedBlock ?? 29115727;
 
   static async takeSnapshot(snapshotBlock) {
@@ -32,8 +32,8 @@ class SnapshotSowV0Service extends TractorSnapshotService {
 
     const o = TRACTOR_ORDER_TABLE.env;
     const e = TRACTOR_EXECUTION_TABLE.env;
-    const osow = TRACTOR_ORDER_SOW_V0_TABLE.env;
-    const esow = TRACTOR_EXECUTION_SOW_V0_TABLE.env;
+    const osow = TRACTOR_ORDER_SOW_TABLE.env;
+    const esow = TRACTOR_EXECUTION_SOW_TABLE.env;
     const [[result]] = await sequelize.query(
       // There should perhaps also be a sum_cascade_below_line_length
       `SELECT
@@ -49,7 +49,7 @@ class SnapshotSowV0Service extends TractorSnapshotService {
       { transaction: AsyncContext.getOrUndef('transaction') }
     );
 
-    const dto = SnapshotSowV0Dto.fromLiveSnapshot({
+    const dto = SnapshotSowDto.fromLiveSnapshot({
       block: snapshotBlock,
       timestamp: blockTimestamp,
       season,
@@ -57,8 +57,8 @@ class SnapshotSowV0Service extends TractorSnapshotService {
     });
     const model = this.snapshotAssembler.toModel(dto);
 
-    await SharedRepository.genericUpsert(sequelize.models.TractorSnapshotSowV0, [model], false);
+    await SharedRepository.genericUpsert(sequelize.models.TractorSnapshotSow, [model], false);
   }
 }
 
-module.exports = SnapshotSowV0Service;
+module.exports = SnapshotSowService;

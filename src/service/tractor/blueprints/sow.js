@@ -2,24 +2,24 @@ const { C } = require('../../../constants/runtime-constants');
 const Contracts = require('../../../datasources/contracts/contracts');
 const Interfaces = require('../../../datasources/contracts/interfaces');
 const InputError = require('../../../error/input-error');
-const SowV0ExecutionDto = require('../../../repository/dto/tractor/SowV0ExecutionDto');
-const SowV0OrderDto = require('../../../repository/dto/tractor/SowV0OrderDto');
+const SowExecutionDto = require('../../../repository/dto/tractor/SowExecutionDto');
+const SowOrderDto = require('../../../repository/dto/tractor/SowOrderDto');
 const { sequelize, Sequelize } = require('../../../repository/postgres/models');
-const SowV0ExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-sow-v0-assembler');
-const SowV0OrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-sow-v0-assembler');
+const SowExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-sow-assembler');
+const SowOrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-sow-assembler');
 const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
 const Concurrent = require('../../../utils/async/concurrent');
 const BlockUtil = require('../../../utils/block');
 const Blueprint = require('./blueprint');
 const BlueprintConstants = require('./blueprint-constants');
 
-class TractorSowV0Service extends Blueprint {
+class TractorSowService extends Blueprint {
   static orderType = TractorOrderType.SOW_V0;
-  static orderModel = sequelize.models.TractorOrderSowV0;
-  static orderAssembler = SowV0OrderAssembler;
-  static executionModel = sequelize.models.TractorExecutionSowV0;
-  static executionAssembler = SowV0ExecutionAssembler;
-  static executionDto = SowV0ExecutionDto;
+  static orderModel = sequelize.models.TractorOrderSow;
+  static orderAssembler = SowOrderAssembler;
+  static executionModel = sequelize.models.TractorExecutionSow;
+  static executionAssembler = SowExecutionAssembler;
+  static executionDto = SowExecutionDto;
 
   /**
    * Determine how many pinto can be sown into each order, accounting for cascading order execution.
@@ -169,7 +169,7 @@ class TractorSowV0Service extends Blueprint {
       return;
     }
 
-    const dto = SowV0OrderDto.fromBlueprintCalldata({
+    const dto = SowOrderDto.fromBlueprintCalldata({
       blueprintHash: orderDto.blueprintHash,
       sowParams: sowV0Call.args.params.sowParams
     });
@@ -252,4 +252,4 @@ class TractorSowV0Service extends Blueprint {
     return where;
   }
 }
-module.exports = TractorSowV0Service;
+module.exports = TractorSowService;

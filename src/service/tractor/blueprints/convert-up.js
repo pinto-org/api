@@ -1,26 +1,26 @@
 const { TractorOrderType, stalkModeToInt } = require('../../../repository/postgres/models/types/types');
 const Blueprint = require('./blueprint');
 const { sequelize, Sequelize } = require('../../../repository/postgres/models');
-const ConvertUpV0ExecutionDto = require('../../../repository/dto/tractor/ConvertUpV0ExecutionDto');
-const ConvertUpV0OrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-convert-up-v0-assembler');
-const ConvertUpV0ExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-convert-up-v0-assembler');
+const ConvertUpExecutionDto = require('../../../repository/dto/tractor/ConvertUpExecutionDto');
+const ConvertUpOrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-convert-up-assembler');
+const ConvertUpExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-convert-up-assembler');
 const BlueprintConstants = require('./blueprint-constants');
 const InputError = require('../../../error/input-error');
 const Contracts = require('../../../datasources/contracts/contracts');
 const { C } = require('../../../constants/runtime-constants');
 const Interfaces = require('../../../datasources/contracts/interfaces');
-const ConvertUpV0OrderDto = require('../../../repository/dto/tractor/ConvertUpV0OrderDto');
+const ConvertUpOrderDto = require('../../../repository/dto/tractor/ConvertUpOrderDto');
 const Concurrent = require('../../../utils/async/concurrent');
 const BlockUtil = require('../../../utils/block');
 const BeanstalkPrice = require('../../../datasources/contracts/upgradeable/beanstalk-price');
 
-class TractorConvertUpV0Service extends Blueprint {
+class TractorConvertUpService extends Blueprint {
   static orderType = TractorOrderType.CONVERT_UP_V0;
-  static orderModel = sequelize.models.TractorOrderConvertUpV0;
-  static orderAssembler = ConvertUpV0OrderAssembler;
-  static executionModel = sequelize.models.TractorExecutionConvertUpV0;
-  static executionAssembler = ConvertUpV0ExecutionAssembler;
-  static executionDto = ConvertUpV0ExecutionDto;
+  static orderModel = sequelize.models.TractorOrderConvertUp;
+  static orderAssembler = ConvertUpOrderAssembler;
+  static executionModel = sequelize.models.TractorExecutionConvertUp;
+  static executionAssembler = ConvertUpExecutionAssembler;
+  static executionDto = ConvertUpExecutionDto;
 
   /**
    * Determine how many pinto can be converted in each order, accounting for cascading order execution.
@@ -178,7 +178,7 @@ class TractorConvertUpV0Service extends Blueprint {
       return;
     }
 
-    const dto = ConvertUpV0OrderDto.fromBlueprintCalldata({
+    const dto = ConvertUpOrderDto.fromBlueprintCalldata({
       blueprintHash: orderDto.blueprintHash,
       convertUpParams: convertUpV0Call.args.params.convertUpParams
     });
@@ -259,4 +259,4 @@ class TractorConvertUpV0Service extends Blueprint {
     return where;
   }
 }
-module.exports = TractorConvertUpV0Service;
+module.exports = TractorConvertUpService;

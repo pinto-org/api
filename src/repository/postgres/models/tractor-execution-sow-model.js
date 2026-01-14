@@ -1,16 +1,16 @@
-const { TRACTOR_EXECUTION_SOW_V0_TABLE } = require('../../../constants/tables');
+const { TRACTOR_EXECUTION_SOW_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
-  const TractorExecutionSowV0 = sequelize.define(
-    'TractorExecutionSowV0',
+  const TractorExecutionSow = sequelize.define(
+    'TractorExecutionSow',
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
       },
-      /// TractorOrderSowV0 blueprintHash added via association below ///
+      /// TractorOrderSow blueprintHash added via association below ///
       ...bigintNumericColumn('index', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('beans', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('pods', DataTypes, { allowNull: false }),
@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: TRACTOR_EXECUTION_SOW_V0_TABLE.env,
+      tableName: TRACTOR_EXECUTION_SOW_TABLE.env,
       indexes: [
         {
           fields: ['blueprintHash']
@@ -36,10 +36,10 @@ module.exports = (sequelize, DataTypes) => {
   );
 
   // Associations here
-  TractorExecutionSowV0.associate = (models) => {
-    TractorExecutionSowV0.belongsTo(models.TractorExecution, { foreignKey: 'id', onDelete: 'RESTRICT' });
-    TractorExecutionSowV0.belongsTo(models.TractorOrderSowV0, { foreignKey: 'blueprintHash', onDelete: 'RESTRICT' });
+  TractorExecutionSow.associate = (models) => {
+    TractorExecutionSow.belongsTo(models.TractorExecution, { foreignKey: 'id', onDelete: 'RESTRICT' });
+    TractorExecutionSow.belongsTo(models.TractorOrderSow, { foreignKey: 'blueprintHash', onDelete: 'RESTRICT' });
   };
 
-  return TractorExecutionSowV0;
+  return TractorExecutionSow;
 };

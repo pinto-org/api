@@ -2,7 +2,7 @@ const Contracts = require('../../../datasources/contracts/contracts');
 const BlueprintConstants = require('../../../service/tractor/blueprints/blueprint-constants');
 const { fromBigInt } = require('../../../utils/number');
 
-class SowV0ExecutionDto {
+class SowExecutionDto {
   constructor(type, d) {
     if (type === 'data') {
       const { baseExecutionDto, innerEvents } = d;
@@ -32,7 +32,7 @@ class SowV0ExecutionDto {
   }
 
   static async fromExecutionContext(sowExecutionContext) {
-    const sowExecutionDto = new SowV0ExecutionDto('data', sowExecutionContext);
+    const sowExecutionDto = new SowExecutionDto('data', sowExecutionContext);
 
     // Assign place in line
     const sowEvt = sowExecutionContext.innerEvents.find((e) => e.name === 'Sow');
@@ -48,7 +48,7 @@ class SowV0ExecutionDto {
   }
 
   static fromModel(dbModel) {
-    return new SowV0ExecutionDto('db', dbModel);
+    return new SowExecutionDto('db', dbModel);
   }
 
   async determineWithdrawnTokens(innerEvents) {
@@ -78,4 +78,4 @@ class SowV0ExecutionDto {
   }
 }
 
-module.exports = SowV0ExecutionDto;
+module.exports = SowExecutionDto;

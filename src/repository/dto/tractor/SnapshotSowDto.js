@@ -1,4 +1,4 @@
-class SnapshotSowV0Dto {
+class SnapshotSowDto {
   constructor(type, d) {
     if (type === 'init') {
       const { block, timestamp, season, snapshotData } = d;
@@ -32,12 +32,12 @@ class SnapshotSowV0Dto {
   }
 
   static fromLiveSnapshot(liveSnapshot) {
-    return new SnapshotSowV0Dto('init', liveSnapshot);
+    return new SnapshotSowDto('init', liveSnapshot);
   }
 
   static fromModel(dbModel) {
-    return new SnapshotSowV0Dto('model', dbModel);
+    return new SnapshotSowDto('model', dbModel);
   }
 }
 
-module.exports = SnapshotSowV0Dto;
+module.exports = SnapshotSowDto;

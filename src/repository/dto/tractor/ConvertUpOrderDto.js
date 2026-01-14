@@ -1,7 +1,7 @@
 const { C } = require('../../../constants/runtime-constants');
 const { intToStalkMode } = require('../../postgres/models/types/types');
 
-class ConvertUpV0OrderDto {
+class ConvertUpOrderDto {
   constructor(type, d) {
     if (type === 'data') {
       this.blueprintHash = d.blueprintHash;
@@ -51,11 +51,11 @@ class ConvertUpV0OrderDto {
   }
 
   static fromBlueprintCalldata(blueprintData) {
-    return new ConvertUpV0OrderDto('data', blueprintData);
+    return new ConvertUpOrderDto('data', blueprintData);
   }
 
   static fromModel(dbModel) {
-    return new ConvertUpV0OrderDto('db', dbModel);
+    return new ConvertUpOrderDto('db', dbModel);
   }
 
   async updateFieldsUponExecution(executionEvents) {
@@ -82,4 +82,4 @@ class ConvertUpV0OrderDto {
   }
 }
 
-module.exports = ConvertUpV0OrderDto;
+module.exports = ConvertUpOrderDto;

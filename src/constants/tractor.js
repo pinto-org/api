@@ -1,11 +1,11 @@
-const TractorConvertUpV0Service = require('../service/tractor/blueprints/convert-up-v0');
-const TractorSowV0Service = require('../service/tractor/blueprints/sow-v0');
+const TractorConvertUpService = require('../service/tractor/blueprints/convert-up');
+const TractorSowService = require('../service/tractor/blueprints/sow');
 
 class TractorConstants {
   static knownBlueprints() {
     return {
-      [TractorSowV0Service.orderType]: TractorSowV0Service,
-      [TractorConvertUpV0Service.orderType]: TractorConvertUpV0Service
+      [TractorSowService.orderType]: TractorSowService,
+      [TractorConvertUpService.orderType]: TractorConvertUpService
     };
   }
 }

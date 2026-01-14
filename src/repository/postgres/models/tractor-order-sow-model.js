@@ -1,9 +1,9 @@
-const { TRACTOR_ORDER_SOW_V0_TABLE } = require('../../../constants/tables');
+const { TRACTOR_ORDER_SOW_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
-  const TractorOrderSowV0 = sequelize.define(
-    'TractorOrderSowV0',
+  const TractorOrderSow = sequelize.define(
+    'TractorOrderSow',
     {
       blueprintHash: {
         type: DataTypes.STRING(66),
@@ -39,14 +39,14 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('slippageRatio', DataTypes, { allowNull: false })
     },
     {
-      tableName: TRACTOR_ORDER_SOW_V0_TABLE.env
+      tableName: TRACTOR_ORDER_SOW_TABLE.env
     }
   );
 
   // Associations here
-  TractorOrderSowV0.associate = (models) => {
-    TractorOrderSowV0.belongsTo(models.TractorOrder, { foreignKey: 'blueprintHash', onDelete: 'RESTRICT' });
+  TractorOrderSow.associate = (models) => {
+    TractorOrderSow.belongsTo(models.TractorOrder, { foreignKey: 'blueprintHash', onDelete: 'RESTRICT' });
   };
 
-  return TractorOrderSowV0;
+  return TractorOrderSow;
 };

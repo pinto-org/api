@@ -1,6 +1,6 @@
 const Contracts = require('../../../datasources/contracts/contracts');
 
-class SowV0OrderDto {
+class SowOrderDto {
   constructor(type, d) {
     if (type === 'data') {
       this.blueprintHash = d.blueprintHash;
@@ -38,11 +38,11 @@ class SowV0OrderDto {
   }
 
   static fromBlueprintCalldata(blueprintData) {
-    return new SowV0OrderDto('data', blueprintData);
+    return new SowOrderDto('data', blueprintData);
   }
 
   static fromModel(dbModel) {
-    return new SowV0OrderDto('db', dbModel);
+    return new SowOrderDto('db', dbModel);
   }
 
   async updateFieldsUponExecution(executionEvents) {
@@ -62,4 +62,4 @@ class SowV0OrderDto {
   }
 }
 
-module.exports = SowV0OrderDto;
+module.exports = SowOrderDto;

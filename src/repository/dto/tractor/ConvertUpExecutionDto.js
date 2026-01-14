@@ -1,7 +1,7 @@
 const PriceService = require('../../../service/price-service');
 const BlueprintConstants = require('../../../service/tractor/blueprints/blueprint-constants');
 
-class ConvertUpV0ExecutionDto {
+class ConvertUpExecutionDto {
   constructor(type, d) {
     if (type === 'data') {
       const { baseExecutionDto, innerEvents } = d;
@@ -52,7 +52,7 @@ class ConvertUpV0ExecutionDto {
   }
 
   static async fromExecutionContext(convertExecutionContext) {
-    const convertExecutionDto = new ConvertUpV0ExecutionDto('data', convertExecutionContext);
+    const convertExecutionDto = new ConvertUpExecutionDto('data', convertExecutionContext);
 
     // Assign before/after prices
     const executionBlock = convertExecutionContext.innerEvents[0].rawLog.blockNumber;
@@ -65,8 +65,8 @@ class ConvertUpV0ExecutionDto {
   }
 
   static fromModel(dbModel) {
-    return new ConvertUpV0ExecutionDto('db', dbModel);
+    return new ConvertUpExecutionDto('db', dbModel);
   }
 }
 
-module.exports = ConvertUpV0ExecutionDto;
+module.exports = ConvertUpExecutionDto;
