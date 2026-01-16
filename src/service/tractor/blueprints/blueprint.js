@@ -2,6 +2,8 @@ const SharedService = require('../../shared-service');
 const { fromBigInt } = require('../../../utils/number');
 const PriceService = require('../../price-service');
 const { C } = require('../../../constants/runtime-constants');
+const BlueprintConstants = require('./blueprint-constants');
+const Interfaces = require('../../../datasources/contracts/interfaces');
 
 // Base class for Tractor blueprint services
 class BlueprintService {
@@ -42,14 +44,6 @@ class BlueprintService {
     throw new Error('orderCancelled must be implemented by subclass');
   }
 
-  /**
-   * Attempts to decode blueprint-specific data
-   * @abstract
-   */
-  static decodeBlueprintData(blueprintData) {
-    throw new Error('decodeBlueprintData must be implemented by subclass');
-  }
-
   // Future work is to put the params/validations in a general location such that blueprints can mix/match
   // which ones they want to use. This would be helpful if we have many different blueprints.
 
@@ -83,6 +77,39 @@ class BlueprintService {
    */
   static executionRequestParams(blueprintParams) {
     throw new Error('executionRequestParams must be implemented by subclass');
+  }
+
+  /**
+   * Decodes blueprint-specific data if it matches a known blueprint version
+   */
+  static decodeBlueprintData(blueprintData) {
+    const unknown = { version: 'UNKNOWN', calldata: null };
+
+    const iBeanstalk = Interfaces.getBeanstalk();
+    const advFarm = Interfaces.safeParseTxn(iBeanstalk, blueprintData);
+    if (!advFarm || advFarm.name !== 'advancedFarm') {
+      return unknown;
+    }
+
+    for (const advFarmData of advFarm.args.data) {
+      const advFarmCall = Interfaces.safeParseTxn(iBeanstalk, advFarmData.callData);
+      if (advFarmCall.name !== 'advancedPipe') {
+        return unknown;
+      }
+
+      for (const pipeCall of advFarmCall.args.pipes) {
+        const blueprintVersion = BlueprintConstants.blueprintVersion(this.orderType, pipeCall.target.toLowerCase());
+        if (!blueprintVersion) {
+          return unknown;
+        }
+
+        const iBlueprint = Interfaces.get(pipeCall.target.toLowerCase());
+        return {
+          version: blueprintVersion,
+          calldata: Interfaces.safeParseTxn(iBlueprint, pipeCall.callData)
+        };
+      }
+    }
   }
 
   /**

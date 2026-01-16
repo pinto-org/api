@@ -35,7 +35,8 @@ const contracts = {
   STABLE2: ['0xBA51055a97b40d7f41f3F64b57469b5D45B67c87', null, wellFunctionAbi],
   SOW_V0: ['0xbb0a41927895F8ca2b4ECCc659ba158735fCF28B', null, sowBlueprintV0Abi],
   SOW_V0_TRACTOR_HELPERS: ['0x2808b14d287F8CA77eb25B16575aF187d5A05119', null, sowV0TractorHelpersAbi],
-  SOW_REFERRAL: ['tbd', null, sowReferralAbi],
+  // TODO: Need to get these addresses
+  SOW_REFERRAL: ['0xd9df9c4c0160401702de1771aaaad886e2375f65', null, sowReferralAbi],
   SOW_REFERRAL_TRACTOR_HELPERS: ['tbd', null, sowReferralTractorHelpersAbi],
   SOW_REFERRAL_SILO_HELPERS: ['tbd', null, sowReferralSiloHelpersAbi],
   CONVERT_UP_V0: ['0x5167Ae1fF37bE08D9cc9188C7e64DB228B6F06ca', null, convertUpBlueprintV0Abi],

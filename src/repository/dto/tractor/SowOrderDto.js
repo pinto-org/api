@@ -3,23 +3,28 @@ const Contracts = require('../../../datasources/contracts/contracts');
 class SowOrderDto {
   constructor(type, d) {
     if (type === 'data') {
-      this.blueprintHash = d.blueprintHash;
-      // TODO: this.blueprintVersion = ??;
+      const { blueprintHash, blueprintVersion, callArgs } = d;
+      this.blueprintHash = blueprintHash;
+      this.blueprintVersion = blueprintVersion;
+
       this.pintoSownCounter = 0n;
       this.lastExecutedSeason = 0;
       this.orderComplete = false;
       this.amountFunded = 0n;
       this.cascadeAmountFunded = 0n;
-      this.sourceTokenIndices = Array.from(d.sowParams.sourceTokenIndices);
-      this.totalAmountToSow = d.sowParams.sowAmounts.totalAmountToSow;
-      this.minAmountToSowPerSeason = d.sowParams.sowAmounts.minAmountToSowPerSeason;
-      this.maxAmountToSowPerSeason = d.sowParams.sowAmounts.maxAmountToSowPerSeason;
-      this.minTemp = d.sowParams.minTemp;
-      this.maxPodlineLength = d.sowParams.maxPodlineLength;
-      this.maxGrownStalkPerBdv = d.sowParams.maxGrownStalkPerBdv;
-      this.runBlocksAfterSunrise = d.sowParams.runBlocksAfterSunrise;
-      this.slippageRatio = d.sowParams.slippageRatio;
-      this.referralAddress = d.referral;
+
+      const sowParams = blueprintVersion === 'V0' ? callArgs.params.sowParams : callArgs.params.params.sowParams;
+
+      this.sourceTokenIndices = Array.from(sowParams.sourceTokenIndices);
+      this.totalAmountToSow = sowParams.sowAmounts.totalAmountToSow;
+      this.minAmountToSowPerSeason = sowParams.sowAmounts.minAmountToSowPerSeason;
+      this.maxAmountToSowPerSeason = sowParams.sowAmounts.maxAmountToSowPerSeason;
+      this.minTemp = sowParams.minTemp;
+      this.maxPodlineLength = sowParams.maxPodlineLength;
+      this.maxGrownStalkPerBdv = sowParams.maxGrownStalkPerBdv;
+      this.runBlocksAfterSunrise = sowParams.runBlocksAfterSunrise;
+      this.slippageRatio = sowParams.slippageRatio;
+      this.referralAddress = blueprintVersion === 'REFERRAL' ? callArgs.params.referral : null;
     } else if (type === 'db') {
       this.blueprintHash = d.blueprintHash;
       this.blueprintVersion = d.blueprintVersion;

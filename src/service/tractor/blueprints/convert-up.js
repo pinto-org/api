@@ -173,22 +173,21 @@ class TractorConvertUpService extends Blueprint {
 
   static async tryAddRequisition(orderDto, blueprintData) {
     // Decode data
-    // TODO: need to loop blueprints here
-    const convertUpV0Call = this.decodeBlueprintData(blueprintData);
-    if (!convertUpV0Call) {
+    const { version, calldata } = this.decodeBlueprintData(blueprintData);
+    if (!calldata) {
       return;
     }
 
     const dto = ConvertUpOrderDto.fromBlueprintCalldata({
       blueprintHash: orderDto.blueprintHash,
-      convertUpParams: convertUpV0Call.args.params.convertUpParams
+      convertUpParams: calldata.args.params.convertUpParams
     });
 
     // Insert entity
     await this.updateOrders([dto]);
 
     // Return amount of tip offered
-    return convertUpV0Call.args.params.opParams.operatorTipAmount;
+    return calldata.args.params.opParams.operatorTipAmount;
   }
 
   static async orderCancelled(orderDto) {
@@ -197,30 +196,6 @@ class TractorConvertUpService extends Blueprint {
     convertOrder.amountFunded = 0n;
     convertOrder.cascadeAmountFunded = 0n;
     await this.updateOrders([convertOrder]);
-  }
-
-  static decodeBlueprintData(blueprintData) {
-    const iBeanstalk = Interfaces.getBeanstalk();
-    const iConvertUpV0 = Interfaces.get(C().CONVERT_UP_V0);
-
-    const advFarm = Interfaces.safeParseTxn(iBeanstalk, blueprintData);
-    if (!advFarm || advFarm.name !== 'advancedFarm') {
-      return;
-    }
-
-    for (const advFarmData of advFarm.args.data) {
-      const advFarmCall = Interfaces.safeParseTxn(iBeanstalk, advFarmData.callData);
-      if (advFarmCall.name !== 'advancedPipe') {
-        return;
-      }
-
-      for (const pipeCall of advFarmCall.args.pipes) {
-        if (pipeCall.target.toLowerCase() !== C().CONVERT_UP_V0) {
-          return;
-        }
-        return Interfaces.safeParseTxn(iConvertUpV0, pipeCall.callData);
-      }
-    }
   }
 
   static validateOrderParams(blueprintParams) {

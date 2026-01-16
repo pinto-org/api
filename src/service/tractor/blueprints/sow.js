@@ -164,23 +164,24 @@ class TractorSowService extends Blueprint {
 
   static async tryAddRequisition(orderDto, blueprintData) {
     // Decode data
-    const sowV0Call = this.decodeBlueprintData(blueprintData);
-    if (!sowV0Call) {
+    const { version, calldata } = this.decodeBlueprintData(blueprintData);
+    if (!calldata) {
       return;
     }
 
     const dto = SowOrderDto.fromBlueprintCalldata({
       blueprintHash: orderDto.blueprintHash,
-      // TODO: will need to pass referral address here (not included in sow params)
-      // TODO: how to pass blueprint version here?
-      sowParams: sowV0Call.args.params.sowParams
+      blueprintVersion: version,
+      callArgs: calldata.args
     });
 
     // Insert entity
     await this.updateOrders([dto]);
 
     // Return amount of tip offered
-    return sowV0Call.args.params.opParams.operatorTipAmount;
+    return version === 'V0'
+      ? calldata.args.params.opParams.operatorTipAmount
+      : calldata.args.params.params.opParams.operatorTipAmount;
   }
 
   static async orderCancelled(orderDto) {
@@ -189,32 +190,6 @@ class TractorSowService extends Blueprint {
     sowOrder.amountFunded = 0n;
     sowOrder.cascadeAmountFunded = 0n;
     await this.updateOrders([sowOrder]);
-  }
-
-  // If possible, decodes blueprint data into the sowBlueprintv0 call
-  static decodeBlueprintData(blueprintData) {
-    const iBeanstalk = Interfaces.getBeanstalk();
-    // Could iterate different sowing compatible blueprints here.
-    const iSowV0 = Interfaces.get(C().SOW_V0);
-
-    const advFarm = Interfaces.safeParseTxn(iBeanstalk, blueprintData);
-    if (!advFarm || advFarm.name !== 'advancedFarm') {
-      return;
-    }
-
-    for (const advFarmData of advFarm.args.data) {
-      const advFarmCall = Interfaces.safeParseTxn(iBeanstalk, advFarmData.callData);
-      if (advFarmCall.name !== 'advancedPipe') {
-        return;
-      }
-
-      for (const pipeCall of advFarmCall.args.pipes) {
-        if (pipeCall.target.toLowerCase() !== C().SOW_V0) {
-          return;
-        }
-        return Interfaces.safeParseTxn(iSowV0, pipeCall.callData);
-      }
-    }
   }
 
   static validateOrderParams(blueprintParams) {
