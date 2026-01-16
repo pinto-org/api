@@ -28,7 +28,7 @@ class SowExecutionDto {
         .map(Number)
         .map((index) => BlueprintConstants.tokenIndexReverseMap()[index]);
       this.usedGrownStalkPerBdv = d.usedGrownStalkPerBdv;
-      // TODO: consider whether this should also have the new property
+      // TODO: consider whether this should also have the new referral address property
     }
   }
 
