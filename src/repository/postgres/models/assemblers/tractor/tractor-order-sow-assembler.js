@@ -4,6 +4,7 @@ class SowOrderAssembler {
   static toModel(orderDto) {
     return {
       blueprintHash: orderDto.blueprintHash,
+      blueprintVersion: orderDto.blueprintVersion,
       pintoSownCounter: orderDto.pintoSownCounter,
       lastExecutedSeason: orderDto.lastExecutedSeason,
       orderComplete: orderDto.orderComplete,

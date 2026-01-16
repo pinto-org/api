@@ -4,6 +4,7 @@ class SowOrderDto {
   constructor(type, d) {
     if (type === 'data') {
       this.blueprintHash = d.blueprintHash;
+      // TODO: this.blueprintVersion = ??;
       this.pintoSownCounter = 0n;
       this.lastExecutedSeason = 0;
       this.orderComplete = false;
@@ -21,6 +22,7 @@ class SowOrderDto {
       this.referralAddress = d.referral;
     } else if (type === 'db') {
       this.blueprintHash = d.blueprintHash;
+      this.blueprintVersion = d.blueprintVersion;
       this.pintoSownCounter = d.pintoSownCounter;
       this.lastExecutedSeason = d.lastExecutedSeason;
       this.orderComplete = d.orderComplete;

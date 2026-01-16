@@ -16,6 +16,28 @@ module.exports = {
       RENAME TO "enum_tractor_order_convert_up_lowStalkDeposits";
     `);
 
+    // Create enum type for tractor_order_sow blueprintVersion
+    await queryInterface.sequelize.query(`
+      CREATE TYPE "enum_tractor_order_sow_blueprintVersion" AS ENUM ('V0', 'REFERRAL');
+    `);
+
+    // Create enum type for tractor_order_convert_up blueprintVersion
+    await queryInterface.sequelize.query(`
+      CREATE TYPE "enum_tractor_order_convert_up_blueprintVersion" AS ENUM ('V0');
+    `);
+
+    // Add blueprintVersion column to tractor_order_sow
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "tractor_order_sow"
+      ADD COLUMN "blueprintVersion" "enum_tractor_order_sow_blueprintVersion" NOT NULL DEFAULT 'V0';
+    `);
+
+    // Add blueprintVersion column to tractor_order_convert_up
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "tractor_order_convert_up"
+      ADD COLUMN "blueprintVersion" "enum_tractor_order_convert_up_blueprintVersion" NOT NULL DEFAULT 'V0';
+    `);
+
     // Add referralAddress column to tractor_order_sow
     await queryInterface.addColumn('tractor_order_sow', 'referralAddress', {
       type: Sequelize.STRING,
@@ -24,8 +46,18 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    // Remove referralAddress column from tractor_order_sow before renaming
+    // Remove columns before renaming
     await queryInterface.removeColumn('tractor_order_sow', 'referralAddress');
+    await queryInterface.removeColumn('tractor_order_sow', 'blueprintVersion');
+    await queryInterface.removeColumn('tractor_order_convert_up', 'blueprintVersion');
+
+    // Drop new enum types
+    await queryInterface.sequelize.query(`
+      DROP TYPE IF EXISTS "enum_tractor_order_sow_blueprintVersion";
+    `);
+    await queryInterface.sequelize.query(`
+      DROP TYPE IF EXISTS "enum_tractor_order_convert_up_blueprintVersion";
+    `);
 
     // Revert table names by adding _v0 suffix back
     await queryInterface.renameTable('tractor_execution_sow', 'tractor_execution_sow_v0');

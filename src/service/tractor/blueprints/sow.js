@@ -172,6 +172,7 @@ class TractorSowService extends Blueprint {
     const dto = SowOrderDto.fromBlueprintCalldata({
       blueprintHash: orderDto.blueprintHash,
       // TODO: will need to pass referral address here (not included in sow params)
+      // TODO: how to pass blueprint version here?
       sowParams: sowV0Call.args.params.sowParams
     });
 

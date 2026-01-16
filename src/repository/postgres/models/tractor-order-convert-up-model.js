@@ -1,6 +1,6 @@
 const { TRACTOR_ORDER_CONVERT_UP_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
-const { StalkMode } = require('./types/types');
+const { StalkMode, TractorOrderConvertUpBlueprintVersion } = require('./types/types');
 
 module.exports = (sequelize, DataTypes) => {
   const TractorOrderConvertUp = sequelize.define(
@@ -9,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
       blueprintHash: {
         type: DataTypes.STRING(66),
         primaryKey: true
+      },
+      blueprintVersion: {
+        type: DataTypes.ENUM,
+        values: Object.values(TractorOrderConvertUpBlueprintVersion),
+        allowNull: false
       },
       /* Order state */
       lastExecutedTimestamp: {

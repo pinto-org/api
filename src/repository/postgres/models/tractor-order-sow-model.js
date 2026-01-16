@@ -1,5 +1,6 @@
 const { TRACTOR_ORDER_SOW_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
+const { TractorOrderSowBlueprintVersion } = require('./types/types');
 
 module.exports = (sequelize, DataTypes) => {
   const TractorOrderSow = sequelize.define(
@@ -8,6 +9,11 @@ module.exports = (sequelize, DataTypes) => {
       blueprintHash: {
         type: DataTypes.STRING(66),
         primaryKey: true
+      },
+      blueprintVersion: {
+        type: DataTypes.ENUM,
+        values: Object.values(TractorOrderSowBlueprintVersion),
+        allowNull: false
       },
       /* Order state */
       ...bigintNumericColumn('pintoSownCounter', DataTypes, { allowNull: false }),
