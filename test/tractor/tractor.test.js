@@ -222,7 +222,7 @@ describe('TractorTask', () => {
     test('Known blueprint', async () => {
       jest
         .spyOn(TractorService, 'getOrders')
-        .mockResolvedValue({ orders: [{ orderType: 'SOW_V0', blueprintData: 'blueprintData' }] });
+        .mockResolvedValue({ orders: [{ orderType: 'SOW', blueprintData: 'blueprintData' }] });
       const sowExeSpy = jest.spyOn(TractorSowService, 'orderExecuted').mockResolvedValue(1.25);
       const insertedDto = {};
       executionDbSpy = jest

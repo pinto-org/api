@@ -119,9 +119,9 @@ router.post('/snapshots', async (ctx) => {
   RestParsingUtil.numberRangeValidation(body.betweenSeasons);
 
   let method;
-  if (body.orderType === 'SOW_V0') {
+  if (body.orderType === TractorOrderType.SOW) {
     method = SnapshotSowService.getSnapshots.bind(SnapshotSowService);
-  } else if (body.orderType === 'CONVERT_UP_V0') {
+  } else if (body.orderType === TractorOrderType.CONVERT_UP) {
     method = SnapshotConvertUpService.getSnapshots.bind(SnapshotConvertUpService);
   }
 
@@ -157,9 +157,9 @@ router.post('/v2/snapshots', async (ctx) => {
 
   const results = await Promise.all(
     orderTypes.map(async (type) => {
-      if (type === 'SOW_V0') {
+      if (type === TractorOrderType.SOW) {
         return await SnapshotSowService.getSnapshots(body);
-      } else if (type === 'CONVERT_UP_V0') {
+      } else if (type === TractorOrderType.CONVERT_UP) {
         return await SnapshotConvertUpService.getSnapshots(body);
       }
     })

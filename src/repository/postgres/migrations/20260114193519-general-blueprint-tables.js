@@ -16,6 +16,31 @@ module.exports = {
       RENAME TO "enum_tractor_order_convert_up_lowStalkDeposits";
     `);
 
+    // Update tractor_order orderType enum: SOW_V0 -> SOW, CONVERT_UP_V0 -> CONVERT_UP
+    // Create new enum type with updated values
+    await queryInterface.sequelize.query(`
+      CREATE TYPE "enum_tractor_order_orderType_new" AS ENUM ('SOW', 'CONVERT_UP');
+    `);
+
+    // Change column to use new enum type and convert values
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "tractor_order"
+      ALTER COLUMN "orderType" TYPE "enum_tractor_order_orderType_new"
+      USING CASE
+        WHEN "orderType"::text = 'SOW_V0' THEN 'SOW'::"enum_tractor_order_orderType_new"
+        WHEN "orderType"::text = 'CONVERT_UP_V0' THEN 'CONVERT_UP'::"enum_tractor_order_orderType_new"
+        ELSE NULL
+      END;
+    `);
+
+    // Drop old enum type and rename new one
+    await queryInterface.sequelize.query(`
+      DROP TYPE "enum_tractor_order_orderType";
+    `);
+    await queryInterface.sequelize.query(`
+      ALTER TYPE "enum_tractor_order_orderType_new" RENAME TO "enum_tractor_order_orderType";
+    `);
+
     // Create enum type for tractor_order_sow blueprintVersion
     await queryInterface.sequelize.query(`
       CREATE TYPE "enum_tractor_order_sow_blueprintVersion" AS ENUM ('V0', 'REFERRAL');
@@ -70,6 +95,31 @@ module.exports = {
     await queryInterface.sequelize.query(`
       ALTER TYPE public."enum_tractor_order_convert_up_lowStalkDeposits"
       RENAME TO "enum_tractor_order_convert_up_v0_lowStalkDeposits";
+    `);
+
+    // Revert tractor_order orderType enum: SOW -> SOW_V0, CONVERT_UP -> CONVERT_UP_V0
+    // Create old enum type
+    await queryInterface.sequelize.query(`
+      CREATE TYPE "enum_tractor_order_orderType_old" AS ENUM ('SOW_V0', 'CONVERT_UP_V0');
+    `);
+
+    // Change column to use old enum type and convert values
+    await queryInterface.sequelize.query(`
+      ALTER TABLE "tractor_order"
+      ALTER COLUMN "orderType" TYPE "enum_tractor_order_orderType_old"
+      USING CASE
+        WHEN "orderType"::text = 'SOW' THEN 'SOW_V0'::"enum_tractor_order_orderType_old"
+        WHEN "orderType"::text = 'CONVERT_UP' THEN 'CONVERT_UP_V0'::"enum_tractor_order_orderType_old"
+        ELSE NULL
+      END;
+    `);
+
+    // Drop new enum type and rename old one back
+    await queryInterface.sequelize.query(`
+      DROP TYPE "enum_tractor_order_orderType";
+    `);
+    await queryInterface.sequelize.query(`
+      ALTER TYPE "enum_tractor_order_orderType_old" RENAME TO "enum_tractor_order_orderType";
     `);
   }
 };

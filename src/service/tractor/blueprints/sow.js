@@ -14,7 +14,7 @@ const Blueprint = require('./blueprint');
 const BlueprintConstants = require('./blueprint-constants');
 
 class TractorSowService extends Blueprint {
-  static orderType = TractorOrderType.SOW_V0;
+  static orderType = TractorOrderType.SOW;
   static orderModel = sequelize.models.TractorOrderSow;
   static orderAssembler = SowOrderAssembler;
   static executionModel = sequelize.models.TractorExecutionSow;
@@ -34,7 +34,7 @@ class TractorSowService extends Blueprint {
   ) {
     let orders = (
       await TractorService_getOrders({
-        orderType: TractorOrderType.SOW_V0,
+        orderType: TractorOrderType.SOW,
         cancelled: false,
         blueprintParams: {
           orderComplete: false

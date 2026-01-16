@@ -15,7 +15,7 @@ const BlockUtil = require('../../../utils/block');
 const BeanstalkPrice = require('../../../datasources/contracts/upgradeable/beanstalk-price');
 
 class TractorConvertUpService extends Blueprint {
-  static orderType = TractorOrderType.CONVERT_UP_V0;
+  static orderType = TractorOrderType.CONVERT_UP;
   static orderModel = sequelize.models.TractorOrderConvertUp;
   static orderAssembler = ConvertUpOrderAssembler;
   static executionModel = sequelize.models.TractorExecutionConvertUp;
@@ -35,7 +35,7 @@ class TractorConvertUpService extends Blueprint {
   ) {
     let orders = (
       await TractorService_getOrders({
-        orderType: TractorOrderType.CONVERT_UP_V0,
+        orderType: TractorOrderType.CONVERT_UP,
         cancelled: false,
         blueprintParams: {
           orderComplete: false
@@ -173,6 +173,7 @@ class TractorConvertUpService extends Blueprint {
 
   static async tryAddRequisition(orderDto, blueprintData) {
     // Decode data
+    // TODO: need to loop blueprints here
     const convertUpV0Call = this.decodeBlueprintData(blueprintData);
     if (!convertUpV0Call) {
       return;
