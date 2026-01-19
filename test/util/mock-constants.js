@@ -46,12 +46,19 @@ function mockPintoERC20s() {
       symbol: 'U-PINTOWSOLCP2w',
       decimals: 18
     },
+    {
+      token: C().PINTOWSTETH,
+      name: 'PINTO:WSTETH Constant Product 2 Upgradeable Well',
+      symbol: 'U-PINTOWSTETHC2w',
+      decimals: 18
+    },
     { token: C().PINTOUSDC, name: 'PINTO:USDC Stable 2 Upgradeable Well', symbol: 'U-PINTOUSDCS2w', decimals: 18 },
     { token: C().WETH, name: 'Wrapped Ether', symbol: 'WETH', decimals: 18 },
     { token: C().CBETH, name: 'Coinbase Wrapped Staked ETH', symbol: 'cbETH', decimals: 18 },
     { token: C().CBBTC, name: 'Coinbase Wrapped BTC', symbol: 'cbBTC', decimals: 8 },
     { token: C().WSOL, name: 'Wrapped SOL', symbol: 'SOL', decimals: 9 },
-    { token: C().USDC, name: 'USD Coin', symbol: 'USDC', decimals: 6 }
+    { token: C().USDC, name: 'USD Coin', symbol: 'USDC', decimals: 6 },
+    { token: C().WSTETH, name: 'Wrapped Staked ETH', symbol: 'WSTETH', decimals: 18 }
   ];
 
   jest.spyOn(ERC20Info, 'getTokenInfo').mockImplementation((token) => {
