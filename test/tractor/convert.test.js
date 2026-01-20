@@ -9,7 +9,7 @@ describe('TractorConvertUpService', () => {
   test('Creates additional order data for matching requisition', async () => {
     jest
       .spyOn(TractorConvertUpService, 'decodeBlueprintData')
-      .mockReturnValue({ args: { params: { opParams: { operatorTipAmount: 456n } } } });
+      .mockReturnValue({ version: 'V0', calldata: { args: { params: { opParams: { operatorTipAmount: 456n } } } } });
     jest.spyOn(ConvertUpOrderDto, 'fromBlueprintCalldata').mockReturnValue('dto');
     const upsertSpy = jest.spyOn(TractorConvertUpService, 'updateOrders').mockImplementation(() => {});
 
