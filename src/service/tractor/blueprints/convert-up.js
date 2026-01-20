@@ -8,7 +8,6 @@ const BlueprintConstants = require('./blueprint-constants');
 const InputError = require('../../../error/input-error');
 const Contracts = require('../../../datasources/contracts/contracts');
 const { C } = require('../../../constants/runtime-constants');
-const Interfaces = require('../../../datasources/contracts/interfaces');
 const ConvertUpOrderDto = require('../../../repository/dto/tractor/ConvertUpOrderDto');
 const Concurrent = require('../../../utils/async/concurrent');
 const BlockUtil = require('../../../utils/block');

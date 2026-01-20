@@ -20,7 +20,13 @@ const {
   TRACTOR_SNAPSHOT_CONVERT_UP_TABLE
 } = require('../../../constants/tables');
 const EnvUtil = require('../../../utils/env');
-const { TractorOrderType, ApyInitType, StalkMode, TractorOrderSowBlueprintVersion } = require('../models/types/types');
+const {
+  TractorOrderType,
+  ApyInitType,
+  StalkMode,
+  TractorOrderSowBlueprintVersion,
+  TractorOrderConvertUpBlueprintVersion
+} = require('../models/types/types');
 const { timestamps, bigintNumericColumn, largeBigintTextColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
@@ -541,6 +547,12 @@ module.exports = {
           type: Sequelize.ENUM,
           values: Object.values(StalkMode),
           allowNull: false
+        },
+        blueprintVersion: {
+          type: Sequelize.ENUM,
+          values: Object.values(TractorOrderConvertUpBlueprintVersion),
+          allowNull: false,
+          defaultValue: 'V0'
         },
         ...timestamps(Sequelize)
       });
