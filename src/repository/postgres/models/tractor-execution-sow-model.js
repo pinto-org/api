@@ -23,7 +23,15 @@ module.exports = (sequelize, DataTypes) => {
       usedGrownStalkPerBdv: {
         type: DataTypes.FLOAT,
         allowNull: false
-      }
+      },
+      referrer: {
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
+      ...bigintNumericColumn('referrerPods', DataTypes, { allowNull: true }),
+      ...bigintNumericColumn('referrerPlaceInLine', DataTypes, { allowNull: true }),
+      ...bigintNumericColumn('refereePods', DataTypes, { allowNull: true }),
+      ...bigintNumericColumn('refereePlaceInLine', DataTypes, { allowNull: true })
     },
     {
       tableName: TRACTOR_EXECUTION_SOW_TABLE.env,

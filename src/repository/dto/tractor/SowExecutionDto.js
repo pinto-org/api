@@ -7,15 +7,24 @@ class SowExecutionDto {
     if (type === 'data') {
       const { baseExecutionDto, innerEvents } = d;
       const sowEvt = innerEvents.find((e) => e.name === 'Sow');
+      const sowReferralEvt = innerEvents.find((e) => e.name === 'SowReferral');
 
       this.id = baseExecutionDto.id;
       this.blueprintHash = baseExecutionDto.blueprintHash;
       this.index = BigInt(sowEvt.args.index);
       this.beans = BigInt(sowEvt.args.beans);
       this.pods = BigInt(sowEvt.args.pods);
-      this.placeInLine = null; // Needs async, will be set outside
-      this.usedTokens = null; // Needs async, will be set outside
-      this.usedGrownStalkPerBdv = null; // Needs async, will be set outside
+      // Fields initialized as nulls need async, will be set outside
+      this.placeInLine = null;
+      this.usedTokens = null;
+      this.usedGrownStalkPerBdv = null;
+      if (sowReferralEvt) {
+        this.referrer = sowReferralEvt.args.referrer;
+        this.referrerPods = BigInt(sowReferralEvt.args.referrerPods);
+        this.referrerPlaceInLine = null;
+        this.refereePods = BigInt(sowReferralEvt.args.refereePods);
+        this.refereePlaceInLine = null;
+      }
     } else if (type === 'db') {
       this.id = d.id;
       this.blueprintHash = d.blueprintHash;
@@ -28,7 +37,11 @@ class SowExecutionDto {
         .map(Number)
         .map((index) => BlueprintConstants.tokenIndexReverseMap()[index]);
       this.usedGrownStalkPerBdv = d.usedGrownStalkPerBdv;
-      // TODO: consider whether this should also have the new referral address property
+      this.referrer = d.referrer;
+      this.referrerPods = d.referrerPods;
+      this.referrerPlaceInLine = d.referrerPlaceInLine;
+      this.refereePods = d.refereePods;
+      this.refereePlaceInLine = d.refereePlaceInLine;
     }
   }
 
@@ -41,6 +54,12 @@ class SowExecutionDto {
       blockTag: sowEvt.rawLog.blockNumber
     });
     sowExecutionDto.placeInLine = BigInt(sowEvt.args.index) - BigInt(harvestableIndex);
+
+    const sowReferralEvt = sowExecutionContext.innerEvents.find((e) => e.name === 'SowReferral');
+    if (sowReferralEvt) {
+      sowExecutionDto.referrerPlaceInLine = BigInt(sowReferralEvt.args.referrerIndex) - BigInt(harvestableIndex);
+      sowExecutionDto.refereePlaceInLine = BigInt(sowReferralEvt.args.refereeIndex) - BigInt(harvestableIndex);
+    }
 
     // Assign usedTokens, usedGrownStalkPerBdv according to withdraw events
     await sowExecutionDto.determineWithdrawnTokens(sowExecutionContext.innerEvents);

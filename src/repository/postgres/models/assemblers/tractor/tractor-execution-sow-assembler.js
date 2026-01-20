@@ -13,7 +13,12 @@ class SowExecutionAssembler {
       usedTokenIndices: executionDto.usedTokens
         .map((token) => BlueprintConstants.tokenIndexMap()[token.toLowerCase()])
         .join(','),
-      usedGrownStalkPerBdv: executionDto.usedGrownStalkPerBdv
+      usedGrownStalkPerBdv: executionDto.usedGrownStalkPerBdv,
+      referrer: executionDto.referrer,
+      referrerPods: executionDto.referrerPods,
+      referrerPlaceInLine: executionDto.referrerPlaceInLine,
+      refereePods: executionDto.refereePods,
+      refereePlaceInLine: executionDto.refereePlaceInLine
     };
   }
 

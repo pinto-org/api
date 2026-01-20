@@ -68,6 +68,28 @@ module.exports = {
       type: Sequelize.STRING,
       allowNull: true
     });
+
+    // Add columns to tractor_execution_sow
+    await queryInterface.addColumn('tractor_execution_sow', 'referrer', {
+      type: Sequelize.STRING(42),
+      allowNull: true
+    });
+    await queryInterface.addColumn('tractor_execution_sow', 'referrerPods', {
+      type: Sequelize.NUMERIC(38, 0),
+      allowNull: true
+    });
+    await queryInterface.addColumn('tractor_execution_sow', 'referrerPlaceInLine', {
+      type: Sequelize.NUMERIC(38, 0),
+      allowNull: true
+    });
+    await queryInterface.addColumn('tractor_execution_sow', 'refereePods', {
+      type: Sequelize.NUMERIC(38, 0),
+      allowNull: true
+    });
+    await queryInterface.addColumn('tractor_execution_sow', 'refereePlaceInLine', {
+      type: Sequelize.NUMERIC(38, 0),
+      allowNull: true
+    });
   },
 
   async down(queryInterface, Sequelize) {
@@ -75,6 +97,12 @@ module.exports = {
     await queryInterface.removeColumn('tractor_order_sow', 'referralAddress');
     await queryInterface.removeColumn('tractor_order_sow', 'blueprintVersion');
     await queryInterface.removeColumn('tractor_order_convert_up', 'blueprintVersion');
+
+    await queryInterface.removeColumn('tractor_execution_sow', 'referrer');
+    await queryInterface.removeColumn('tractor_execution_sow', 'referrerPods');
+    await queryInterface.removeColumn('tractor_execution_sow', 'referrerPlaceInLine');
+    await queryInterface.removeColumn('tractor_execution_sow', 'refereePods');
+    await queryInterface.removeColumn('tractor_execution_sow', 'refereePlaceInLine');
 
     // Drop new enum types
     await queryInterface.sequelize.query(`
