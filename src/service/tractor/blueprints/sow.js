@@ -1,6 +1,5 @@
 const { C } = require('../../../constants/runtime-constants');
 const Contracts = require('../../../datasources/contracts/contracts');
-const Interfaces = require('../../../datasources/contracts/interfaces');
 const InputError = require('../../../error/input-error');
 const SowExecutionDto = require('../../../repository/dto/tractor/SowExecutionDto');
 const SowOrderDto = require('../../../repository/dto/tractor/SowOrderDto');

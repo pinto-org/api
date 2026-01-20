@@ -180,7 +180,8 @@ class TractorConvertUpService extends Blueprint {
 
     const dto = ConvertUpOrderDto.fromBlueprintCalldata({
       blueprintHash: orderDto.blueprintHash,
-      convertUpParams: calldata.args.params.convertUpParams
+      blueprintVersion: version,
+      callArgs: calldata.args
     });
 
     // Insert entity
