@@ -5,9 +5,9 @@ const {
   DEPOSIT_TABLE,
   TRACTOR_ORDER_TABLE,
   TRACTOR_EXECUTION_TABLE,
-  TRACTOR_EXECUTION_SOW_V0_TABLE,
-  TRACTOR_SNAPSHOT_SOW_V0_TABLE,
-  TRACTOR_ORDER_SOW_V0_TABLE,
+  TRACTOR_EXECUTION_SOW_TABLE,
+  TRACTOR_SNAPSHOT_SOW_TABLE,
+  TRACTOR_ORDER_SOW_TABLE,
   SILO_INFLOW_TABLE,
   SILO_INFLOW_SNAPSHOT_TABLE,
   FIELD_INFLOW_SNAPSHOT_TABLE,
@@ -15,9 +15,9 @@ const {
   TOKEN_TABLE,
   SEASON_TABLE,
   YIELD_TABLE,
-  TRACTOR_ORDER_CONVERT_UP_V0_TABLE,
-  TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE,
-  TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE
+  TRACTOR_ORDER_CONVERT_UP_TABLE,
+  TRACTOR_EXECUTION_CONVERT_UP_TABLE,
+  TRACTOR_SNAPSHOT_CONVERT_UP_TABLE
 } = require('../../../constants/tables');
 const EnvUtil = require('../../../utils/env');
 const { TractorOrderType, ApyInitType, StalkMode } = require('../models/types/types');
@@ -359,8 +359,8 @@ module.exports = {
       await queryInterface.addIndex(TRACTOR_EXECUTION_TABLE.indexing, ['blueprintHash']);
     }
 
-    if (!existingTables.includes(TRACTOR_ORDER_SOW_V0_TABLE.indexing)) {
-      await queryInterface.createTable(TRACTOR_ORDER_SOW_V0_TABLE.indexing, {
+    if (!existingTables.includes(TRACTOR_ORDER_SOW_TABLE.indexing)) {
+      await queryInterface.createTable(TRACTOR_ORDER_SOW_TABLE.indexing, {
         blueprintHash: {
           type: Sequelize.STRING(66),
           primaryKey: true,
@@ -398,8 +398,8 @@ module.exports = {
       });
     }
 
-    if (!existingTables.includes(TRACTOR_EXECUTION_SOW_V0_TABLE.indexing)) {
-      await queryInterface.createTable(TRACTOR_EXECUTION_SOW_V0_TABLE.indexing, {
+    if (!existingTables.includes(TRACTOR_EXECUTION_SOW_TABLE.indexing)) {
+      await queryInterface.createTable(TRACTOR_EXECUTION_SOW_TABLE.indexing, {
         id: {
           type: Sequelize.INTEGER,
           primaryKey: true,
@@ -414,7 +414,7 @@ module.exports = {
         blueprintHash: {
           type: Sequelize.STRING(66),
           references: {
-            model: TRACTOR_ORDER_SOW_V0_TABLE.indexing,
+            model: TRACTOR_ORDER_SOW_TABLE.indexing,
             key: 'blueprintHash'
           },
           onDelete: 'RESTRICT',
@@ -435,11 +435,11 @@ module.exports = {
         },
         ...timestamps(Sequelize)
       });
-      await queryInterface.addIndex(TRACTOR_EXECUTION_SOW_V0_TABLE.indexing, ['blueprintHash']);
+      await queryInterface.addIndex(TRACTOR_EXECUTION_SOW_TABLE.indexing, ['blueprintHash']);
     }
 
-    if (!existingTables.includes(TRACTOR_SNAPSHOT_SOW_V0_TABLE.indexing)) {
-      await queryInterface.createTable(TRACTOR_SNAPSHOT_SOW_V0_TABLE.indexing, {
+    if (!existingTables.includes(TRACTOR_SNAPSHOT_SOW_TABLE.indexing)) {
+      await queryInterface.createTable(TRACTOR_SNAPSHOT_SOW_TABLE.indexing, {
         id: {
           type: Sequelize.INTEGER,
           primaryKey: true,
@@ -476,8 +476,8 @@ module.exports = {
       });
     }
 
-    if (!existingTables.includes(TRACTOR_ORDER_CONVERT_UP_V0_TABLE.indexing)) {
-      await queryInterface.createTable(TRACTOR_ORDER_CONVERT_UP_V0_TABLE.indexing, {
+    if (!existingTables.includes(TRACTOR_ORDER_CONVERT_UP_TABLE.indexing)) {
+      await queryInterface.createTable(TRACTOR_ORDER_CONVERT_UP_TABLE.indexing, {
         blueprintHash: {
           type: Sequelize.STRING(66),
           primaryKey: true,
@@ -528,8 +528,8 @@ module.exports = {
       });
     }
 
-    if (!existingTables.includes(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.indexing)) {
-      await queryInterface.createTable(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.indexing, {
+    if (!existingTables.includes(TRACTOR_EXECUTION_CONVERT_UP_TABLE.indexing)) {
+      await queryInterface.createTable(TRACTOR_EXECUTION_CONVERT_UP_TABLE.indexing, {
         id: {
           type: Sequelize.INTEGER,
           primaryKey: true,
@@ -544,7 +544,7 @@ module.exports = {
         blueprintHash: {
           type: Sequelize.STRING(66),
           references: {
-            model: TRACTOR_ORDER_CONVERT_UP_V0_TABLE.indexing,
+            model: TRACTOR_ORDER_CONVERT_UP_TABLE.indexing,
             key: 'blueprintHash'
           },
           onDelete: 'RESTRICT',
@@ -577,11 +577,11 @@ module.exports = {
         ...bigintNumericColumn('gsPenaltyBdv', Sequelize, { allowNull: false }),
         ...timestamps(Sequelize)
       });
-      await queryInterface.addIndex(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.indexing, ['blueprintHash']);
+      await queryInterface.addIndex(TRACTOR_EXECUTION_CONVERT_UP_TABLE.indexing, ['blueprintHash']);
     }
 
-    if (!existingTables.includes(TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE.indexing)) {
-      await queryInterface.createTable(TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE.indexing, {
+    if (!existingTables.includes(TRACTOR_SNAPSHOT_CONVERT_UP_TABLE.indexing)) {
+      await queryInterface.createTable(TRACTOR_SNAPSHOT_CONVERT_UP_TABLE.indexing, {
         id: {
           type: Sequelize.INTEGER,
           primaryKey: true,
@@ -917,12 +917,12 @@ module.exports = {
     await queryInterface.dropTable(DEPOSIT_TABLE.indexing);
     await queryInterface.dropTable(TRACTOR_ORDER_TABLE.indexing);
     await queryInterface.dropTable(TRACTOR_EXECUTION_TABLE.indexing);
-    await queryInterface.dropTable(TRACTOR_ORDER_SOW_V0_TABLE.indexing);
-    await queryInterface.dropTable(TRACTOR_EXECUTION_SOW_V0_TABLE.indexing);
-    await queryInterface.dropTable(TRACTOR_SNAPSHOT_SOW_V0_TABLE.indexing);
-    await queryInterface.dropTable(TRACTOR_ORDER_CONVERT_UP_V0_TABLE.indexing);
-    await queryInterface.dropTable(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.indexing);
-    await queryInterface.dropTable(TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE.indexing);
+    await queryInterface.dropTable(TRACTOR_ORDER_SOW_TABLE.indexing);
+    await queryInterface.dropTable(TRACTOR_EXECUTION_SOW_TABLE.indexing);
+    await queryInterface.dropTable(TRACTOR_SNAPSHOT_SOW_TABLE.indexing);
+    await queryInterface.dropTable(TRACTOR_ORDER_CONVERT_UP_TABLE.indexing);
+    await queryInterface.dropTable(TRACTOR_EXECUTION_CONVERT_UP_TABLE.indexing);
+    await queryInterface.dropTable(TRACTOR_SNAPSHOT_CONVERT_UP_TABLE.indexing);
     await queryInterface.dropTable(SILO_INFLOW_TABLE.indexing);
     await queryInterface.dropTable(SILO_INFLOW_SNAPSHOT_TABLE.indexing);
     await queryInterface.dropTable(FIELD_INFLOW_TABLE.indexing);

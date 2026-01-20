@@ -1,12 +1,11 @@
 'use strict';
 
-const { TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE } = require('../../../constants/tables');
 const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable(TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE.prod, {
+    await queryInterface.createTable('tractor_snapshot_convert_up_v0', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -46,6 +45,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable(TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE.prod);
+    await queryInterface.dropTable('tractor_snapshot_convert_up_v0');
   }
 };
