@@ -19,7 +19,14 @@ const ALL_JOBS = {
     // Updated less frequently because the underlying data is currently unused
     cron: '0 10 * * * *',
     function: async () => {
-      while ((await DepositsTask.queueExecution({ minIntervalMinutes: 55 })).canExecuteAgain) {}
+      let minIntervalMinutes = 55;
+      while (true) {
+        const { canExecuteAgain } = await DepositsTask.queueExecution({ minIntervalMinutes });
+        if (!canExecuteAgain) {
+          break;
+        }
+        minIntervalMinutes = 0;
+      }
     }
   },
   inflows: {
@@ -27,7 +34,14 @@ const ALL_JOBS = {
     // Updated less frequently because its only used for snapshots (and the ws should invoke it at sunrise)
     cron: '0 10 * * * *',
     function: async () => {
-      while ((await InflowsTask.queueExecution({ minIntervalMinutes: 55 })).canExecuteAgain) {}
+      let minIntervalMinutes = 55;
+      while (true) {
+        const { canExecuteAgain } = await InflowsTask.queueExecution({ minIntervalMinutes });
+        if (!canExecuteAgain) {
+          break;
+        }
+        minIntervalMinutes = 0;
+      }
     }
   },
   tractor: {
@@ -35,9 +49,10 @@ const ALL_JOBS = {
     cron: '0 */5 * * * *',
     function: async () => {
       const isInitialRun = TractorTask.getLastExecutionTime() === null;
+      let minIntervalMinutes = 4.5;
       while (true) {
         const { countEvents, queuedCallersBehind, canExecuteAgain } = await TractorTask.queueExecution({
-          minIntervalMinutes: 4.5
+          minIntervalMinutes
         });
         if (!canExecuteAgain) {
           // queuedCallersBehind can be true if the task ran slightly before the websocket got the event,
@@ -47,6 +62,7 @@ const ALL_JOBS = {
           }
           break;
         }
+        minIntervalMinutes = 0;
       }
     }
   },
