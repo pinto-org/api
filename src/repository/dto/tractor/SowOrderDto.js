@@ -24,7 +24,9 @@ class SowOrderDto {
       this.maxGrownStalkPerBdv = sowParams.maxGrownStalkPerBdv;
       this.runBlocksAfterSunrise = sowParams.runBlocksAfterSunrise;
       this.slippageRatio = sowParams.slippageRatio;
-      this.referralAddress = blueprintVersion === 'REFERRAL' ? callArgs.params.referral : null;
+      if (blueprintVersion === 'REFERRAL') {
+        this.referralAddress = callArgs.params.referral;
+      }
     } else if (type === 'db') {
       this.blueprintHash = d.blueprintHash;
       this.blueprintVersion = d.blueprintVersion;

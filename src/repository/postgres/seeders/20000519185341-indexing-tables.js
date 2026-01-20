@@ -20,7 +20,7 @@ const {
   TRACTOR_SNAPSHOT_CONVERT_UP_TABLE
 } = require('../../../constants/tables');
 const EnvUtil = require('../../../utils/env');
-const { TractorOrderType, ApyInitType, StalkMode } = require('../models/types/types');
+const { TractorOrderType, ApyInitType, StalkMode, TractorOrderSowBlueprintVersion } = require('../models/types/types');
 const { timestamps, bigintNumericColumn, largeBigintTextColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
@@ -394,6 +394,16 @@ module.exports = {
         ...bigintNumericColumn('maxGrownStalkPerBdv', Sequelize, { allowNull: false }),
         ...bigintNumericColumn('runBlocksAfterSunrise', Sequelize, { allowNull: false }),
         ...bigintNumericColumn('slippageRatio', Sequelize, { allowNull: false }),
+        blueprintVersion: {
+          type: Sequelize.ENUM,
+          values: Object.values(TractorOrderSowBlueprintVersion),
+          allowNull: false,
+          defaultValue: 'V0'
+        },
+        referralAddress: {
+          type: Sequelize.STRING,
+          allowNull: true
+        },
         ...timestamps(Sequelize)
       });
     }
@@ -433,6 +443,14 @@ module.exports = {
           type: Sequelize.FLOAT,
           allowNull: false
         },
+        referrer: {
+          type: Sequelize.STRING(42),
+          allowNull: true
+        },
+        ...bigintNumericColumn('referrerPods', Sequelize, { allowNull: true }),
+        ...bigintNumericColumn('referrerPlaceInLine', Sequelize, { allowNull: true }),
+        ...bigintNumericColumn('refereePods', Sequelize, { allowNull: true }),
+        ...bigintNumericColumn('refereePlaceInLine', Sequelize, { allowNull: true }),
         ...timestamps(Sequelize)
       });
       await queryInterface.addIndex(TRACTOR_EXECUTION_SOW_TABLE.indexing, ['blueprintHash']);
