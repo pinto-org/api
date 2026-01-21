@@ -1,7 +1,7 @@
 const BlueprintConstants = require('../../../../../service/tractor/blueprints/blueprint-constants');
-const SowV0ExecutionDto = require('../../../../dto/tractor/SowV0ExecutionDto');
+const SowExecutionDto = require('../../../../dto/tractor/SowExecutionDto');
 
-class SowV0ExecutionAssembler {
+class SowExecutionAssembler {
   static toModel(executionDto) {
     return {
       id: executionDto.id,
@@ -13,12 +13,17 @@ class SowV0ExecutionAssembler {
       usedTokenIndices: executionDto.usedTokens
         .map((token) => BlueprintConstants.tokenIndexMap()[token.toLowerCase()])
         .join(','),
-      usedGrownStalkPerBdv: executionDto.usedGrownStalkPerBdv
+      usedGrownStalkPerBdv: executionDto.usedGrownStalkPerBdv,
+      referrer: executionDto.referrer,
+      referrerPods: executionDto.referrerPods,
+      referrerPlaceInLine: executionDto.referrerPlaceInLine,
+      refereePods: executionDto.refereePods,
+      refereePlaceInLine: executionDto.refereePlaceInLine
     };
   }
 
   static fromModel(executionModel) {
-    return SowV0ExecutionDto.fromModel(executionModel);
+    return SowExecutionDto.fromModel(executionModel);
   }
 }
-module.exports = SowV0ExecutionAssembler;
+module.exports = SowExecutionAssembler;

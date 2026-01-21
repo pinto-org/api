@@ -1023,7 +1023,8 @@ paths:
                   type: string
                   description: Type of the tractor order
                   enum:
-                    - SOW_V0
+                    - SOW
+                    - CONVERT_UP
                     - KNOWN
                     - UNKNOWN
                 blueprintHash:
@@ -1086,7 +1087,7 @@ paths:
                         orderType:
                           type: string
                           description: Type of the order
-                          example: "SOW_V0"
+                          example: "SOW"
                         publisher:
                           type: string
                           description: Address of the publisher
@@ -1323,8 +1324,8 @@ paths:
                   type: string
                   description: Type of the tractor order
                   enum:
-                    - SOW_V0
-                    - CONVERT_UP_V0
+                    - SOW
+                    - CONVERT_UP
                 betweenTimes:
                   type: array
                   description: Date range for snapshot time filtering
@@ -1377,37 +1378,37 @@ paths:
                           description: Season number of this snapshot
                         totalPintoSown:
                           type: string
-                          description: (SOW_V0) Cumulative amount of Pinto sown at snapshot time
+                          description: (SOW) Cumulative amount of Pinto sown at snapshot time
                         totalPodsMinted:
                           type: string
-                          description: (SOW_V0) Cumulative number of pods minted at snapshot time
+                          description: (SOW) Cumulative number of pods minted at snapshot time
                         totalCascadeFundedBelowTemp:
                           type: string
-                          description: (SOW_V0) Total funded amount that can be executed at the current temperature
+                          description: (SOW) Total funded amount that can be executed at the current temperature
                         totalCascadeFundedAnyTemp:
                           type: string
-                          description: (SOW_V0) Total funded amount that can be executed at any temperature
+                          description: (SOW) Total funded amount that can be executed at any temperature
                         totalBeansConverted:
                           type: string
-                          description: (CONVERT_UP_V0) Cumulative amount of Beans converted at snapshot time
+                          description: (CONVERT_UP) Cumulative amount of Beans converted at snapshot time
                         totalGsBonusStalk:
                           type: string
-                          description: (CONVERT_UP_V0) Total Grown Stalk bonus received from conversions
+                          description: (CONVERT_UP) Total Grown Stalk bonus received from conversions
                         totalGsBonusBdv:
                           type: string
-                          description: (CONVERT_UP_V0) Total BDV associated with Grown Stalk bonuses
+                          description: (CONVERT_UP) Total BDV associated with Grown Stalk bonuses
                         totalGsPenaltyStalk:
                           type: string
-                          description: (CONVERT_UP_V0) Total Grown Stalk penalty from conversions
+                          description: (CONVERT_UP) Total Grown Stalk penalty from conversions
                         totalGsPenaltyBdv:
                           type: string
-                          description: (CONVERT_UP_V0) Total BDV associated with Grown Stalk penalties
+                          description: (CONVERT_UP) Total BDV associated with Grown Stalk penalties
                         totalCascadeFunded:
                           type: string
-                          description: (CONVERT_UP_V0) Total amount funded in cascade
+                          description: (CONVERT_UP) Total amount funded in cascade
                         totalCascadeFundedExecutable:
                           type: string
-                          description: (CONVERT_UP_V0) Total funded amount that is currently executable
+                          description: (CONVERT_UP) Total funded amount that is currently executable
                         totalTipsPaid:
                           type: string
                           description: Cumulative tips paid to this order type at snapshot time
@@ -1463,8 +1464,8 @@ paths:
                   items:
                     type: string
                     enum:
-                      - SOW_V0
-                      - CONVERT_UP_V0
+                      - SOW
+                      - CONVERT_UP
                 betweenTimes:
                   type: array
                   description: Date range for snapshot time filtering
@@ -1520,37 +1521,37 @@ paths:
                             description: Season number of this snapshot
                           totalPintoSown:
                             type: string
-                            description: (SOW_V0) Cumulative amount of Pinto sown at snapshot time
+                            description: (SOW) Cumulative amount of Pinto sown at snapshot time
                           totalPodsMinted:
                             type: string
-                            description: (SOW_V0) Cumulative number of pods minted at snapshot time
+                            description: (SOW) Cumulative number of pods minted at snapshot time
                           totalCascadeFundedBelowTemp:
                             type: string
-                            description: (SOW_V0) Total funded amount that can be executed at the current temperature
+                            description: (SOW) Total funded amount that can be executed at the current temperature
                           totalCascadeFundedAnyTemp:
                             type: string
-                            description: (SOW_V0) Total funded amount that can be executed at any temperature
+                            description: (SOW) Total funded amount that can be executed at any temperature
                           totalBeansConverted:
                             type: string
-                            description: (CONVERT_UP_V0) Cumulative amount of Beans converted at snapshot time
+                            description: (CONVERT_UP) Cumulative amount of Beans converted at snapshot time
                           totalGsBonusStalk:
                             type: string
-                            description: (CONVERT_UP_V0) Total Grown Stalk bonus received from conversions
+                            description: (CONVERT_UP) Total Grown Stalk bonus received from conversions
                           totalGsBonusBdv:
                             type: string
-                            description: (CONVERT_UP_V0) Total BDV associated with Grown Stalk bonuses
+                            description: (CONVERT_UP) Total BDV associated with Grown Stalk bonuses
                           totalGsPenaltyStalk:
                             type: string
-                            description: (CONVERT_UP_V0) Total Grown Stalk penalty from conversions
+                            description: (CONVERT_UP) Total Grown Stalk penalty from conversions
                           totalGsPenaltyBdv:
                             type: string
-                            description: (CONVERT_UP_V0) Total BDV associated with Grown Stalk penalties
+                            description: (CONVERT_UP) Total BDV associated with Grown Stalk penalties
                           totalCascadeFunded:
                             type: string
-                            description: (CONVERT_UP_V0) Total amount funded in cascade
+                            description: (CONVERT_UP) Total amount funded in cascade
                           totalCascadeFundedExecutable:
                             type: string
-                            description: (CONVERT_UP_V0) Total funded amount that is currently executable
+                            description: (CONVERT_UP) Total funded amount that is currently executable
                           totalTipsPaid:
                             type: string
                             description: Cumulative tips paid to this order type at snapshot time
@@ -1566,7 +1567,7 @@ paths:
                 example:
                   lastUpdated: 29374836
                   snapshots:
-                    SOW_V0:
+                    SOW:
                       - id: 172
                         snapshotTimestamp: "2025-04-23T23:00:01.000Z"
                         snapshotBlock: 29329927
@@ -1579,7 +1580,7 @@ paths:
                         currentMaxTip: "910000"
                         totalExecutions: 71
                         uniquePublishers: 4
-                    CONVERT_UP_V0:
+                    CONVERT_UP:
                       - snapshotTimestamp: "2025-11-06T09:00:01.000Z"
                         snapshotBlock: 37815127
                         season: 8426

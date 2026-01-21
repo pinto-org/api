@@ -1,6 +1,6 @@
-const SnapshotConvertUpV0Dto = require('../../../../dto/tractor/SnapshotConvertUpV0Dto');
+const SnapshotConvertUpDto = require('../../../../dto/tractor/SnapshotConvertUpDto');
 
-class SnapshotConvertUpV0Assembler {
+class SnapshotConvertUpAssembler {
   static toModel(snapshotDto) {
     return {
       id: snapshotDto.id,
@@ -22,7 +22,7 @@ class SnapshotConvertUpV0Assembler {
   }
 
   static fromModel(snapshotModel) {
-    return SnapshotConvertUpV0Dto.fromModel(snapshotModel);
+    return SnapshotConvertUpDto.fromModel(snapshotModel);
   }
 }
-module.exports = SnapshotConvertUpV0Assembler;
+module.exports = SnapshotConvertUpAssembler;

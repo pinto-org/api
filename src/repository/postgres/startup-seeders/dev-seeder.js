@@ -13,8 +13,8 @@ class DevSeeder {
       Log.info('Running Tractor dev seeder');
       await AsyncContext.sequelizeTransaction(async () => {
         await sequelize.query('truncate table tractor_order cascade');
-        await sequelize.query('truncate table tractor_snapshot_sow_v0 cascade');
-        await sequelize.query('truncate table tractor_snapshot_convert_up_v0 cascade');
+        await sequelize.query('truncate table tractor_snapshot_sow cascade');
+        await sequelize.query('truncate table tractor_snapshot_convert_up cascade');
         await sequelize.query(
           `update "${API_META_TABLE.env}" set "lastTractorUpdate" = ${EnvUtil.getDevTractor().seedBlock};`
         );

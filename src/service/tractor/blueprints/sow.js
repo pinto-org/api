@@ -1,25 +1,24 @@
 const { C } = require('../../../constants/runtime-constants');
 const Contracts = require('../../../datasources/contracts/contracts');
-const Interfaces = require('../../../datasources/contracts/interfaces');
 const InputError = require('../../../error/input-error');
-const SowV0ExecutionDto = require('../../../repository/dto/tractor/SowV0ExecutionDto');
-const SowV0OrderDto = require('../../../repository/dto/tractor/SowV0OrderDto');
+const SowExecutionDto = require('../../../repository/dto/tractor/SowExecutionDto');
+const SowOrderDto = require('../../../repository/dto/tractor/SowOrderDto');
 const { sequelize, Sequelize } = require('../../../repository/postgres/models');
-const SowV0ExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-sow-v0-assembler');
-const SowV0OrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-sow-v0-assembler');
+const SowExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-sow-assembler');
+const SowOrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-sow-assembler');
 const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
 const Concurrent = require('../../../utils/async/concurrent');
 const BlockUtil = require('../../../utils/block');
 const Blueprint = require('./blueprint');
 const BlueprintConstants = require('./blueprint-constants');
 
-class TractorSowV0Service extends Blueprint {
-  static orderType = TractorOrderType.SOW_V0;
-  static orderModel = sequelize.models.TractorOrderSowV0;
-  static orderAssembler = SowV0OrderAssembler;
-  static executionModel = sequelize.models.TractorExecutionSowV0;
-  static executionAssembler = SowV0ExecutionAssembler;
-  static executionDto = SowV0ExecutionDto;
+class TractorSowService extends Blueprint {
+  static orderType = TractorOrderType.SOW;
+  static orderModel = sequelize.models.TractorOrderSow;
+  static orderAssembler = SowOrderAssembler;
+  static executionModel = sequelize.models.TractorExecutionSow;
+  static executionAssembler = SowExecutionAssembler;
+  static executionDto = SowExecutionDto;
 
   /**
    * Determine how many pinto can be sown into each order, accounting for cascading order execution.
@@ -34,7 +33,7 @@ class TractorSowV0Service extends Blueprint {
   ) {
     let orders = (
       await TractorService_getOrders({
-        orderType: TractorOrderType.SOW_V0,
+        orderType: TractorOrderType.SOW,
         cancelled: false,
         blueprintParams: {
           orderComplete: false
@@ -164,21 +163,24 @@ class TractorSowV0Service extends Blueprint {
 
   static async tryAddRequisition(orderDto, blueprintData) {
     // Decode data
-    const sowV0Call = this.decodeBlueprintData(blueprintData);
-    if (!sowV0Call) {
+    const { version, calldata } = this.decodeBlueprintData(blueprintData);
+    if (!calldata) {
       return;
     }
 
-    const dto = SowV0OrderDto.fromBlueprintCalldata({
+    const dto = SowOrderDto.fromBlueprintCalldata({
       blueprintHash: orderDto.blueprintHash,
-      sowParams: sowV0Call.args.params.sowParams
+      blueprintVersion: version,
+      callArgs: calldata.args
     });
 
     // Insert entity
     await this.updateOrders([dto]);
 
     // Return amount of tip offered
-    return sowV0Call.args.params.opParams.operatorTipAmount;
+    return version === 'V0'
+      ? calldata.args.params.opParams.operatorTipAmount
+      : calldata.args.params.params.opParams.operatorTipAmount;
   }
 
   static async orderCancelled(orderDto) {
@@ -187,31 +189,6 @@ class TractorSowV0Service extends Blueprint {
     sowOrder.amountFunded = 0n;
     sowOrder.cascadeAmountFunded = 0n;
     await this.updateOrders([sowOrder]);
-  }
-
-  // If possible, decodes blueprint data into the sowBlueprintv0 call
-  static decodeBlueprintData(blueprintData) {
-    const iBeanstalk = Interfaces.getBeanstalk();
-    const iSowV0 = Interfaces.get(C().SOW_V0);
-
-    const advFarm = Interfaces.safeParseTxn(iBeanstalk, blueprintData);
-    if (!advFarm || advFarm.name !== 'advancedFarm') {
-      return;
-    }
-
-    for (const advFarmData of advFarm.args.data) {
-      const advFarmCall = Interfaces.safeParseTxn(iBeanstalk, advFarmData.callData);
-      if (advFarmCall.name !== 'advancedPipe') {
-        return;
-      }
-
-      for (const pipeCall of advFarmCall.args.pipes) {
-        if (pipeCall.target.toLowerCase() !== C().SOW_V0) {
-          return;
-        }
-        return Interfaces.safeParseTxn(iSowV0, pipeCall.callData);
-      }
-    }
   }
 
   static validateOrderParams(blueprintParams) {
@@ -251,4 +228,4 @@ class TractorSowV0Service extends Blueprint {
     return where;
   }
 }
-module.exports = TractorSowV0Service;
+module.exports = TractorSowService;

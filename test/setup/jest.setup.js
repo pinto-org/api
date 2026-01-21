@@ -40,8 +40,8 @@ jest.mock('../../src/repository/postgres/models/index', () => {
         Yield: {},
         TractorOrder: {},
         TractorExecution: {},
-        TractorOrderSowV0: {},
-        TractorExecutionSowV0: {}
+        TractorOrderSow: {},
+        TractorExecutionSow: {}
       }
     },
     Sequelize: {

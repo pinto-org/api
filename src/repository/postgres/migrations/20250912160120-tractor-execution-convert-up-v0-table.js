@@ -1,16 +1,12 @@
 'use strict';
 
-const {
-  TRACTOR_EXECUTION_TABLE,
-  TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE,
-  TRACTOR_ORDER_CONVERT_UP_V0_TABLE
-} = require('../../../constants/tables');
+const { TRACTOR_EXECUTION_TABLE } = require('../../../constants/tables');
 const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.prod, {
+    await queryInterface.createTable('tractor_execution_convert_up_v0', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -25,7 +21,7 @@ module.exports = {
       blueprintHash: {
         type: Sequelize.STRING(66),
         references: {
-          model: TRACTOR_ORDER_CONVERT_UP_V0_TABLE.prod,
+          model: 'tractor_order_convert_up_v0',
           key: 'blueprintHash'
         },
         onDelete: 'RESTRICT',
@@ -59,10 +55,10 @@ module.exports = {
       ...timestamps(Sequelize)
     });
 
-    await queryInterface.addIndex(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.prod, ['blueprintHash']);
+    await queryInterface.addIndex('tractor_execution_convert_up_v0', ['blueprintHash']);
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable(TRACTOR_EXECUTION_CONVERT_UP_V0_TABLE.prod);
+    await queryInterface.dropTable('tractor_execution_convert_up_v0');
   }
 };

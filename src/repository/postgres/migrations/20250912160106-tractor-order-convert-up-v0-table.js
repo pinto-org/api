@@ -1,13 +1,13 @@
 'use strict';
 
-const { TRACTOR_ORDER_TABLE, TRACTOR_ORDER_CONVERT_UP_V0_TABLE } = require('../../../constants/tables');
+const { TRACTOR_ORDER_TABLE } = require('../../../constants/tables');
 const { StalkMode } = require('../models/types/types');
 const { timestamps, bigintNumericColumn } = require('../util/sequelize-util');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable(TRACTOR_ORDER_CONVERT_UP_V0_TABLE.prod, {
+    await queryInterface.createTable('tractor_order_convert_up_v0', {
       blueprintHash: {
         type: Sequelize.STRING(66),
         primaryKey: true,
@@ -59,6 +59,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable(TRACTOR_ORDER_CONVERT_UP_V0_TABLE.prod);
+    await queryInterface.dropTable('tractor_order_convert_up_v0');
   }
 };

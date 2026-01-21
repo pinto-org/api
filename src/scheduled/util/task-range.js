@@ -1,6 +1,5 @@
 const { C } = require('../../constants/runtime-constants');
 const retryable = require('../../utils/async/retryable');
-const ChainUtil = require('../../utils/chain');
 const EnvUtil = require('../../utils/env');
 
 class TaskRangeUtil {

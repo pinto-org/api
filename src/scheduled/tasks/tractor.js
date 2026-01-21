@@ -8,8 +8,8 @@ const TractorExecutionDto = require('../../repository/dto/tractor/TractorExecuti
 const TractorOrderDto = require('../../repository/dto/tractor/TractorOrderDto');
 const AppMetaService = require('../../service/meta-service');
 const PriceService = require('../../service/price-service');
-const SnapshotConvertUpV0Service = require('../../service/tractor/snapshots/snapshot-convert-up-v0-service');
-const SnapshotSowV0Service = require('../../service/tractor/snapshots/snapshot-sow-v0-service');
+const SnapshotConvertUpService = require('../../service/tractor/snapshots/snapshot-convert-up-service');
+const SnapshotSowService = require('../../service/tractor/snapshots/snapshot-sow-service');
 const TractorService = require('../../service/tractor/tractor-service');
 const Concurrent = require('../../utils/async/concurrent');
 const AsyncContext = require('../../utils/async/context');
@@ -21,7 +21,7 @@ const IndexingTask = require('./IndexingTask');
 // Maximum number of blocks to process in one invocation
 const MAX_BLOCKS = 10000;
 
-const SNAPSHOT_SERVICES = [SnapshotSowV0Service, SnapshotConvertUpV0Service];
+const SNAPSHOT_SERVICES = [SnapshotSowService, SnapshotConvertUpService];
 
 class TractorTask extends IndexingTask {
   static async handleLiveEvent(event) {

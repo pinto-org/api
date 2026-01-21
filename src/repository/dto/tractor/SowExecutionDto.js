@@ -2,20 +2,29 @@ const Contracts = require('../../../datasources/contracts/contracts');
 const BlueprintConstants = require('../../../service/tractor/blueprints/blueprint-constants');
 const { fromBigInt } = require('../../../utils/number');
 
-class SowV0ExecutionDto {
+class SowExecutionDto {
   constructor(type, d) {
     if (type === 'data') {
       const { baseExecutionDto, innerEvents } = d;
       const sowEvt = innerEvents.find((e) => e.name === 'Sow');
+      const sowReferralEvt = innerEvents.find((e) => e.name === 'SowReferral');
 
       this.id = baseExecutionDto.id;
       this.blueprintHash = baseExecutionDto.blueprintHash;
       this.index = BigInt(sowEvt.args.index);
       this.beans = BigInt(sowEvt.args.beans);
       this.pods = BigInt(sowEvt.args.pods);
-      this.placeInLine = null; // Needs async, will be set outside
-      this.usedTokens = null; // Needs async, will be set outside
-      this.usedGrownStalkPerBdv = null; // Needs async, will be set outside
+      // Fields initialized as nulls need async, will be set outside
+      this.placeInLine = null;
+      this.usedTokens = null;
+      this.usedGrownStalkPerBdv = null;
+      if (sowReferralEvt) {
+        this.referrer = sowReferralEvt.args.referrer;
+        this.referrerPods = BigInt(sowReferralEvt.args.referrerPods);
+        this.referrerPlaceInLine = null;
+        this.refereePods = BigInt(sowReferralEvt.args.refereePods);
+        this.refereePlaceInLine = null;
+      }
     } else if (type === 'db') {
       this.id = d.id;
       this.blueprintHash = d.blueprintHash;
@@ -28,11 +37,16 @@ class SowV0ExecutionDto {
         .map(Number)
         .map((index) => BlueprintConstants.tokenIndexReverseMap()[index]);
       this.usedGrownStalkPerBdv = d.usedGrownStalkPerBdv;
+      this.referrer = d.referrer;
+      this.referrerPods = d.referrerPods;
+      this.referrerPlaceInLine = d.referrerPlaceInLine;
+      this.refereePods = d.refereePods;
+      this.refereePlaceInLine = d.refereePlaceInLine;
     }
   }
 
   static async fromExecutionContext(sowExecutionContext) {
-    const sowExecutionDto = new SowV0ExecutionDto('data', sowExecutionContext);
+    const sowExecutionDto = new SowExecutionDto('data', sowExecutionContext);
 
     // Assign place in line
     const sowEvt = sowExecutionContext.innerEvents.find((e) => e.name === 'Sow');
@@ -41,6 +55,12 @@ class SowV0ExecutionDto {
     });
     sowExecutionDto.placeInLine = BigInt(sowEvt.args.index) - BigInt(harvestableIndex);
 
+    const sowReferralEvt = sowExecutionContext.innerEvents.find((e) => e.name === 'SowReferral');
+    if (sowReferralEvt) {
+      sowExecutionDto.referrerPlaceInLine = BigInt(sowReferralEvt.args.referrerIndex) - BigInt(harvestableIndex);
+      sowExecutionDto.refereePlaceInLine = BigInt(sowReferralEvt.args.refereeIndex) - BigInt(harvestableIndex);
+    }
+
     // Assign usedTokens, usedGrownStalkPerBdv according to withdraw events
     await sowExecutionDto.determineWithdrawnTokens(sowExecutionContext.innerEvents);
 
@@ -48,7 +68,7 @@ class SowV0ExecutionDto {
   }
 
   static fromModel(dbModel) {
-    return new SowV0ExecutionDto('db', dbModel);
+    return new SowExecutionDto('db', dbModel);
   }
 
   async determineWithdrawnTokens(innerEvents) {
@@ -78,4 +98,4 @@ class SowV0ExecutionDto {
   }
 }
 
-module.exports = SowV0ExecutionDto;
+module.exports = SowExecutionDto;

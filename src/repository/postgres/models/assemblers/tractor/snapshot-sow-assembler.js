@@ -1,6 +1,6 @@
-const SnapshotSowV0Dto = require('../../../../dto/tractor/SnapshotSowV0Dto');
+const SnapshotSowDto = require('../../../../dto/tractor/SnapshotSowDto');
 
-class SnapshotSowV0Assembler {
+class SnapshotSowAssembler {
   static toModel(snapshotDto) {
     return {
       id: snapshotDto.id,
@@ -20,7 +20,7 @@ class SnapshotSowV0Assembler {
   }
 
   static fromModel(snapshotModel) {
-    return SnapshotSowV0Dto.fromModel(snapshotModel);
+    return SnapshotSowDto.fromModel(snapshotModel);
   }
 }
-module.exports = SnapshotSowV0Assembler;
+module.exports = SnapshotSowAssembler;

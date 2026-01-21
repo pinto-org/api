@@ -1,22 +1,22 @@
 const { C } = require('../../src/constants/runtime-constants');
-const SowV0ExecutionDto = require('../../src/repository/dto/tractor/SowV0ExecutionDto');
-const SowV0OrderDto = require('../../src/repository/dto/tractor/SowV0OrderDto');
+const SowExecutionDto = require('../../src/repository/dto/tractor/SowExecutionDto');
+const SowOrderDto = require('../../src/repository/dto/tractor/SowOrderDto');
 const PriceService = require('../../src/service/price-service');
-const TractorSowV0Service = require('../../src/service/tractor/blueprints/sow-v0');
+const TractorSowService = require('../../src/service/tractor/blueprints/sow');
 
-describe('TractorSowV0Service', () => {
+describe('TractorSowService', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });
 
   test('Creates additional order data for matching requisition', async () => {
     jest
-      .spyOn(TractorSowV0Service, 'decodeBlueprintData')
-      .mockReturnValue({ args: { params: { opParams: { operatorTipAmount: 456n } } } });
-    jest.spyOn(SowV0OrderDto, 'fromBlueprintCalldata').mockReturnValue('dto');
-    const upsertSpy = jest.spyOn(TractorSowV0Service, 'updateOrders').mockImplementation(() => {});
+      .spyOn(TractorSowService, 'decodeBlueprintData')
+      .mockReturnValue({ version: 'V0', calldata: { args: { params: { opParams: { operatorTipAmount: 456n } } } } });
+    jest.spyOn(SowOrderDto, 'fromBlueprintCalldata').mockReturnValue('dto');
+    const upsertSpy = jest.spyOn(TractorSowService, 'updateOrders').mockImplementation(() => {});
 
-    const result = await TractorSowV0Service.tryAddRequisition({ blueprintHash: 123 }, 'data');
+    const result = await TractorSowService.tryAddRequisition({ blueprintHash: 123 }, 'data');
 
     expect(result).toBe(456n);
     expect(upsertSpy).toHaveBeenCalledWith(['dto']);
@@ -36,12 +36,12 @@ describe('TractorSowV0Service', () => {
     const mockSowOrder = {
       updateFieldsUponExecution: jest.fn()
     };
-    const updateOrderSpy = jest.spyOn(TractorSowV0Service, 'updateOrders').mockImplementation(() => {});
-    jest.spyOn(SowV0ExecutionDto, 'fromExecutionContext').mockImplementation(() => {});
-    const updateExecutionSpy = jest.spyOn(TractorSowV0Service, 'updateExecutions').mockImplementation(() => {});
+    const updateOrderSpy = jest.spyOn(TractorSowService, 'updateOrders').mockImplementation(() => {});
+    jest.spyOn(SowExecutionDto, 'fromExecutionContext').mockImplementation(() => {});
+    const updateExecutionSpy = jest.spyOn(TractorSowService, 'updateExecutions').mockImplementation(() => {});
     const priceSpy = jest.spyOn(PriceService, 'getBeanPrice').mockResolvedValue({ usdPrice: 1.5 });
 
-    const result = await TractorSowV0Service.orderExecuted(mockSowOrder, null, mockInnerEvents);
+    const result = await TractorSowService.orderExecuted(mockSowOrder, null, mockInnerEvents);
 
     expect(mockSowOrder.updateFieldsUponExecution).toHaveBeenCalledWith(mockInnerEvents);
     expect(updateOrderSpy).toHaveBeenCalledWith([mockSowOrder]);

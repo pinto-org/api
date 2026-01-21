@@ -1,13 +1,19 @@
-const { TRACTOR_ORDER_SOW_V0_TABLE } = require('../../../constants/tables');
+const { TRACTOR_ORDER_SOW_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
+const { TractorOrderSowBlueprintVersion } = require('./types/types');
 
 module.exports = (sequelize, DataTypes) => {
-  const TractorOrderSowV0 = sequelize.define(
-    'TractorOrderSowV0',
+  const TractorOrderSow = sequelize.define(
+    'TractorOrderSow',
     {
       blueprintHash: {
         type: DataTypes.STRING(66),
         primaryKey: true
+      },
+      blueprintVersion: {
+        type: DataTypes.ENUM,
+        values: Object.values(TractorOrderSowBlueprintVersion),
+        allowNull: false
       },
       /* Order state */
       ...bigintNumericColumn('pintoSownCounter', DataTypes, { allowNull: false }),
@@ -36,17 +42,22 @@ module.exports = (sequelize, DataTypes) => {
       ...bigintNumericColumn('maxPodlineLength', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('maxGrownStalkPerBdv', DataTypes, { allowNull: false }),
       ...bigintNumericColumn('runBlocksAfterSunrise', DataTypes, { allowNull: false }),
-      ...bigintNumericColumn('slippageRatio', DataTypes, { allowNull: false })
+      ...bigintNumericColumn('slippageRatio', DataTypes, { allowNull: false }),
+      // Present in SowBlueprintReferral
+      referralAddress: {
+        type: DataTypes.STRING,
+        allowNull: true
+      }
     },
     {
-      tableName: TRACTOR_ORDER_SOW_V0_TABLE.env
+      tableName: TRACTOR_ORDER_SOW_TABLE.env
     }
   );
 
   // Associations here
-  TractorOrderSowV0.associate = (models) => {
-    TractorOrderSowV0.belongsTo(models.TractorOrder, { foreignKey: 'blueprintHash', onDelete: 'RESTRICT' });
+  TractorOrderSow.associate = (models) => {
+    TractorOrderSow.belongsTo(models.TractorOrder, { foreignKey: 'blueprintHash', onDelete: 'RESTRICT' });
   };
 
-  return TractorOrderSowV0;
+  return TractorOrderSow;
 };

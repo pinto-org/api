@@ -1,9 +1,9 @@
-const { TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE } = require('../../../constants/tables');
+const { TRACTOR_SNAPSHOT_CONVERT_UP_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
 
 module.exports = (sequelize, DataTypes) => {
-  const TractorSnapshotConvertUpV0 = sequelize.define(
-    'TractorSnapshotConvertUpV0',
+  const TractorSnapshotConvertUp = sequelize.define(
+    'TractorSnapshotConvertUp',
     {
       id: {
         type: DataTypes.INTEGER,
@@ -52,9 +52,9 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: TRACTOR_SNAPSHOT_CONVERT_UP_V0_TABLE.env
+      tableName: TRACTOR_SNAPSHOT_CONVERT_UP_TABLE.env
     }
   );
 
-  return TractorSnapshotConvertUpV0;
+  return TractorSnapshotConvertUp;
 };

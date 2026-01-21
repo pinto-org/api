@@ -1,9 +1,10 @@
-const SowV0OrderDto = require('../../../../dto/tractor/SowV0OrderDto');
+const SowOrderDto = require('../../../../dto/tractor/SowOrderDto');
 
-class SowV0OrderAssembler {
+class SowOrderAssembler {
   static toModel(orderDto) {
     return {
       blueprintHash: orderDto.blueprintHash,
+      blueprintVersion: orderDto.blueprintVersion,
       pintoSownCounter: orderDto.pintoSownCounter,
       lastExecutedSeason: orderDto.lastExecutedSeason,
       orderComplete: orderDto.orderComplete,
@@ -17,12 +18,13 @@ class SowV0OrderAssembler {
       maxPodlineLength: orderDto.maxPodlineLength,
       maxGrownStalkPerBdv: orderDto.maxGrownStalkPerBdv,
       runBlocksAfterSunrise: orderDto.runBlocksAfterSunrise,
-      slippageRatio: orderDto.slippageRatio
+      slippageRatio: orderDto.slippageRatio,
+      referralAddress: orderDto.referralAddress
     };
   }
 
   static fromModel(orderModel) {
-    return SowV0OrderDto.fromModel(orderModel);
+    return SowOrderDto.fromModel(orderModel);
   }
 }
-module.exports = SowV0OrderAssembler;
+module.exports = SowOrderAssembler;

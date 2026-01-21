@@ -1,19 +1,19 @@
-const ConvertUpV0OrderDto = require('../../src/repository/dto/tractor/ConvertUpV0OrderDto');
-const TractorConvertUpV0Service = require('../../src/service/tractor/blueprints/convert-up-v0');
+const ConvertUpOrderDto = require('../../src/repository/dto/tractor/ConvertUpOrderDto');
+const TractorConvertUpService = require('../../src/service/tractor/blueprints/convert-up');
 
-describe('TractorConvertUpV0Service', () => {
+describe('TractorConvertUpService', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });
 
   test('Creates additional order data for matching requisition', async () => {
     jest
-      .spyOn(TractorConvertUpV0Service, 'decodeBlueprintData')
-      .mockReturnValue({ args: { params: { opParams: { operatorTipAmount: 456n } } } });
-    jest.spyOn(ConvertUpV0OrderDto, 'fromBlueprintCalldata').mockReturnValue('dto');
-    const upsertSpy = jest.spyOn(TractorConvertUpV0Service, 'updateOrders').mockImplementation(() => {});
+      .spyOn(TractorConvertUpService, 'decodeBlueprintData')
+      .mockReturnValue({ version: 'V0', calldata: { args: { params: { opParams: { operatorTipAmount: 456n } } } } });
+    jest.spyOn(ConvertUpOrderDto, 'fromBlueprintCalldata').mockReturnValue('dto');
+    const upsertSpy = jest.spyOn(TractorConvertUpService, 'updateOrders').mockImplementation(() => {});
 
-    const result = await TractorConvertUpV0Service.tryAddRequisition({ blueprintHash: 123 }, 'data');
+    const result = await TractorConvertUpService.tryAddRequisition({ blueprintHash: 123 }, 'data');
 
     expect(result).toBe(456n);
     expect(upsertSpy).toHaveBeenCalledWith(['dto']);

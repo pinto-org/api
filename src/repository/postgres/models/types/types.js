@@ -4,8 +4,17 @@ const ApyInitType = {
 };
 
 const TractorOrderType = {
-  SOW_V0: 'SOW_V0',
-  CONVERT_UP_V0: 'CONVERT_UP_V0'
+  SOW: 'SOW',
+  CONVERT_UP: 'CONVERT_UP'
+};
+
+const TractorOrderSowBlueprintVersion = {
+  V0: 'V0',
+  REFERRAL: 'REFERRAL'
+};
+
+const TractorOrderConvertUpBlueprintVersion = {
+  V0: 'V0'
 };
 
 const StalkModeArray = ['USE', 'OMIT', 'USE_LAST'];
@@ -20,6 +29,8 @@ const StalkMode = StalkModeArray.reduce((acc, value) => {
 module.exports = {
   ApyInitType,
   TractorOrderType,
+  TractorOrderSowBlueprintVersion,
+  TractorOrderConvertUpBlueprintVersion,
   StalkMode,
   intToStalkMode,
   stalkModeToInt

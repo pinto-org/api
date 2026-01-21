@@ -1,7 +1,7 @@
 const BlueprintConstants = require('../../../../../service/tractor/blueprints/blueprint-constants');
-const ConvertUpV0ExecutionDto = require('../../../../dto/tractor/ConvertUpV0ExecutionDto');
+const ConvertUpExecutionDto = require('../../../../dto/tractor/ConvertUpExecutionDto');
 
-class ConvertUpV0ExecutionAssembler {
+class ConvertUpExecutionAssembler {
   static toModel(executionDto) {
     return {
       id: executionDto.id,
@@ -22,7 +22,7 @@ class ConvertUpV0ExecutionAssembler {
   }
 
   static fromModel(executionModel) {
-    return ConvertUpV0ExecutionDto.fromModel(executionModel);
+    return ConvertUpExecutionDto.fromModel(executionModel);
   }
 }
-module.exports = ConvertUpV0ExecutionAssembler;
+module.exports = ConvertUpExecutionAssembler;

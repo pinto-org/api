@@ -1,4 +1,4 @@
-class SnapshotConvertUpV0Dto {
+class SnapshotConvertUpDto {
   constructor(type, d) {
     if (type === 'init') {
       const { block, timestamp, season, snapshotData } = d;
@@ -36,12 +36,12 @@ class SnapshotConvertUpV0Dto {
   }
 
   static fromLiveSnapshot(liveSnapshot) {
-    return new SnapshotConvertUpV0Dto('init', liveSnapshot);
+    return new SnapshotConvertUpDto('init', liveSnapshot);
   }
 
   static fromModel(dbModel) {
-    return new SnapshotConvertUpV0Dto('model', dbModel);
+    return new SnapshotConvertUpDto('model', dbModel);
   }
 }
 
-module.exports = SnapshotConvertUpV0Dto;
+module.exports = SnapshotConvertUpDto;

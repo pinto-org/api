@@ -1,30 +1,35 @@
 const { C } = require('../../../constants/runtime-constants');
 const { intToStalkMode } = require('../../postgres/models/types/types');
 
-class ConvertUpV0OrderDto {
+class ConvertUpOrderDto {
   constructor(type, d) {
     if (type === 'data') {
-      this.blueprintHash = d.blueprintHash;
+      const { blueprintHash, blueprintVersion, callArgs } = d;
+      this.blueprintHash = blueprintHash;
+      this.blueprintVersion = blueprintVersion;
+
+      const convertUpParams = callArgs.params.convertUpParams;
+
       this.lastExecutedTimestamp = new Date(0);
-      this.beansLeftToConvert = d.convertUpParams.totalBeanAmountToConvert;
+      this.beansLeftToConvert = convertUpParams.totalBeanAmountToConvert;
       this.orderComplete = false;
       this.amountFunded = 0n;
       this.cascadeAmountFunded = 0n;
-      this.sourceTokenIndices = Array.from(d.convertUpParams.sourceTokenIndices);
-      this.totalBeanAmountToConvert = d.convertUpParams.totalBeanAmountToConvert;
-      this.minBeansConvertPerExecution = d.convertUpParams.minBeansConvertPerExecution;
-      this.maxBeansConvertPerExecution = d.convertUpParams.maxBeansConvertPerExecution;
-      this.capAmountToBonusCapacity = d.convertUpParams.capAmountToBonusCapacity;
-      this.minTimeBetweenConverts = d.convertUpParams.minTimeBetweenConverts;
-      this.minConvertBonusCapacity = d.convertUpParams.minConvertBonusCapacity;
-      this.maxGrownStalkPerBdv = d.convertUpParams.maxGrownStalkPerBdv;
-      this.seedDifference = d.convertUpParams.seedDifference;
-      this.grownStalkPerBdvBonusBid = d.convertUpParams.grownStalkPerBdvBonusBid;
-      this.maxPriceToConvertUp = d.convertUpParams.maxPriceToConvertUp;
-      this.minPriceToConvertUp = d.convertUpParams.minPriceToConvertUp;
-      this.maxGrownStalkPerBdvPenalty = d.convertUpParams.maxGrownStalkPerBdvPenalty;
-      this.slippageRatio = d.convertUpParams.slippageRatio;
-      this.lowStalkDeposits = intToStalkMode(Number(d.convertUpParams.lowStalkDeposits));
+      this.sourceTokenIndices = Array.from(convertUpParams.sourceTokenIndices);
+      this.totalBeanAmountToConvert = convertUpParams.totalBeanAmountToConvert;
+      this.minBeansConvertPerExecution = convertUpParams.minBeansConvertPerExecution;
+      this.maxBeansConvertPerExecution = convertUpParams.maxBeansConvertPerExecution;
+      this.capAmountToBonusCapacity = convertUpParams.capAmountToBonusCapacity;
+      this.minTimeBetweenConverts = convertUpParams.minTimeBetweenConverts;
+      this.minConvertBonusCapacity = convertUpParams.minConvertBonusCapacity;
+      this.maxGrownStalkPerBdv = convertUpParams.maxGrownStalkPerBdv;
+      this.seedDifference = convertUpParams.seedDifference;
+      this.grownStalkPerBdvBonusBid = convertUpParams.grownStalkPerBdvBonusBid;
+      this.maxPriceToConvertUp = convertUpParams.maxPriceToConvertUp;
+      this.minPriceToConvertUp = convertUpParams.minPriceToConvertUp;
+      this.maxGrownStalkPerBdvPenalty = convertUpParams.maxGrownStalkPerBdvPenalty;
+      this.slippageRatio = convertUpParams.slippageRatio;
+      this.lowStalkDeposits = intToStalkMode(Number(convertUpParams.lowStalkDeposits));
     } else if (type === 'db') {
       this.blueprintHash = d.blueprintHash;
       this.lastExecutedTimestamp = new Date(d.lastExecutedTimestamp * 1000);
@@ -51,11 +56,11 @@ class ConvertUpV0OrderDto {
   }
 
   static fromBlueprintCalldata(blueprintData) {
-    return new ConvertUpV0OrderDto('data', blueprintData);
+    return new ConvertUpOrderDto('data', blueprintData);
   }
 
   static fromModel(dbModel) {
-    return new ConvertUpV0OrderDto('db', dbModel);
+    return new ConvertUpOrderDto('db', dbModel);
   }
 
   async updateFieldsUponExecution(executionEvents) {
@@ -82,4 +87,4 @@ class ConvertUpV0OrderDto {
   }
 }
 
-module.exports = ConvertUpV0OrderDto;
+module.exports = ConvertUpOrderDto;

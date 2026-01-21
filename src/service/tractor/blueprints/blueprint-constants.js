@@ -1,6 +1,20 @@
 const { C } = require('../../../constants/runtime-constants');
 
+const BLUEPRINT_VERSIONS_MAP = {
+  SOW: {
+    [C().SOW_V0]: 'V0',
+    [C().SOW_REFERRAL]: 'REFERRAL'
+  },
+  CONVERT_UP: {
+    [C().CONVERT_UP_V0]: 'V0'
+  }
+};
+
 class BlueprintConstants {
+  static blueprintVersion(orderType, blueprintAddress) {
+    return BLUEPRINT_VERSIONS_MAP[orderType][blueprintAddress];
+  }
+
   static tokenIndexMap() {
     return {
       [C().BEAN]: 0,

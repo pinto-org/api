@@ -1,25 +1,35 @@
 const Contracts = require('../../../datasources/contracts/contracts');
 
-class SowV0OrderDto {
+class SowOrderDto {
   constructor(type, d) {
     if (type === 'data') {
-      this.blueprintHash = d.blueprintHash;
+      const { blueprintHash, blueprintVersion, callArgs } = d;
+      this.blueprintHash = blueprintHash;
+      this.blueprintVersion = blueprintVersion;
+
       this.pintoSownCounter = 0n;
       this.lastExecutedSeason = 0;
       this.orderComplete = false;
       this.amountFunded = 0n;
       this.cascadeAmountFunded = 0n;
-      this.sourceTokenIndices = Array.from(d.sowParams.sourceTokenIndices);
-      this.totalAmountToSow = d.sowParams.sowAmounts.totalAmountToSow;
-      this.minAmountToSowPerSeason = d.sowParams.sowAmounts.minAmountToSowPerSeason;
-      this.maxAmountToSowPerSeason = d.sowParams.sowAmounts.maxAmountToSowPerSeason;
-      this.minTemp = d.sowParams.minTemp;
-      this.maxPodlineLength = d.sowParams.maxPodlineLength;
-      this.maxGrownStalkPerBdv = d.sowParams.maxGrownStalkPerBdv;
-      this.runBlocksAfterSunrise = d.sowParams.runBlocksAfterSunrise;
-      this.slippageRatio = d.sowParams.slippageRatio;
+
+      const sowParams = blueprintVersion === 'V0' ? callArgs.params.sowParams : callArgs.params.params.sowParams;
+
+      this.sourceTokenIndices = Array.from(sowParams.sourceTokenIndices);
+      this.totalAmountToSow = sowParams.sowAmounts.totalAmountToSow;
+      this.minAmountToSowPerSeason = sowParams.sowAmounts.minAmountToSowPerSeason;
+      this.maxAmountToSowPerSeason = sowParams.sowAmounts.maxAmountToSowPerSeason;
+      this.minTemp = sowParams.minTemp;
+      this.maxPodlineLength = sowParams.maxPodlineLength;
+      this.maxGrownStalkPerBdv = sowParams.maxGrownStalkPerBdv;
+      this.runBlocksAfterSunrise = sowParams.runBlocksAfterSunrise;
+      this.slippageRatio = sowParams.slippageRatio;
+      if (blueprintVersion === 'REFERRAL') {
+        this.referralAddress = callArgs.params.referral;
+      }
     } else if (type === 'db') {
       this.blueprintHash = d.blueprintHash;
+      this.blueprintVersion = d.blueprintVersion;
       this.pintoSownCounter = d.pintoSownCounter;
       this.lastExecutedSeason = d.lastExecutedSeason;
       this.orderComplete = d.orderComplete;
@@ -34,15 +44,16 @@ class SowV0OrderDto {
       this.maxGrownStalkPerBdv = d.maxGrownStalkPerBdv;
       this.runBlocksAfterSunrise = d.runBlocksAfterSunrise;
       this.slippageRatio = d.slippageRatio;
+      this.referralAddress = d.referralAddress;
     }
   }
 
   static fromBlueprintCalldata(blueprintData) {
-    return new SowV0OrderDto('data', blueprintData);
+    return new SowOrderDto('data', blueprintData);
   }
 
   static fromModel(dbModel) {
-    return new SowV0OrderDto('db', dbModel);
+    return new SowOrderDto('db', dbModel);
   }
 
   async updateFieldsUponExecution(executionEvents) {
@@ -62,4 +73,4 @@ class SowV0OrderDto {
   }
 }
 
-module.exports = SowV0OrderDto;
+module.exports = SowOrderDto;

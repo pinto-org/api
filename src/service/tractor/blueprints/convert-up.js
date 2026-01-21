@@ -1,26 +1,25 @@
 const { TractorOrderType, stalkModeToInt } = require('../../../repository/postgres/models/types/types');
 const Blueprint = require('./blueprint');
 const { sequelize, Sequelize } = require('../../../repository/postgres/models');
-const ConvertUpV0ExecutionDto = require('../../../repository/dto/tractor/ConvertUpV0ExecutionDto');
-const ConvertUpV0OrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-convert-up-v0-assembler');
-const ConvertUpV0ExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-convert-up-v0-assembler');
+const ConvertUpExecutionDto = require('../../../repository/dto/tractor/ConvertUpExecutionDto');
+const ConvertUpOrderAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-order-convert-up-assembler');
+const ConvertUpExecutionAssembler = require('../../../repository/postgres/models/assemblers/tractor/tractor-execution-convert-up-assembler');
 const BlueprintConstants = require('./blueprint-constants');
 const InputError = require('../../../error/input-error');
 const Contracts = require('../../../datasources/contracts/contracts');
 const { C } = require('../../../constants/runtime-constants');
-const Interfaces = require('../../../datasources/contracts/interfaces');
-const ConvertUpV0OrderDto = require('../../../repository/dto/tractor/ConvertUpV0OrderDto');
+const ConvertUpOrderDto = require('../../../repository/dto/tractor/ConvertUpOrderDto');
 const Concurrent = require('../../../utils/async/concurrent');
 const BlockUtil = require('../../../utils/block');
 const BeanstalkPrice = require('../../../datasources/contracts/upgradeable/beanstalk-price');
 
-class TractorConvertUpV0Service extends Blueprint {
-  static orderType = TractorOrderType.CONVERT_UP_V0;
-  static orderModel = sequelize.models.TractorOrderConvertUpV0;
-  static orderAssembler = ConvertUpV0OrderAssembler;
-  static executionModel = sequelize.models.TractorExecutionConvertUpV0;
-  static executionAssembler = ConvertUpV0ExecutionAssembler;
-  static executionDto = ConvertUpV0ExecutionDto;
+class TractorConvertUpService extends Blueprint {
+  static orderType = TractorOrderType.CONVERT_UP;
+  static orderModel = sequelize.models.TractorOrderConvertUp;
+  static orderAssembler = ConvertUpOrderAssembler;
+  static executionModel = sequelize.models.TractorExecutionConvertUp;
+  static executionAssembler = ConvertUpExecutionAssembler;
+  static executionDto = ConvertUpExecutionDto;
 
   /**
    * Determine how many pinto can be converted in each order, accounting for cascading order execution.
@@ -35,7 +34,7 @@ class TractorConvertUpV0Service extends Blueprint {
   ) {
     let orders = (
       await TractorService_getOrders({
-        orderType: TractorOrderType.CONVERT_UP_V0,
+        orderType: TractorOrderType.CONVERT_UP,
         cancelled: false,
         blueprintParams: {
           orderComplete: false
@@ -173,21 +172,22 @@ class TractorConvertUpV0Service extends Blueprint {
 
   static async tryAddRequisition(orderDto, blueprintData) {
     // Decode data
-    const convertUpV0Call = this.decodeBlueprintData(blueprintData);
-    if (!convertUpV0Call) {
+    const { version, calldata } = this.decodeBlueprintData(blueprintData);
+    if (!calldata) {
       return;
     }
 
-    const dto = ConvertUpV0OrderDto.fromBlueprintCalldata({
+    const dto = ConvertUpOrderDto.fromBlueprintCalldata({
       blueprintHash: orderDto.blueprintHash,
-      convertUpParams: convertUpV0Call.args.params.convertUpParams
+      blueprintVersion: version,
+      callArgs: calldata.args
     });
 
     // Insert entity
     await this.updateOrders([dto]);
 
     // Return amount of tip offered
-    return convertUpV0Call.args.params.opParams.operatorTipAmount;
+    return calldata.args.params.opParams.operatorTipAmount;
   }
 
   static async orderCancelled(orderDto) {
@@ -196,30 +196,6 @@ class TractorConvertUpV0Service extends Blueprint {
     convertOrder.amountFunded = 0n;
     convertOrder.cascadeAmountFunded = 0n;
     await this.updateOrders([convertOrder]);
-  }
-
-  static decodeBlueprintData(blueprintData) {
-    const iBeanstalk = Interfaces.getBeanstalk();
-    const iConvertUpV0 = Interfaces.get(C().CONVERT_UP_V0);
-
-    const advFarm = Interfaces.safeParseTxn(iBeanstalk, blueprintData);
-    if (!advFarm || advFarm.name !== 'advancedFarm') {
-      return;
-    }
-
-    for (const advFarmData of advFarm.args.data) {
-      const advFarmCall = Interfaces.safeParseTxn(iBeanstalk, advFarmData.callData);
-      if (advFarmCall.name !== 'advancedPipe') {
-        return;
-      }
-
-      for (const pipeCall of advFarmCall.args.pipes) {
-        if (pipeCall.target.toLowerCase() !== C().CONVERT_UP_V0) {
-          return;
-        }
-        return Interfaces.safeParseTxn(iConvertUpV0, pipeCall.callData);
-      }
-    }
   }
 
   static validateOrderParams(blueprintParams) {
@@ -259,4 +235,4 @@ class TractorConvertUpV0Service extends Blueprint {
     return where;
   }
 }
-module.exports = TractorConvertUpV0Service;
+module.exports = TractorConvertUpService;

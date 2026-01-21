@@ -1,14 +1,19 @@
-const { TRACTOR_ORDER_CONVERT_UP_V0_TABLE } = require('../../../constants/tables');
+const { TRACTOR_ORDER_CONVERT_UP_TABLE } = require('../../../constants/tables');
 const { bigintNumericColumn } = require('../util/sequelize-util');
-const { StalkMode } = require('./types/types');
+const { StalkMode, TractorOrderConvertUpBlueprintVersion } = require('./types/types');
 
 module.exports = (sequelize, DataTypes) => {
-  const TractorOrderConvertUpV0 = sequelize.define(
-    'TractorOrderConvertUpV0',
+  const TractorOrderConvertUp = sequelize.define(
+    'TractorOrderConvertUp',
     {
       blueprintHash: {
         type: DataTypes.STRING(66),
         primaryKey: true
+      },
+      blueprintVersion: {
+        type: DataTypes.ENUM,
+        values: Object.values(TractorOrderConvertUpBlueprintVersion),
+        allowNull: false
       },
       /* Order state */
       lastExecutedTimestamp: {
@@ -53,14 +58,14 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     {
-      tableName: TRACTOR_ORDER_CONVERT_UP_V0_TABLE.env
+      tableName: TRACTOR_ORDER_CONVERT_UP_TABLE.env
     }
   );
 
   // Associations here
-  TractorOrderConvertUpV0.associate = (models) => {
-    TractorOrderConvertUpV0.belongsTo(models.TractorOrder, { foreignKey: 'blueprintHash', onDelete: 'RESTRICT' });
+  TractorOrderConvertUp.associate = (models) => {
+    TractorOrderConvertUp.belongsTo(models.TractorOrder, { foreignKey: 'blueprintHash', onDelete: 'RESTRICT' });
   };
 
-  return TractorOrderConvertUpV0;
+  return TractorOrderConvertUp;
 };
