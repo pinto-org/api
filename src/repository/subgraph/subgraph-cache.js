@@ -7,10 +7,15 @@ const CommonSubgraphRepository = require('./common-subgraph');
 
 // Caches past season results for configured queries, enabling retrieval of the full history to be fast
 class SubgraphCache {
+  // Introspection is required at runtime to build the schema.
+  // If the schema of an underlying subgraph changes, the API must be redeployed (or apollo restarted).
+  // Therefore the schema can be cached here rather than retrieved at runtime on each request.
+  static initialIntrospection = {};
+
   static async get(cacheQueryName, where) {
     const sgName = SG_CACHE_CONFIG[cacheQueryName].subgraph;
 
-    const introspection = await this.introspect(sgName);
+    const introspection = this.initialIntrospection[sgName];
 
     const { latest, cache } = await this._getCachedResults(cacheQueryName, where);
     const freshResults = await this._queryFreshResults(cacheQueryName, where, latest, introspection);
@@ -66,12 +71,10 @@ class SubgraphCache {
     if (!fromCache) {
       Log.info(`New deployment detected; clearing subgraph cache for ${sgName}`);
       await this.clear(sgName);
-
       await redisClient.set(`sg-deployment:${sgName}`, deployment);
-      await redisClient.set(`sg-introspection:${sgName}`, JSON.stringify(queryInfo));
     }
 
-    return queryInfo;
+    return (this.initialIntrospection[sgName] = queryInfo);
   }
 
   // Recursively build a type string to use in the re-exported schema
@@ -88,7 +91,8 @@ class SubgraphCache {
 
   static async _getCachedResults(cacheQueryName, where) {
     const cfg = SG_CACHE_CONFIG[cacheQueryName];
-    const cachedResults = JSON.parse(await redisClient.get(`sg:${cfg.subgraph}:${cacheQueryName}:${where}`)) ?? [];
+    const redisResult = await redisClient.get(`sg:${cfg.subgraph}:${cacheQueryName}:${where}`);
+    const cachedResults = JSON.parse(redisResult) ?? [];
 
     return {
       latest:
@@ -101,6 +105,7 @@ class SubgraphCache {
 
   static async _queryFreshResults(cacheQueryName, where, latestValue, introspection, c = C()) {
     const cfg = SG_CACHE_CONFIG[cacheQueryName];
+    // TODO: if got different x-deployment, clear the cache and send an alert that API might need restarting
     const results = await SubgraphQueryUtil.allPaginatedSG(
       cfg.client(c),
       `{ ${cfg.queryName} { ${introspection[cacheQueryName].fields

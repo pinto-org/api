@@ -40,7 +40,7 @@ class IndexingTask {
         return {
           countEvents,
           queuedCallersBehind: this._queueCounter > localCount,
-          canExecuteAgain: !this.isCaughtUp()
+          canExecuteAgain: !this.isCaughtUp() && countEvents !== false // false indicates task skipped
         };
       } finally {
         this._running = false;
