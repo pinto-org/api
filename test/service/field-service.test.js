@@ -1,14 +1,14 @@
 const Contracts = require('../../src/datasources/contracts/contracts');
 const FieldService = require('../../src/service/field-service');
 const { toBigInt } = require('../../src/utils/number');
-const { mockBeanstalkSG } = require('../util/mock-sg');
+const { mockBeanstalkSG, mockWrappedSgReturnData } = require('../util/mock-sg');
 
 describe('FieldService', () => {
   describe('Plot summary', () => {
     beforeEach(async () => {
       jest.restoreAllMocks();
       const allPlots = require('../mock-responses/service/field/allPlots.json');
-      jest.spyOn(mockBeanstalkSG, 'request').mockResolvedValueOnce(allPlots);
+      jest.spyOn(mockBeanstalkSG, 'rawRequest').mockResolvedValueOnce(mockWrappedSgReturnData(allPlots));
       jest.spyOn(Contracts, 'getBeanstalk').mockReturnValue({
         harvestableIndex: jest.fn().mockResolvedValue(5000)
       });
@@ -85,7 +85,7 @@ describe('FieldService', () => {
             result: 'result'
           }
         });
-        const sgSpy = jest.spyOn(mockBeanstalkSG, 'request');
+        const sgSpy = jest.spyOn(mockBeanstalkSG, 'rawRequest');
 
         const result = await FieldService.getAggregatePlotSummary({ bucketSize: 10000 });
 
@@ -100,7 +100,7 @@ describe('FieldService', () => {
             result: 'result'
           }
         });
-        const sgSpy = jest.spyOn(mockBeanstalkSG, 'request');
+        const sgSpy = jest.spyOn(mockBeanstalkSG, 'rawRequest');
 
         jest.setSystemTime(Date.now() + 1000 * 60 * 300 + 1);
         const result = await FieldService.getAggregatePlotSummary({ bucketSize: 10000 });
