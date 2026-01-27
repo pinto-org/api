@@ -1,6 +1,6 @@
 const OnSunriseUtil = require('../../src/scheduled/util/on-sunrise');
 const { mockBeanstalkConstants } = require('../util/mock-constants');
-const { mockBeanSG, mockBasinSG, mockBeanstalkSG } = require('../util/mock-sg');
+const { mockBeanSG, mockBasinSG, mockBeanstalkSG, mockWrappedSgReturnData } = require('../util/mock-sg');
 
 async function checkLastPromiseResult(spy, expected) {
   const lastCallResult = await spy.mock.results[spy.mock.results.length - 1].value;
@@ -22,11 +22,13 @@ describe('OnSunrise', () => {
 
   it('identifies when the subgraphs have processed the new season', async () => {
     const seasonResponse = require('../mock-responses/subgraph/scheduled/sunrise/beanstalkSeason_1.json');
-    const beanstalkSGSpy = jest.spyOn(mockBeanstalkSG, 'request').mockResolvedValue(seasonResponse);
+    const beanstalkSGSpy = jest
+      .spyOn(mockBeanstalkSG, 'rawRequest')
+      .mockResolvedValue(mockWrappedSgReturnData(seasonResponse));
 
     const metaNotReady = require('../mock-responses/subgraph/scheduled/sunrise/metaNotReady.json');
-    const beanSGSpy = jest.spyOn(mockBeanSG, 'request').mockResolvedValue(metaNotReady);
-    const basinSGSpy = jest.spyOn(mockBasinSG, 'request').mockResolvedValue(metaNotReady);
+    const beanSGSpy = jest.spyOn(mockBeanSG, 'rawRequest').mockResolvedValue(mockWrappedSgReturnData(metaNotReady));
+    const basinSGSpy = jest.spyOn(mockBasinSG, 'rawRequest').mockResolvedValue(mockWrappedSgReturnData(metaNotReady));
 
     const checkSpy = jest.spyOn(OnSunriseUtil, 'checkSubgraphsForSunrise');
 
@@ -34,7 +36,7 @@ describe('OnSunrise', () => {
     await checkLastPromiseResult(checkSpy, false);
 
     const seasonResponse2 = require('../mock-responses/subgraph/scheduled/sunrise/beanstalkSeason_2.json');
-    beanstalkSGSpy.mockResolvedValue(seasonResponse2);
+    beanstalkSGSpy.mockResolvedValue(mockWrappedSgReturnData(seasonResponse2));
     // Fast-forward timers and continue
     jest.advanceTimersByTime(5000);
     jest.runAllTimers();
@@ -55,7 +57,7 @@ describe('OnSunrise', () => {
 
   test('fails to identify a new season within the time limit', async () => {
     const seasonResponse = require('../mock-responses/subgraph/scheduled/sunrise/beanstalkSeason_1.json');
-    jest.spyOn(mockBeanstalkSG, 'request').mockResolvedValue(seasonResponse);
+    jest.spyOn(mockBeanstalkSG, 'rawRequest').mockResolvedValue(mockWrappedSgReturnData(seasonResponse));
 
     const checkSpy = jest.spyOn(OnSunriseUtil, 'checkSubgraphsForSunrise');
 

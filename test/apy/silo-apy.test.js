@@ -8,7 +8,7 @@ const GaugeApyUtil = require('../../src/service/utils/apy/gauge');
 const PreGaugeApyUtil = require('../../src/service/utils/apy/pre-gauge');
 const { toBigInt } = require('../../src/utils/number');
 const { mockBeanstalkConstants } = require('../util/mock-constants');
-const { mockBeanstalkSG } = require('../util/mock-sg');
+const { mockBeanstalkSG, mockWrappedSgReturnData } = require('../util/mock-sg');
 
 describe('Window EMA', () => {
   beforeEach(() => {
@@ -20,7 +20,7 @@ describe('Window EMA', () => {
 
   it('should calculate window EMA', async () => {
     const rewardMintResponse = require('../mock-responses/subgraph/silo-apy/siloHourlyRewardMints_1.json');
-    jest.spyOn(mockBeanstalkSG, 'request').mockResolvedValue(rewardMintResponse);
+    jest.spyOn(mockBeanstalkSG, 'rawRequest').mockResolvedValue(mockWrappedSgReturnData(rewardMintResponse));
 
     const emaResult = await SiloApyService.calcWindowEMA(21816, [24, 168, 720]);
 
@@ -45,7 +45,7 @@ describe('Window EMA', () => {
 
   it('should use up to as many season as are available', async () => {
     const rewardMintResponse = require('../mock-responses/subgraph/silo-apy/siloHourlyRewardMints_2.json');
-    jest.spyOn(mockBeanstalkSG, 'request').mockResolvedValue(rewardMintResponse);
+    jest.spyOn(mockBeanstalkSG, 'rawRequest').mockResolvedValue(mockWrappedSgReturnData(rewardMintResponse));
 
     const emaResult = await SiloApyService.calcWindowEMA(6100, [10000, 20000]);
 
@@ -291,9 +291,9 @@ describe('SiloApyService Orchestration', () => {
 
   it('pre-gauge should supply appropriate parameters', async () => {
     const seasonBlockResponse = require('../mock-responses/subgraph/silo-apy/preGaugeApyInputs_1.json');
-    jest.spyOn(mockBeanstalkSG, 'request').mockResolvedValueOnce(seasonBlockResponse);
+    jest.spyOn(mockBeanstalkSG, 'rawRequest').mockResolvedValueOnce(mockWrappedSgReturnData(seasonBlockResponse));
     const preGaugeApyInputsResponse = require('../mock-responses/subgraph/silo-apy/preGaugeApyInputs_2.json');
-    jest.spyOn(mockBeanstalkSG, 'request').mockResolvedValueOnce(preGaugeApyInputsResponse);
+    jest.spyOn(mockBeanstalkSG, 'rawRequest').mockResolvedValueOnce(mockWrappedSgReturnData(preGaugeApyInputsResponse));
 
     const spy = jest.spyOn(PreGaugeApyUtil, 'calcApy');
     spy.mockReturnValueOnce({
@@ -329,9 +329,9 @@ describe('SiloApyService Orchestration', () => {
 
   it('gauge should supply appropriate parameters', async () => {
     const seasonBlockResponse = require('../mock-responses/subgraph/silo-apy/gaugeApyInputs_1.json');
-    jest.spyOn(mockBeanstalkSG, 'request').mockResolvedValueOnce(seasonBlockResponse);
+    jest.spyOn(mockBeanstalkSG, 'rawRequest').mockResolvedValueOnce(mockWrappedSgReturnData(seasonBlockResponse));
     const gaugeApyInputsResponse = require('../mock-responses/subgraph/silo-apy/gaugeApyInputs_2.json');
-    jest.spyOn(mockBeanstalkSG, 'request').mockResolvedValueOnce(gaugeApyInputsResponse);
+    jest.spyOn(mockBeanstalkSG, 'rawRequest').mockResolvedValueOnce(mockWrappedSgReturnData(gaugeApyInputsResponse));
 
     const spy = jest.spyOn(GaugeApyUtil, 'calcApy');
     spy.mockReturnValueOnce({

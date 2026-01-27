@@ -5,7 +5,7 @@ const { getTickers, getWellPriceStats, getTrades } = require('../../src/service/
 const {
   ADDRESSES: { BEANWETH, BEANWSTETH, WETH, BEAN }
 } = require('../../src/constants/raw/beanstalk-eth');
-const { mockBasinSG } = require('../util/mock-sg');
+const { mockBasinSG, mockWrappedSgReturnData } = require('../util/mock-sg');
 const LiquidityUtil = require('../../src/service/utils/pool/liquidity');
 const ExchangeService = require('../../src/service/exchange-service');
 const { mockBeanstalkConstants } = require('../util/mock-constants');
@@ -23,7 +23,7 @@ describe('ExchangeService', () => {
 
   it('should return all Basin tickers in the expected format', async () => {
     const wellsResponse = require('../mock-responses/subgraph/basin/wells.json');
-    jest.spyOn(mockBasinSG, 'request').mockResolvedValue(wellsResponse);
+    jest.spyOn(mockBasinSG, 'rawRequest').mockResolvedValue(mockWrappedSgReturnData(wellsResponse));
     // In practice these 2 values are not necessary since the subsequent getWellPriceRange is also mocked.
     jest.spyOn(BasinSubgraphRepository, 'getAllTrades').mockResolvedValue(undefined);
     jest.spyOn(ExchangeService, 'priceEventsByWell').mockReturnValueOnce(undefined);
@@ -79,7 +79,9 @@ describe('ExchangeService', () => {
   });
 
   test('Returns swap history', async () => {
-    jest.spyOn(mockBasinSG, 'request').mockResolvedValue(require('../mock-responses/subgraph/basin/swapHistory.json'));
+    jest
+      .spyOn(mockBasinSG, 'rawRequest')
+      .mockResolvedValue(mockWrappedSgReturnData(require('../mock-responses/subgraph/basin/swapHistory.json')));
 
     const options = {
       ticker_id: `${BEAN}_${WETH}`,
