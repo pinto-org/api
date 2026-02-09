@@ -18,7 +18,7 @@ class GraphQLSchema {
       scalar Bytes
       ${Object.keys(introspection).map(
         (query) =>
-          `type ${introspection[query].type} {
+          `type Cached${introspection[query].type} {
             ${introspection[query].fields
               .filter((f) => !SG_CACHE_CONFIG[query].omitFields?.includes(f.name))
               .concat(
@@ -35,7 +35,7 @@ class GraphQLSchema {
         ${Object.keys(introspection)
           .map(
             (query) =>
-              `${query}(where: String, orderBy: String, orderDirection: String, skip: Int, first: Int): [${introspection[query].type}!]!`
+              `${query}(where: String, orderBy: String, orderDirection: String, skip: Int, first: Int): [Cached${introspection[query].type}!]!`
           )
           .join('\n')}
       }
