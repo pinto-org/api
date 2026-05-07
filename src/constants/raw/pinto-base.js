@@ -61,6 +61,8 @@ const DECIMALS = {
 
 const MILESTONE = {
   startSeason: 1,
+  startSeasonBlock: 22622961,
+  startSeasonBlockTimestamp: 1732035269,
   endSeason: 99999999,
   isGaugeEnabled: ({ season, block }) => true,
   // [[pauseBlock, unpauseBlock]]

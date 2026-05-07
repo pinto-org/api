@@ -8,12 +8,19 @@ const { bigintFloatMultiplier, bigintPercent, toBigInt, fromBigInt } = require('
 
 class SiloInflowsUtil {
   // Assigns a pseudo bdv to each claim plenty event (the claimed tokens aren't whitelisted and don't have a bdv)
-  static async assignClaimPlentyBdvs(claimPlenties, beanPrice, block) {
+  static async assignClaimPlentyBdvs(
+    claimPlenties,
+    beanPrice,
+    block,
+    getTokenPrice = (token, blockNumber) => PriceService.getTokenPrice(token, { blockNumber })
+  ) {
+    if (claimPlenties.length === 0) {
+      return;
+    }
+
     // Price the value and bdvs of all claimed tokens
     const tokens = claimPlenties.map((e) => e.args.token.toLowerCase());
-    const tokenPrices = (
-      await Promise.all(tokens.map((t) => PriceService.getTokenPrice(t, { blockNumber: block })))
-    ).map((p) => p.usdPrice);
+    const tokenPrices = (await Promise.all(tokens.map((t) => getTokenPrice(t, block)))).map((p) => p.usdPrice);
     const pseudoBdvs = tokenPrices.map((p) => p / beanPrice);
 
     for (let i = 0; i < claimPlenties.length; ++i) {

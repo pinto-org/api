@@ -22,6 +22,21 @@ const FIELD_EVENTS = new Set(['Sow', 'Harvest', 'PodListingFilled', 'PodOrderFil
 const SILO_EVENTS = new Set(['AddDeposit', 'RemoveDeposit', 'RemoveDeposits', 'Plant', 'Convert', 'ClaimPlenty']);
 const ALL_EVENTS = [...FIELD_EVENTS, ...SILO_EVENTS];
 
+const getOrSet = async (map, key, valueFn) => {
+  if (!map.has(key)) {
+    map.set(
+      key,
+      Promise.resolve()
+        .then(valueFn)
+        .catch((e) => {
+          map.delete(key);
+          throw e;
+        })
+    );
+  }
+  return await map.get(key);
+};
+
 class InflowsTask extends IndexingTask {
   static async handleLiveEvent(event) {
     // Inflows are only used for snapshots currently, therefore update on Sunrise only
@@ -53,11 +68,15 @@ class InflowsTask extends IndexingTask {
 
     const siloInflowDtos = [];
     const fieldInflowDtos = [];
+    const beanPriceByBlock = new Map();
+    const temperatureByBlock = new Map();
+    const tokenPriceByTokenBlock = new Map();
 
     const TAG = Concurrent.tag('inflows');
     for (const txnHash in byTxn) {
       await Concurrent.run(TAG, 35, async () => {
         const txnEvents = byTxn[txnHash];
+        const blockNumber = txnEvents[0].rawLog.blockNumber;
         const converts = txnEvents.filter((e) => e.name === 'Convert');
         const plants = txnEvents.filter((e) => e.name === 'Plant');
         const addRemoves = txnEvents.filter((e) => e.name.includes('Deposit'));
@@ -69,19 +88,33 @@ class InflowsTask extends IndexingTask {
         SiloEvents.removeConvertRelatedEvents(addRemoves, converts);
         SiloEvents.removePlantRelatedEvents(addRemoves, plants);
 
-        const beanPrice = (await PriceService.getBeanPrice({ blockNumber: txnEvents[0].rawLog.blockNumber })).usdPrice;
+        const beanPrice = await getOrSet(
+          beanPriceByBlock,
+          blockNumber,
+          async () => (await PriceService.getBeanPrice({ blockNumber })).usdPrice
+        );
+        const temperature =
+          sowEvents.length === 0
+            ? null
+            : await getOrSet(temperatureByBlock, blockNumber, () =>
+                FieldInflowsUtil.getTemperatureForBlock(blockNumber)
+              );
+        const getTokenPrice = (token, block) =>
+          getOrSet(tokenPriceByTokenBlock, `${token}|${block}`, () =>
+            PriceService.getTokenPrice(token, { blockNumber: block })
+          );
 
         // Assign true beans sown to the sow events
-        await FieldInflowsUtil.assignTrueBeansSown(sowEvents, txnEvents[0].rawLog.blockNumber);
+        await FieldInflowsUtil.assignTrueBeansSown(sowEvents, blockNumber, temperature);
         // Attaches bdv/bean price to the plenty events
-        await SiloInflowsUtil.assignClaimPlentyBdvs(claimPlenties, beanPrice, txnEvents[0].rawLog.blockNumber);
+        await SiloInflowsUtil.assignClaimPlentyBdvs(claimPlenties, beanPrice, blockNumber, getTokenPrice);
 
         const netDeposits = SiloInflowsUtil.netDeposits(addRemoves);
         const netSilo = SiloInflowsUtil.netBdvInflows(netDeposits, claimPlenties);
         const netField = FieldInflowsUtil.netBdvInflows(fieldEvents);
 
         const txnMeta = {
-          block: txnEvents[0].rawLog.blockNumber,
+          block: blockNumber,
           timestamp: txnEvents[0].extra.timestamp,
           txnHash,
           beanPrice

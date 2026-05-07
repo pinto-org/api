@@ -9,6 +9,7 @@ const SowOrderAssembler = require('../../../repository/postgres/models/assembler
 const { TractorOrderType } = require('../../../repository/postgres/models/types/types');
 const Concurrent = require('../../../utils/async/concurrent');
 const BlockUtil = require('../../../utils/block');
+const Log = require('../../../utils/logging');
 const Blueprint = require('./blueprint');
 const BlueprintConstants = require('./blueprint-constants');
 
@@ -68,10 +69,22 @@ class TractorSowService extends Blueprint {
     }
     await TractorService_updateOrders(ordersToUpdate);
 
+    const totalOrders = orders.length;
+    let skippedPublishers = [];
     if (!forceUpdateAll) {
       // Only update orders with recent silo activity
+      skippedPublishers = orders
+        .filter((o) => !siloUpdateAccounts.has(o.publisher.toLowerCase()))
+        .map((o) => o.publisher.toLowerCase());
       orders = orders.filter((o) => siloUpdateAccounts.has(o.publisher.toLowerCase()));
     }
+    Log.info(`Tractor ${this.orderType} periodicUpdate`, {
+      blockNumber,
+      forceUpdateAll,
+      evaluatedOrders: orders.length,
+      skippedOrders: totalOrders - orders.length,
+      skippedPublishers: [...new Set(skippedPublishers)]
+    });
 
     // Sort orders that can be executed first
     orders.sort((a, b) => {

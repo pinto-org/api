@@ -12,7 +12,7 @@ const { allToBigInt, fromBigInt, percentDiff } = require('../src/utils/number');
 const CommonSubgraphRepository = require('../src/repository/subgraph/common-subgraph');
 const { BigInt_applyPercent } = require('../src/utils/bigint');
 const { C } = require('../src/constants/runtime-constants');
-const { mockBeanstalkConstants } = require('./util/mock-constants');
+const { mockBeanstalkConstants, mockPintoConstants } = require('./util/mock-constants');
 
 describe('Utils', () => {
   beforeEach(() => {
@@ -51,6 +51,27 @@ describe('Utils', () => {
 
     expect(getBlockSpy).toHaveBeenCalledWith(19500000);
     expect(result.number).toEqual(19500000);
+  });
+
+  test('Finds Base block by timestamp with arithmetic estimate', async () => {
+    mockPintoConstants();
+    const getBlockSpy = jest.spyOn(alchemy.providerForChain(), 'getBlock').mockImplementation((blockNumber) => {
+      const base = { number: 22622961, timestamp: 1732035269 };
+      if (blockNumber === 'latest') {
+        return Promise.resolve({ number: 22622963, timestamp: 1732035273 });
+      }
+      return Promise.resolve({
+        number: blockNumber,
+        timestamp: base.timestamp + (blockNumber - base.number) * 2
+      });
+    });
+    getBlockSpy.mockClear();
+
+    const result = await BlockUtil.findBlockByTimestamp(1732035273);
+
+    expect(result).toEqual({ number: 22622963, timestamp: 1732035273 });
+    expect(getBlockSpy).toHaveBeenCalledTimes(1);
+    expect(getBlockSpy).toHaveBeenCalledWith(22622963);
   });
 
   describe('BigInt', () => {

@@ -14,6 +14,7 @@ function mockBeanstalkConstants() {
 }
 
 function mockPintoConstants() {
+  jest.spyOn(EnvUtil, 'defaultChain').mockReturnValue('base');
   jest.spyOn(RuntimeConstants, '_getMapping').mockReturnValue({
     base: PintoBase
   });

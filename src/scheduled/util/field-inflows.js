@@ -3,12 +3,20 @@ const FieldInflowDto = require('../../repository/dto/inflow/FieldInflowDto');
 const { toBigInt, fromBigInt } = require('../../utils/number');
 
 class FieldInflowsUtil {
+  static async getTemperatureForBlock(block) {
+    const beanstalk = Contracts.getBeanstalk();
+    return await beanstalk.temperature({ blockTag: block });
+  }
+
   // Previously there was a bug in the Sow event emission such that the amount of beans indicated
   // was actually the amount of soil reduced. This occurred during the morning when above peg.
   // The true amount of beans sown is computed here and attached as a _beansSown field.
-  static async assignTrueBeansSown(sowEvents, block) {
-    const beanstalk = Contracts.getBeanstalk();
-    const temperature = await beanstalk.temperature({ blockTag: block });
+  static async assignTrueBeansSown(sowEvents, block, temperature = undefined) {
+    if (sowEvents.length === 0) {
+      return;
+    }
+
+    temperature ??= await this.getTemperatureForBlock(block);
 
     for (const e of sowEvents) {
       e._beansSown = toBigInt(fromBigInt(BigInt(e.args.pods), 6) / (1 + fromBigInt(temperature, 6 + 2)), 6);

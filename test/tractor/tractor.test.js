@@ -54,7 +54,7 @@ describe('TractorTask', () => {
       });
       jest
         .spyOn(FilterLogs, 'getBeanstalkEvents')
-        .mockResolvedValueOnce([{ name: 'Sunrise', rawLog: { blockNumber: 1000 } }])
+        .mockResolvedValueOnce([{ name: 'Sunrise', args: { season: 24 }, rawLog: { blockNumber: 1000 } }])
         .mockResolvedValueOnce([
           { name: 'PublishRequisition', value: 1 },
           { name: 'CancelBlueprint', value: 2 },
@@ -243,6 +243,60 @@ describe('TractorTask', () => {
       expect(sowExeSpy).toHaveBeenCalledWith(expect.anything(), insertedDto, [events[1]]);
       expect(executionDbSpy).toHaveBeenNthCalledWith(2, [insertedDto]);
       expect(insertedDto.tipUsd).toBe(1.25);
+    });
+
+    test('Groups same-transaction events for shared receipt and WETH price', async () => {
+      const receiptSpy = jest.fn().mockResolvedValue('receipt');
+      jest.spyOn(AlchemyUtil, 'providerForChain').mockReturnValue({
+        getTransactionReceipt: receiptSpy
+      });
+      const priceSpy = jest.spyOn(PriceService, 'getTokenPrice').mockResolvedValue({ usdPrice: 1500 });
+      const parsedEvents = [
+        {
+          name: 'TractorExecutionBegan',
+          args: { gasleft: 5000, blueprintHash: 123, nonce: 5 },
+          rawLog: { index: 0 }
+        },
+        { name: 'Tractor', args: { gasleft: 4750, blueprintHash: 123, nonce: 5 }, rawLog: { index: 100 } },
+        {
+          name: 'TractorExecutionBegan',
+          args: { gasleft: 7000, blueprintHash: 456, nonce: 6 },
+          rawLog: { index: 101 }
+        },
+        { name: 'Tractor', args: { gasleft: 6500, blueprintHash: 456, nonce: 6 }, rawLog: { index: 200 } }
+      ];
+      const parseSpy = jest.spyOn(TractorTask, '_getTractorTransactionEvents').mockResolvedValue(parsedEvents);
+      const handleSpy = jest.spyOn(TractorTask, 'handleTractor').mockResolvedValue();
+      const groupedEvents = [
+        {
+          name: 'Tractor',
+          args: { gasleft: 4750, blueprintHash: 123, nonce: 5 },
+          rawLog: { transactionHash: '0xtx', blockNumber: 1000, index: 100 }
+        },
+        {
+          name: 'Tractor',
+          args: { gasleft: 6500, blueprintHash: 456, nonce: 6 },
+          rawLog: { transactionHash: '0xtx', blockNumber: 1000, index: 200 }
+        }
+      ];
+
+      await TractorTask.processTractorEventsConcurrently(groupedEvents);
+
+      expect(receiptSpy).toHaveBeenCalledTimes(1);
+      expect(receiptSpy).toHaveBeenCalledWith('0xtx');
+      expect(priceSpy).toHaveBeenCalledTimes(1);
+      expect(parseSpy).toHaveBeenCalledTimes(1);
+      expect(handleSpy).toHaveBeenCalledTimes(2);
+      expect(handleSpy).toHaveBeenNthCalledWith(1, groupedEvents[0], {
+        receipt: 'receipt',
+        txnEvents: parsedEvents,
+        ethPriceUsd: 1500
+      });
+      expect(handleSpy).toHaveBeenNthCalledWith(2, groupedEvents[1], {
+        receipt: 'receipt',
+        txnEvents: parsedEvents,
+        ethPriceUsd: 1500
+      });
     });
   });
 });
