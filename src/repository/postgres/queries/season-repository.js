@@ -20,6 +20,17 @@ class SeasonRepository {
     return maxSeason;
   }
 
+  static async findMaxSeason() {
+    return await sequelize.models.Season.findOne({
+      order: [['season', 'DESC']],
+      transaction: AsyncContext.getOrUndef('transaction')
+    });
+  }
+
+  static async getMaxSeasonBlock() {
+    return (await this.findMaxSeason())?.block;
+  }
+
   // Returns a list of all seasons that are missing
   static async findMissingSeasons(maxSeason) {
     return await SharedRepository.findMissingSeasons(SEASON_TABLE.env, maxSeason);

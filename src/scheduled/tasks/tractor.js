@@ -23,6 +23,21 @@ const MAX_BLOCKS = 10000;
 
 const SNAPSHOT_SERVICES = [SnapshotSowService, SnapshotConvertUpService];
 
+const getOrSet = async (map, key, valueFn) => {
+  if (!map.has(key)) {
+    map.set(
+      key,
+      Promise.resolve()
+        .then(valueFn)
+        .catch((e) => {
+          map.delete(key);
+          throw e;
+        })
+    );
+  }
+  return await map.get(key);
+};
+
 class TractorTask extends IndexingTask {
   static async handleLiveEvent(event) {
     if (['Sunrise', 'PublishRequisition', 'CancelBlueprint', 'Tractor'].includes(event.name)) {
@@ -96,7 +111,7 @@ class TractorTask extends IndexingTask {
             TractorService.updateOrders.bind(TractorService),
             updateBlock,
             siloUpdateAccounts,
-            updateBlock === nextSunriseBlock
+            this.shouldForceUpdateAll(updateBlock, sunrise[0])
           );
         })
       );
@@ -132,11 +147,41 @@ class TractorTask extends IndexingTask {
     await TractorService.cancelOrder(event.args.blueprintHash);
   }
 
-  static async handleTractor(event) {
+  static shouldForceUpdateAll(updateBlock, nextSunriseEvent) {
+    if (updateBlock !== nextSunriseEvent?.rawLog.blockNumber) {
+      return false;
+    }
+
+    const season = Number(nextSunriseEvent.args?.season ?? nextSunriseEvent.args?.[0]);
+    if (!Number.isFinite(season)) {
+      Log.info(`Skipping Tractor forceUpdateAll; Sunrise event did not include a season number.`);
+      return false;
+    }
+
+    return season % 24 === 0;
+  }
+
+  static _tractorEventContracts() {
+    return [
+      Contracts.getBeanstalk(),
+      Contracts.get(C().SOW_V0),
+      Contracts.get(C().SOW_V0_TRACTOR_HELPERS),
+      Contracts.get(C().CONVERT_UP_V0),
+      Contracts.get(C().CONVERT_UP_V0_TRACTOR_HELPERS)
+    ];
+  }
+
+  static async _getTractorTransactionEvents(receipt) {
+    return await FilterLogs.getTransactionEvents(this._tractorEventContracts(), receipt);
+  }
+
+  static async handleTractor(event, context = {}) {
     const [receipt, order, ethPriceUsd] = await Promise.all([
-      C().RPC.getTransactionReceipt(event.rawLog.transactionHash),
+      context.receipt ?? C().RPC.getTransactionReceipt(event.rawLog.transactionHash),
       (async () => (await TractorService.getOrders({ blueprintHash: event.args.blueprintHash })).orders[0])(),
-      PriceService.getTokenPrice(C().WETH, { blockNumber: event.rawLog.blockNumber })
+      context.ethPriceUsd === undefined
+        ? PriceService.getTokenPrice(C().WETH, { blockNumber: event.rawLog.blockNumber })
+        : { usdPrice: context.ethPriceUsd }
     ]);
     if (!order) {
       // Tractor event received for unpublished blueprint hash. Skip it
@@ -144,16 +189,7 @@ class TractorTask extends IndexingTask {
     }
     // This should be refactored to not use the deprecated method; however in practice it is acceptable currently
     // because though the Convert event signature changed, it was not during the lifetime of any existing Convert blueprint.
-    const txnEvents = await FilterLogs.getTransactionEvents(
-      [
-        Contracts.getBeanstalk(),
-        Contracts.get(C().SOW_V0),
-        Contracts.get(C().SOW_V0_TRACTOR_HELPERS),
-        Contracts.get(C().CONVERT_UP_V0),
-        Contracts.get(C().CONVERT_UP_V0_TRACTOR_HELPERS)
-      ],
-      receipt
-    );
+    const txnEvents = context.txnEvents ?? (await this._getTractorTransactionEvents(receipt));
 
     // Find events between TractorExecutionBegan and Tractor event indexes
     const began = txnEvents.find(
@@ -193,10 +229,62 @@ class TractorTask extends IndexingTask {
 
   static async processEventsConcurrently(allEvents, eventName, handler) {
     const events = allEvents.filter((e) => e.name === eventName);
+    if (eventName === 'Tractor') {
+      await this.processTractorEventsConcurrently(events);
+      return;
+    }
+
     const TAG = Concurrent.tag(eventName);
     for (const event of events) {
       await Concurrent.run(TAG, 50, async () => {
         await handler(event);
+      });
+    }
+    await Concurrent.allResolved(TAG);
+  }
+
+  static async processTractorEventsConcurrently(events) {
+    if (events.length === 0) {
+      return;
+    }
+
+    if (events.some((e) => !e.rawLog?.transactionHash)) {
+      const TAG = Concurrent.tag('Tractor');
+      for (const event of events) {
+        await Concurrent.run(TAG, 50, async () => {
+          await this.handleTractor(event);
+        });
+      }
+      await Concurrent.allResolved(TAG);
+      return;
+    }
+
+    const ethPriceByBlock = new Map();
+    const eventsByTxn = events.reduce((acc, event) => {
+      (acc[event.rawLog.transactionHash] ??= []).push(event);
+      return acc;
+    }, {});
+
+    const TAG = Concurrent.tag('Tractor');
+    for (const [txnHash, txnEvents] of Object.entries(eventsByTxn)) {
+      await Concurrent.run(TAG, 50, async () => {
+        const blockNumber = txnEvents[0].rawLog.blockNumber;
+        const [receipt, ethPriceUsd] = await Promise.all([
+          C().RPC.getTransactionReceipt(txnHash),
+          getOrSet(ethPriceByBlock, blockNumber, async () => {
+            const price = await PriceService.getTokenPrice(C().WETH, { blockNumber });
+            return price.usdPrice;
+          })
+        ]);
+        const parsedTxnEvents = await this._getTractorTransactionEvents(receipt);
+
+        for (const event of txnEvents) {
+          await this.handleTractor(event, {
+            receipt,
+            txnEvents: parsedTxnEvents,
+            ethPriceUsd
+          });
+        }
       });
     }
     await Concurrent.allResolved(TAG);

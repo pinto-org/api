@@ -10,6 +10,7 @@ jest.mock('../../src/utils/env', () => {
     getDeploymentEnv: jest.fn(),
     getDiscordWebhooks: jest.fn(),
     getDiscordPrefix: jest.fn(),
+    getRedisUrl: jest.fn().mockReturnValue('redis://localhost:6379'),
     getSG: jest.fn().mockImplementation(() => ({
       BEANSTALK: 'a',
       BEAN: 'b',

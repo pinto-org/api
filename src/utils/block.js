@@ -27,24 +27,47 @@ class BlockUtil {
   // Performs a binary search lookup to find the ethereum block number closest to this timestamp
   static async findBlockByTimestamp(timestamp) {
     const provider = C().RPC;
-    let upper = await provider.getBlockNumber();
-    let lower = 22622961; // Pinto did not exist prior to this block
-    let bestBlock = null;
+    const startBlock = C().MILESTONE.startSeasonBlock ?? 22622961;
+    const startTimestamp = C().MILESTONE.startSeasonBlockTimestamp ?? 1732035269;
+    const requestedTimestamp = Number(timestamp);
+    const estimatedBlockNumber = Math.max(
+      startBlock,
+      startBlock + Math.floor((requestedTimestamp - startTimestamp) / 2)
+    );
+    let bestBlock = await provider.getBlock(estimatedBlockNumber);
 
-    while (lower <= upper) {
-      const mid = lower + Math.floor((upper - lower) / 2);
-      bestBlock = await provider.getBlock(mid);
+    if (!bestBlock) {
+      return await provider.getBlock('latest');
+    }
+    if (bestBlock.timestamp === requestedTimestamp || estimatedBlockNumber === startBlock) {
+      return bestBlock;
+    }
 
-      if (bestBlock.timestamp == timestamp) {
+    const direction = bestBlock.timestamp < requestedTimestamp ? 1 : -1;
+    let cursorBlockNumber = bestBlock.number;
+    for (let i = 1; i <= 3; ++i) {
+      cursorBlockNumber += direction;
+      if (cursorBlockNumber < startBlock) {
         break;
       }
-      if (bestBlock.timestamp < timestamp) {
-        lower = mid + 1;
-      } else {
-        upper = mid - 1;
+      const nextBlock = await provider.getBlock(cursorBlockNumber);
+      if (!nextBlock) {
+        break;
+      }
+
+      bestBlock = this._closestBlock(requestedTimestamp, bestBlock, nextBlock);
+      if (
+        (direction > 0 && nextBlock.timestamp >= requestedTimestamp) ||
+        (direction < 0 && nextBlock.timestamp <= requestedTimestamp)
+      ) {
+        break;
       }
     }
     return bestBlock;
+  }
+
+  static _closestBlock(timestamp, a, b) {
+    return Math.abs(a.timestamp - timestamp) <= Math.abs(b.timestamp - timestamp) ? a : b;
   }
 
   // Transforms a block during a pause to the block right before the pause.
